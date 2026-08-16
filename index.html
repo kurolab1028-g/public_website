@@ -432,8 +432,6 @@
 </style>
 </head>
 <body>
-
-
 <div class="app-shell">
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
   <nav class="sidebar" id="sidebar">
@@ -518,11 +516,11 @@
   var ROLE_ORDER = ["固定費", "生活費", "養育費", "将来費", "QOL費"];
   var ROLE_COLOR = { "固定費": "var(--role-1)", "生活費": "var(--role-2)", "養育費": "var(--role-5)", "将来費": "var(--role-3)", "QOL費": "var(--role-4)" };
   var ROLE_DESC = {
-    "固定費": "必要で、短期的に止めにくい支出（住宅＝家計費送金、通信費、自動車）",
-    "生活費": "必要だが金額は調整できる支出（食費、日用品、健康・医療、衣服・美容、現金・カード、その他、特別な支出、交際費、未分類）",
-    "養育費": "子どもの学費・習いごとなど、子ども関係の支出（教養・教育）",
+    "固定費": "必要で、短期的に止めにくい支出（住宅＝家計費送金、通信費、自動車。ただし自動車の駐車場は生活費に含む）",
+    "生活費": "必要だが金額は調整できる支出（食費、日用品、健康・医療、衣服・美容、現金・カード、その他、特別な支出、交際費、未分類、自動車の駐車場。ただしその他のAmazonはQOL費に含む）",
+    "養育費": "子どもの学費・習いごとなど、子ども関係の支出（教養・教育。ただし書籍とその他教養・教育はQOL費に含む）",
     "将来費": "今後に備えて事前に確保する支出（税・社会保障＝iDeCo等、保険）",
-    "QOL費": "必須ではないが生活満足度を上げる支出（趣味・娯楽）"
+    "QOL費": "必須ではないが生活満足度を上げる支出（趣味・娯楽、その他のAmazon、教養・教育の書籍・その他教養・教育）"
   };
   var CATEGORY_ROLE = {
     "通信費": "固定費", "自動車": "固定費",
@@ -532,16 +530,44 @@
     "税・社会保障": "将来費", "保険": "将来費",
     "趣味・娯楽": "QOL費"
   };
+  // 中項目（サブカテゴリ）単位での役割の例外指定。「大項目|中項目」→ 役割。
+  // ここに無ければ CATEGORY_ROLE（大項目単位）の役割を使う。
+  var SUBCATEGORY_ROLE_OVERRIDE = {
+    "自動車|駐車場": "生活費",
+    "その他|Amazon": "QOL費",
+    "教養・教育|書籍": "QOL費",
+    "教養・教育|その他教養・教育": "QOL費"
+  };
+  function roleForSub(catName, subName) {
+    var key = catName + "|" + subName;
+    if (SUBCATEGORY_ROLE_OVERRIDE.hasOwnProperty(key)) return SUBCATEGORY_ROLE_OVERRIDE[key];
+    return CATEGORY_ROLE[catName] || "生活費";
+  }
 
   function roleBreakdown(month) {
     var sums = { "固定費": 0, "生活費": 0, "養育費": 0, "将来費": 0, "QOL費": 0 };
     sums["固定費"] += month.housing || 0;
     month.categories.forEach(function (c) {
-      var role = CATEGORY_ROLE[c.name] || "生活費";
-      sums[role] += c.total;
+      c.subcategories.forEach(function (s) {
+        sums[roleForSub(c.name, s.name)] += s.total;
+      });
     });
     return sums;
   }
+
+  // カテゴリ×中項目の13ヶ月累計（役割別の「内訳」表示で使う）
+  var SUBCAT_TOTALS_13M = {};
+  var SUBCAT_BY_CATEGORY = {};
+  MONTHS.forEach(function (m) {
+    m.categories.forEach(function (c) {
+      c.subcategories.forEach(function (s) {
+        var key = c.name + "|" + s.name;
+        SUBCAT_TOTALS_13M[key] = (SUBCAT_TOTALS_13M[key] || 0) + s.total;
+        if (!SUBCAT_BY_CATEGORY[c.name]) SUBCAT_BY_CATEGORY[c.name] = [];
+        if (SUBCAT_BY_CATEGORY[c.name].indexOf(s.name) === -1) SUBCAT_BY_CATEGORY[c.name].push(s.name);
+      });
+    });
+  });
 
   function fmtYen(v) {
     var abs = Math.abs(Math.round(v));
@@ -1177,15 +1203,23 @@
   }
 
   var ROLE_GUIDANCE = {
-    "固定費": "大部分を占めるのは住宅（家計費送金）で、これは必要経費のため見直し対象外。通信費・自動車はすでに低水準〜妥当な範囲にあり、この役割の中では大きな削減余地は見当たらない。",
-    "生活費": "食費が中心。TAIRAYA宮原東口店への高頻度な少額購入（月8.5回・111件／13ヶ月）が積み重なっており、まとめ買いへの移行で削減余地がある（見直し優先度P4）。外食比率の見直しも候補（P5）。",
-    "養育費": "教養・教育（子どもの学費・習いごと）が構成要素。RKS(サイエイHD)への支払いが最大で、内容の把握をおすすめしたい（P3）。子どもの成長に応じて金額が変動しやすいため、削減対象というより「今後の見込み額を把握する」費目として捉えたい。",
+    "固定費": "大部分を占めるのは住宅（家計費送金）で、これは必要経費のため見直し対象外。通信費・自動車（駐車場を除く）はすでに低水準〜妥当な範囲にあり、この役割の中では大きな削減余地は見当たらない。",
+    "生活費": "食費が中心（自動車の駐車場を含む一方、その他のAmazon購入はQOL費に区分）。TAIRAYA宮原東口店への高頻度な少額購入（月8.5回・111件／13ヶ月）が積み重なっており、まとめ買いへの移行で削減余地がある（見直し優先度P4）。外食比率の見直しも候補（P5）。",
+    "養育費": "教養・教育のうち子どもの習いごとが中心（書籍・その他教養・教育はQOL費に区分）。RKS(サイエイHD)への支払いが最大で、内容の把握をおすすめしたい（P3）。子どもの成長に応じて金額が変動しやすいため、削減対象というより「今後の見込み額を把握する」費目として捉えたい。",
     "将来費": "iDeCoは資産形成としてすでに活用できている一方、生命保険は一括払いが続いており契約内容の確認余地がある（P2）。詳細は「大型出費」を参照。",
-    "QOL費": "趣味・娯楽が唯一の構成要素。動画配信サービスの重複契約（NETFLIX＋dアニメ、月1,200円程度）と、旅行など単発の大型出費が主な削減余地（P1）。"
+    "QOL費": "趣味・娯楽に加え、その他のAmazon購入、教養・教育の書籍・その他教養・教育も含む。動画配信サービスの重複契約（NETFLIX＋dアニメ、月1,200円程度）と、旅行など単発の大型出費が主な削減余地（P1）。"
   };
 
   function categoriesForRole(role) {
-    var list = CATEGORY_TOTALS.filter(function (c) { return (CATEGORY_ROLE[c.name] || "生活費") === role; }).slice();
+    var list = [];
+    Object.keys(SUBCAT_BY_CATEGORY).forEach(function (catName) {
+      var allSubs = SUBCAT_BY_CATEGORY[catName];
+      var subs = allSubs.filter(function (subName) { return roleForSub(catName, subName) === role; });
+      if (subs.length === 0) return;
+      var total = subs.reduce(function (s, subName) { return s + (SUBCAT_TOTALS_13M[catName + "|" + subName] || 0); }, 0);
+      var name = subs.length === allSubs.length ? catName : catName + "（" + subs.join("・") + "）";
+      list.push({ name: name, total: total });
+    });
     if (role === "固定費") {
       var housingTotal = MONTHS.reduce(function (s, m) { return s + (m.housing || 0); }, 0);
       list.push({ name: "住宅（家計費送金）", total: housingTotal });
@@ -1437,7 +1471,12 @@
       var roleCats = [];
       if (role === "固定費" && month.housing) roleCats.push({ name: "住宅（家計費送金）", total: month.housing });
       month.categories.forEach(function (c) {
-        if ((CATEGORY_ROLE[c.name] || "生活費") === role) roleCats.push({ name: c.name, total: c.total });
+        var allSubs = c.subcategories.map(function (s) { return s.name; });
+        var subs = c.subcategories.filter(function (s) { return roleForSub(c.name, s.name) === role; });
+        if (subs.length === 0) return;
+        var total = subs.reduce(function (s, sub) { return s + sub.total; }, 0);
+        var name = subs.length === allSubs.length ? c.name : c.name + "（" + subs.map(function (s) { return s.name; }).join("・") + "）";
+        roleCats.push({ name: name, total: total });
       });
       roleCats.sort(function (a, b) { return a.total - b.total; });
 
@@ -1585,6 +1624,5 @@
 
 })();
 </script>
-
 </body>
 </html>
