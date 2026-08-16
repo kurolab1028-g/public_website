@@ -1544,6 +1544,18 @@
       body.appendChild(sec);
       monthlyTimeSeries(chart, series);
 
+      var subTotals = (SUBCAT_BY_CATEGORY[catName] || []).map(function (subName) {
+        return { name: subName, total: SUBCAT_TOTALS_13M[catName + "|" + subName] || 0 };
+      }).sort(function (a, b) { return a.total - b.total; });
+      if (subTotals.length > 1) {
+        var subHead = el("div");
+        subHead.innerHTML = '<div class="sub-title" style="margin-top:16px;">中項目別の13ヶ月累計</div>';
+        sec.appendChild(subHead);
+        var subChart = el("div", "chart-wrap");
+        sec.appendChild(subChart);
+        rankedBar(subChart, subTotals, { categorical: true });
+      }
+
       var sub = el("div");
       sub.innerHTML = '<div class="sub-title" style="margin-top:16px;">主な支払先（13ヶ月累計）</div>';
       sec.appendChild(sub);
@@ -1568,6 +1580,15 @@
       col.style.marginTop = i ? "24px" : "0";
       col.innerHTML = '<div class="sub-title">' + catName + '（13ヶ月累計 ' + fmtSpend(CATEGORY_TOTALS_MAP[catName]) + '）</div>';
       s07.appendChild(col);
+      var subTotalsLite = (SUBCAT_BY_CATEGORY[catName] || []).map(function (subName) {
+        return { name: subName, total: SUBCAT_TOTALS_13M[catName + "|" + subName] || 0 };
+      }).sort(function (a, b) { return a.total - b.total; });
+      if (subTotalsLite.length > 1) {
+        var liteSubChart = el("div", "chart-wrap");
+        liteSubChart.style.marginBottom = "10px";
+        col.appendChild(liteSubChart);
+        rankedBar(liteSubChart, subTotalsLite, { categorical: true, width: 640, labelW: 150 });
+      }
       vendorTable(col, VENDOR_RANK[catName]);
     });
   }
