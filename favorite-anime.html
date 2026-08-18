@@ -1,0 +1,1491 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>お気に入りアニメ一覧</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #666666;
+    --border: #e0e0e0;
+    --accent: #e85d75;
+    --badge-hof: #f5a623;
+    --badge-history: #4a90d9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --card-bg: #1e2126;
+      --text: #eaeaea;
+      --text-muted: #9a9a9a;
+      --border: #33363c;
+      --accent: #ff7a93;
+      --badge-hof: #f5a623;
+      --badge-history: #5aa3e8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header.page-header { padding: 24px 20px 16px; max-width: 1100px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 1.6rem; }
+  .subtitle { color: var(--text-muted); margin: 0 0 20px; font-size: 0.9rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .view-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .view-toggle button { padding: 8px 14px; border: none; background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 0.85rem; }
+  .view-toggle button.active { background: var(--accent); color: #fff; }
+  .filter-badges { display: inline-flex; gap: 6px; }
+  .filter-badges button { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 0.8rem; }
+  .filter-badges button.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  input[type="search"] { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.85rem; min-width: 180px; }
+  select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.85rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; }
+  .empty-state { text-align: center; color: var(--text-muted); padding: 60px 20px; }
+  .card-list { display: flex; flex-direction: column; gap: 16px; }
+  .card { display: flex; gap: 16px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .card img { width: 120px; height: 168px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: var(--border); }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card-title { font-size: 1.1rem; font-weight: 600; margin: 0; }
+  .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; color: #fff; }
+  .badge.hof { background: var(--badge-hof); }
+  .meta-row { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 8px; }
+  .synopsis { font-size: 0.85rem; margin: 0 0 8px; line-height: 1.6; }
+  .cast-list { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 8px; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+  .tag { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-muted); }
+  .rating { color: var(--badge-hof); font-size: 0.9rem; }
+  .comment { font-size: 0.82rem; font-style: italic; color: var(--text-muted); }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .gallery-item { text-align: center; }
+  .gallery-item img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--border); }
+  .gallery-item .gallery-title { font-size: 0.78rem; margin-top: 6px; line-height: 1.3; }
+  @media (max-width: 480px) {
+    .card { flex-direction: column; }
+    .card img { width: 100%; height: 200px; }
+  }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <h1>お気に入りアニメ一覧</h1>
+  <p class="subtitle">見てよかった作品の記録です。</p>
+  <div class="controls">
+    <div class="view-toggle">
+      <button id="btn-view-list" class="active" onclick="setView('list')">詳細一覧</button>
+      <button id="btn-view-gallery" onclick="setView('gallery')">サムネイルギャラリー</button>
+    </div>
+    <div class="filter-badges">
+      <button class="active" data-category="all" onclick="setCategory('all')">すべて</button>
+      <button data-category="hof" onclick="setCategory('hof')">殿堂入り</button>
+    </div>
+    <input type="search" id="search-box" placeholder="タイトル・ジャンル・タグで検索" oninput="render()">
+    <select id="sort-select" onchange="render()">
+      <option value="rating">評価が高い順</option>
+      <option value="added">新しく追加した順</option>
+      <option value="title">タイトル順</option>
+    </select>
+  </div>
+</header>
+<main id="app"></main>
+<script>
+const ANIME_DATA = [
+  {
+    id: 'lycoris-recoil',
+    title: 'リコリス・リコイル',
+    rating: 5,
+    category: 'hof',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/lycoris-recoil.jpg',
+    synopsis: '日本の治安を裏で守る非公式組織「DA」に所属する凄腕エージェント錦木千束と、エリートから左遷されてきた井ノ上たきなが、喫茶リコリコで働きながら難事件に挑む。日常の温かさと非日常のガンアクションが同居するオリジナルアニメ。',
+    studio: 'A-1 Pictures',
+    creator: '足立慎吾(監督)',
+    year: 2022,
+    episodes: 13,
+    genres: ['アクション', '日常', 'ガンアクション'],
+    cast: [
+      { character: '錦木千束', actor: '安済知佳' },
+      { character: '井ノ上たきな', actor: '若山詩音' },
+      { character: '中原ミズキ', actor: '小清水亜美' },
+      { character: 'クルミ', actor: '久野美咲' },
+      { character: 'ミカ', actor: 'さかき孝輔' }
+    ]
+  },
+  {
+    id: 'dennou-coil',
+    title: '電脳コイル',
+    rating: 5,
+    category: 'hof',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/dennou-coil.jpg',
+    synopsis: '電脳メガネで拡張現実が日常に溶け込んだ地方都市・大黒町を舞台に、少女ヤサコとイサコを中心とした子供たちが、電脳世界に潜む謎の存在や町に隠された秘密を追う。ノスタルジックな日常描写とSF設定を融合させたオリジナルアニメ。',
+    studio: 'マッドハウス',
+    creator: '磯光雄(原作・脚本・監督)',
+    year: 2007,
+    episodes: 26,
+    genres: ['SF', 'ジュブナイル', 'ミステリー'],
+    cast: [
+      { character: 'ヤサコ(小此木優子)', actor: '折笠富美子' },
+      { character: 'イサコ(天沢勇子)', actor: '桑島法子' },
+      { character: 'フミエ(橋本文恵)', actor: '小島幸子' },
+      { character: 'ハラケン(原川研一)', actor: '朴璐美' },
+      { character: 'メガばあ(小此木早苗)', actor: '鈴木れい子' }
+    ]
+  },
+  {
+    id: 'cowboy-bebop',
+    title: 'COWBOY BEBOP(TVシリーズ)',
+    rating: 5,
+    category: 'hof',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/cowboy-bebop.jpg',
+    synopsis: '2071年、太陽系全域に人類の生活圏が広がった未来。賞金稼ぎのスパイクとジェットが宇宙船ビバップ号で仲間と共に賞金首を追う、ジャズが彩るハードボイルドなエピソード集。',
+    studio: 'サンライズ',
+    creator: '渡辺信一郎(監督)',
+    year: 1998,
+    episodes: 26,
+    genres: ['SF', 'ノワール', 'アクション'],
+    cast: [
+      { character: 'スパイク・スピーゲル', actor: '山寺宏一' },
+      { character: 'ジェット・ブラック', actor: '石塚運昇' },
+      { character: 'フェイ・ヴァレンタイン', actor: '林原めぐみ' },
+      { character: 'エドワード', actor: '多田葵' }
+    ]
+  },
+  {
+    id: 'chikyuugai-shounen-shoujo',
+    title: '地球外少年少女',
+    rating: 4,
+    category: '',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/chikyuugai-shounen-shoujo.jpg',
+    synopsis: '2045年、宇宙が生活圏の一部になった未来。商業ステーション「あんしん」で少年少女たちが大事故に見舞われ、大人とはぐれた子供たちがAIやドローンの力を借りながら自力での生還を目指す、『電脳コイル』磯光雄監督のオリジナルSFアニメ。',
+    studio: 'Production +h.',
+    creator: '磯光雄(原作・監督)',
+    year: 2022,
+    episodes: 6,
+    genres: ['SF', '青春', 'サバイバル'],
+    cast: [
+      { character: '相模登矢', actor: '藤原夏海' },
+      { character: '七瀬・Б・心葉', actor: '和氣あず未' },
+      { character: '筑波大洋', actor: '小野賢章' },
+      { character: '美笹美衣奈', actor: '赤﨑千夏' },
+      { character: '種子島博士', actor: '小林由美子' }
+    ]
+  },
+  {
+    id: 'madoka-magica',
+    title: '魔法少女まどか☆マギカ',
+    rating: 5,
+    category: 'hof',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/madoka-magica.jpg',
+    synopsis: '平凡な中学2年生・鹿目まどかが、謎の生物キュゥべえから魔法少女への契約を持ちかけられる。可愛らしい魔法少女ものの体裁から一転、魔女や願いの代償をめぐる過酷な運命が描かれるダークな展開で話題を呼んだ作品。',
+    studio: 'シャフト',
+    creator: '新房昭之(監督)・虚淵玄(脚本)',
+    year: 2011,
+    episodes: 12,
+    genres: ['魔法少女', 'ダークファンタジー', 'サイコロジカル'],
+    cast: [
+      { character: '鹿目まどか', actor: '悠木碧' },
+      { character: '暁美ほむら', actor: '斎藤千和' },
+      { character: '巴マミ', actor: '水橋かおり' },
+      { character: '美樹さやか', actor: '喜多村英梨' },
+      { character: '佐倉杏子', actor: '野中藍' },
+      { character: 'キュゥべえ', actor: '加藤英美里' }
+    ]
+  },
+  {
+    id: 'eva-old-movie',
+    title: 'エヴァンゲリオン劇場版(旧劇場版)',
+    rating: 5,
+    category: 'hof',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/eva-old-movie.jpg',
+    synopsis: 'TVシリーズとは異なる結末を描いた劇場版2部作「Air/まごころを、君に」。人類補完計画が発動する中、暴走するネルフとゼーレの攻防、そしてシンジが自身の内面と向き合う衝撃的な結末が描かれる、旧エヴァンゲリオンシリーズの完結編。',
+    studio: 'ガイナックス / Production I.G',
+    creator: '庵野秀明(監督)',
+    year: 1997,
+    episodes: 1,
+    genres: ['SF', 'ロボット', 'サイコロジカル'],
+    cast: [
+      { character: '碇シンジ', actor: '緒方恵美' },
+      { character: '綾波レイ', actor: '林原めぐみ' },
+      { character: '惣流・アスカ・ラングレー', actor: '宮村優子' },
+      { character: '葛城ミサト', actor: '三石琴乃' },
+      { character: '赤木リツコ', actor: '山口由里子' }
+    ]
+  },
+  {
+    id: 'kimi-no-na-wa',
+    title: '君の名は。',
+    rating: 5,
+    category: 'hof',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/kimi-no-na-wa.jpg',
+    synopsis: '東京の少年・瀧と、飛騨の山間の町に暮らす少女・三葉。ある日を境に二人の身体が入れ替わるという不思議な現象が起き、やがて1200年ぶりに地球へ接近する彗星をめぐる運命的な出来事へとつながっていく。',
+    studio: 'コミックス・ウェーブ・フィルム',
+    creator: '新海誠(監督・脚本)',
+    year: 2016,
+    episodes: 1,
+    genres: ['恋愛', 'SF', '青春'],
+    cast: [
+      { character: '立花瀧', actor: '神木隆之介' },
+      { character: '宮水三葉', actor: '上白石萌音' },
+      { character: '藤井司', actor: '島崎信長' },
+      { character: '勅使河原克彦', actor: '成田凌' },
+      { character: '名取早耶香', actor: '悠木碧' }
+    ]
+  },
+  {
+    id: '5-centimeters-per-second',
+    title: '秒速5センチメートル',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/5-centimeters-per-second.jpg',
+    synopsis: '小学校の卒業とともに離れ離れになった貴樹と明里の再会を描く「桜花抄」、種子島を舞台にした「コスモナウト」、表題作の全3話からなる連作短編アニメーション。すれ違っていく想いと過ぎていく時間を繊細に描く新海誠監督作品。',
+    studio: 'コミックス・ウェーブ・フィルム',
+    creator: '新海誠(監督・原作・脚本)',
+    year: 2007,
+    episodes: 1,
+    genres: ['恋愛', '青春', 'ヒューマンドラマ'],
+    cast: [
+      { character: '遠野貴樹', actor: '水橋研二' },
+      { character: '篠原明里', actor: '近藤好美 / 尾上綾華' },
+      { character: '澄田花苗', actor: '花村怜美' }
+    ]
+  },
+  {
+    id: 'akira',
+    title: 'AKIRA(アキラ)',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/akira.jpg',
+    synopsis: '第三次世界大戦後のネオ東京を舞台に、暴走族の少年・鉄雄が謎の力に目覚めたことから、金田をはじめとする仲間たちと巨大な陰謀を巻き込む事態へと発展していく。大友克洋自身が原作・監督を務めたSFアニメーションの金字塔。',
+    studio: '東京ムービー新社',
+    creator: '大友克洋(原作・監督)',
+    year: 1988,
+    episodes: 1,
+    genres: ['SF', 'サイバーパンク', 'アクション'],
+    cast: [
+      { character: '金田正太郎', actor: '岩田光央' },
+      { character: '島鉄雄', actor: '佐々木望' },
+      { character: 'ケイ', actor: '小山茉美' },
+      { character: '大佐', actor: '石田太郎' },
+      { character: '竜', actor: '玄田哲章' }
+    ]
+  },
+  {
+    id: 'code-geass',
+    title: 'コードギアス 反逆のルルーシュ',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/code-geass.jpg',
+    synopsis: '超大国ブリタニアに占領された日本「エリア11」を舞台に、皇族の血を引く青年ルルーシュが、不思議な力「ギアス」を得たことをきっかけにレジスタンス組織「黒の騎士団」を率いて帝国への反逆を企てるロボットアクション。',
+    studio: 'サンライズ',
+    creator: '谷口悟朗(監督)・大河内一楼(シリーズ構成)・CLAMP(キャラクター原案)',
+    year: 2006,
+    episodes: 25,
+    genres: ['ロボット', '学園', 'シリアス'],
+    cast: [
+      { character: 'ルルーシュ・ランペルージ', actor: '福山潤' },
+      { character: '枢木スザク', actor: '櫻井孝宏' },
+      { character: 'C.C.', actor: 'ゆかな' },
+      { character: '枢木(スタッドフェルド)カレン', actor: '小清水亜美' }
+    ]
+  },
+  {
+    id: 'kill-la-kill',
+    title: 'キルラキル',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/kill-la-kill.jpg',
+    synopsis: '生徒会長・鬼龍院皐月が支配する本能字学園に、父の仇を探す転校生・纏流子が乗り込む学園バトルアクション。特殊な「戦闘服」を巡って繰り広げられる過激で疾走感のある戦いが魅力のTRIGGERオリジナルアニメ。',
+    studio: 'TRIGGER',
+    creator: '今石洋之(監督)・中島かずき(脚本)',
+    year: 2013,
+    episodes: 24,
+    genres: ['アクション', 'コメディ', '学園'],
+    cast: [
+      { character: '纏流子', actor: '小清水亜美' },
+      { character: '鬼龍院皐月', actor: '柚木涼香' },
+      { character: '満艦飾マコ', actor: '洲崎綾' },
+      { character: '蟇郡苛', actor: '稲田徹' }
+    ]
+  },
+  {
+    id: 'flcl',
+    title: 'フリクリ(FLCL)',
+    rating: 5,
+    category: 'hof',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/flcl.jpg',
+    synopsis: '平凡な小学生ナオ太の額に、謎の女ハル子が乗るベスパにはねられた拍子からロボットが飛び出すようになる。日常と非日常が入り混じる、疾走感あふれる実験的な映像表現が特徴のガイナックス制作OVA。',
+    studio: 'ガイナックス / Production I.G',
+    creator: '鶴巻和哉(監督)',
+    year: 2000,
+    episodes: 6,
+    genres: ['SF', 'コメディ', 'アクション'],
+    cast: [
+      { character: 'ナンダバ・ナオ太', actor: '水樹洵' },
+      { character: 'ハルハラ・ハル子', actor: '新谷真弓' },
+      { character: 'サメジマ・マミ美', actor: '笠木泉' },
+      { character: 'アマラオ', actor: '大倉孝二' }
+    ]
+  },
+  {
+    id: 'kyoukai-no-kanata',
+    title: '境界の彼方',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/kyoukai-no-kanata.jpg',
+    synopsis: '不死身の半妖である少年・神原秋人と、妖夢を討伐する一族「異界士」の少女・栗山未来が出会い、互いの秘密や過去と向き合っていく京都アニメーション制作のファンタジー作品。',
+    studio: '京都アニメーション',
+    creator: '石立太一(監督)・鳥居なごむ(原作)',
+    year: 2013,
+    episodes: 12,
+    genres: ['ファンタジー', '学園', 'バトル'],
+    cast: [
+      { character: '栗山未来', actor: '種田梨沙' },
+      { character: '神原秋人', actor: 'KENN' },
+      { character: '名瀬美月', actor: '茅原実里' }
+    ]
+  },
+  {
+    id: 'hyouka',
+    title: '氷菓',
+    rating: 4,
+    category: '',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/hyouka.jpg',
+    synopsis: '省エネ主義の高校生・折木奉太郎が、廃部寸前の「古典部」に入部したことをきっかけに、好奇心旺盛な千反田えると共に身近な謎を解いていく青春ミステリー。京都アニメーションが米澤穂信の原作を丁寧な空気感で映像化した。',
+    studio: '京都アニメーション',
+    creator: '米澤穂信(原作)・武本康弘(監督)',
+    year: 2012,
+    episodes: 22,
+    genres: ['ミステリー', '青春', '学園'],
+    cast: [
+      { character: '折木奉太郎', actor: '中村悠一' },
+      { character: '千反田える', actor: '佐藤聡美' },
+      { character: '福部里志', actor: '阪口大助' },
+      { character: '伊原摩耶花', actor: '茅野愛衣' }
+    ]
+  },
+  {
+    id: 'chainsaw-man',
+    title: 'チェンソーマン',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/chainsaw-man.jpg',
+    synopsis: '借金返済のためデビルハンターとして働く少年デンジが、相棒の悪魔ポチタと契約し「チェンソーマン」として蘇る。悪魔がはびこる世界を舞台に藤本タツキの原作をMAPPAが手がけた、ダークで疾走感のあるアクション作品。',
+    studio: 'MAPPA',
+    creator: '藤本タツキ(原作)・中山竜(監督)',
+    year: 2022,
+    episodes: 12,
+    genres: ['ダークファンタジー', 'アクション', 'バトル'],
+    cast: [
+      { character: 'デンジ', actor: '戸谷菊之介' },
+      { character: 'マキマ', actor: '楠木ともり' },
+      { character: '早川アキ', actor: '坂田将吾' },
+      { character: 'パワー', actor: 'ファイルーズあい' },
+      { character: 'ポチタ', actor: '井澤詩織' }
+    ]
+  },
+  {
+    id: 'gundam-thunderbolt',
+    title: '機動戦士ガンダム サンダーボルト',
+    rating: 5,
+    category: 'hof',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/gundam-thunderbolt.jpg',
+    synopsis: '一年戦争下、ジオン軍と連邦軍が激突する激戦地「サイド4」を舞台に、義足の狙撃手イオ・フレミングと、盲目のジャズドラマー出身のモビルスーツパイロット、ダリル・ローレンツの因縁の対決を描く。太田垣康男の漫画を原作に、ジャズが響く陰惨な戦場のリアリズムを追求したガンダム外伝。',
+    studio: 'サンライズ',
+    creator: '太田垣康男(原作)・松尾衡(監督)',
+    year: 2015,
+    episodes: 8,
+    genres: ['ロボット', '戦争', 'ジャズ'],
+    cast: [
+      { character: 'イオ・フレミング', actor: '中村悠一' },
+      { character: 'ダリル・ローレンツ', actor: '木村良平' },
+      { character: 'クローディア・ペール', actor: '行成とあ' },
+      { character: 'カーラ・ミッチャム', actor: '大原さやか' }
+    ]
+  },
+  {
+    id: 'hathaway',
+    title: '閃光のハサウェイ',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/hathaway.jpg',
+    synopsis: '一年戦争から12年後、地球連邦政府の腐敗に反旗を翻すテロ組織「マフティー」を率いるハサウェイ・ノアと、彼を追う連邦軍将校ケネス・スレッグ、謎の女性ギギ・アンダルシアの三角関係を軸に描く。富野由悠季の小説三部作を村瀬修功監督が緻密な作画で映像化した劇場版シリーズ第1作。',
+    studio: 'サンライズ(バンダイナムコフィルムワークス)',
+    creator: '富野由悠季(原作)・村瀬修功(監督)',
+    year: 2021,
+    episodes: 1,
+    genres: ['ロボット', 'SF', 'サスペンス'],
+    cast: [
+      { character: 'ハサウェイ・ノア', actor: '小野賢章' },
+      { character: 'ギギ・アンダルシア', actor: '上田麗奈' },
+      { character: 'ケネス・スレッグ', actor: '諏訪部順一' },
+      { character: 'エマーラ・ズビン', actor: '石川由依' }
+    ]
+  },
+  {
+    id: 'gundam-origin',
+    title: '機動戦士ガンダム THE ORIGIN',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/gundam-origin.jpg',
+    synopsis: '「機動戦士ガンダム」誕生前史を、原作コミック作者である安彦良和自身が総監督として映像化したOVAシリーズ。シャア・アズナブルとセイラ・マス兄妹の少年時代から、ザビ家の権力闘争、ルウム会戦に至るまでを、テレビ版とは異なる重厚な人間ドラマとして描く。',
+    studio: 'サンライズ',
+    creator: '安彦良和(原作・総監督)',
+    year: 2015,
+    episodes: 6,
+    genres: ['ロボット', '戦争', 'ドラマ'],
+    cast: [
+      { character: 'シャア・アズナブル(青年期)', actor: '池田秀一' },
+      { character: 'キャスバル(少年期)', actor: '田中真弓' },
+      { character: 'セイラ・マス', actor: '潘めぐみ' },
+      { character: 'ドズル・ザビ', actor: '三宅健太' },
+      { character: 'ガルマ・ザビ', actor: '柿原徹也' }
+    ]
+  },
+  {
+    id: 'sora-yori-mo-tooi-basho',
+    title: '宇宙よりも遠い場所',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/sora-yori-mo-tooi-basho.jpg',
+    synopsis: '高校2年生の玉木マリは、青春を無駄にしていることに焦りを感じながらも一歩を踏み出せずにいたが、南極を目指す少女・小淵沢報瀬と出会い人生が動き出す。友人を誘い南極観測隊に同行するという型破りな挑戦を通して、少女たちの成長と友情を丁寧に描くオリジナルアニメ。',
+    studio: 'マッドハウス',
+    creator: '石塚敦子(監督)・花田十輝(シリーズ構成)',
+    year: 2018,
+    episodes: 13,
+    genres: ['青春', '友情', '南極'],
+    cast: [
+      { character: '玉木マリ', actor: '水瀬いのり' },
+      { character: '小淵沢報瀬', actor: '花澤香菜' },
+      { character: '三宅日向', actor: '井口裕香' },
+      { character: '白石結月', actor: '早見沙織' }
+    ]
+  },
+  {
+    id: 'kanata-no-astra',
+    title: '彼方のアストラ',
+    rating: 4,
+    category: '',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/kanata-no-astra.jpg',
+    synopsis: '惑星キャンプ中に謎の球体に吸い込まれた9人の少年少女が、5000光年離れた宇宙に飛ばされてしまう。宇宙船アストラ号で無事に故郷への生還を目指す中、次々と明かされる衝撃の真実が待ち受ける、篠原健太の完結済み人気漫画を原作としたSFサバイバル。',
+    studio: 'Lerche',
+    creator: '篠原健太(原作)・安藤正臣(監督)',
+    year: 2019,
+    episodes: 12,
+    genres: ['SF', 'サバイバル', 'ミステリー'],
+    cast: [
+      { character: 'カナタ・ホシジマ', actor: '細谷佳正' },
+      { character: 'アリエス・スプリング', actor: '水瀬いのり' },
+      { character: 'ザック・ウォーカー', actor: '武内駿輔' },
+      { character: 'キトリー・ラファエリ', actor: '黒沢ともよ' },
+      { character: 'ユンファ・ルー', actor: '早見沙織' }
+    ]
+  },
+  {
+    id: 'ansatsu-kyoushitsu',
+    title: '暗殺教室',
+    rating: 4,
+    category: '',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/ansatsu-kyoushitsu.jpg',
+    synopsis: '月の7割を破壊した謎の超生物「殺せんせー」が、突然中学3年E組の担任教師となる。生徒たちには彼を来年3月までに暗殺すれば政府から巨額の報酬が支払われるという任務が課され、超高速で移動する殺せんせーとの奇妙な学園生活が始まる。松井優征の人気漫画を原作としたダークコメディ。',
+    studio: 'Lerche',
+    creator: '松井優征(原作)・岸誠二(監督)',
+    year: 2015,
+    episodes: 47,
+    genres: ['学園', 'コメディ', 'アクション'],
+    cast: [
+      { character: '殺せんせー', actor: '福山潤' },
+      { character: '潮田渚', actor: '渕上舞' },
+      { character: '赤羽業', actor: '岡本信彦' },
+      { character: '烏間惟臣', actor: '杉田智和' },
+      { character: '磯貝悠馬', actor: '逢坂良太' }
+    ]
+  },
+  {
+    id: 'helck',
+    title: 'Helck',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/helck.jpg',
+    synopsis: '魔王を倒した勇者を決めるトーナメントに、なぜか人間を殺そうとしない不敵な魔王軍の戦士ヘルクが飛び入り参加する。人類に味方するはずのない魔族がなぜ人間界の勇者を目指すのか、その謎を追う魔族の女幹部ヴァミリオが、ヘルクの過去と優しさに触れていく異色のダークファンタジー。',
+    studio: 'サテライト',
+    creator: '七尾ナナキ(原作)・佐藤竜雄(監督)',
+    year: 2023,
+    episodes: 24,
+    genres: ['ファンタジー', 'バトル', 'ヒューマンドラマ'],
+    cast: [
+      { character: 'ヘルク', actor: '小西克幸' },
+      { character: 'ヴァミリオ', actor: '小松未可子' },
+      { character: 'アズドラ', actor: '松岡禎丞' },
+      { character: 'ホン', actor: '石田彰' },
+      { character: 'ロココ', actor: '徳井青空' }
+    ]
+  },
+  {
+    id: 'pop-team-epic',
+    title: 'ポプテピピック',
+    rating: 4,
+    category: '',
+    tags: ['おすすめしない'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/pop-team-epic.jpg',
+    synopsis: '大川ぶくぶによるシュールな4コマ漫画を原作に、脈絡のないパロディ・ネタが高速で連射されるカオスなギャグアニメ。同じ内容の前半パートと後半パートで担当声優を丸ごと交代する斬新な構成や過激なパロディが物議を醸すなど、視聴者を選ぶ実験的な作品として話題になった。',
+    studio: '神風動画/スペースネコカンパニー',
+    creator: '大川ぶくぶ(原作)・青木純(監督)',
+    year: 2018,
+    episodes: 12,
+    genres: ['ギャグ', 'シュール', 'パロディ'],
+    cast: [
+      { character: 'ポプ子(前半パート担当声優の一例)', actor: '三ツ矢雄二' },
+      { character: 'ピピ美(前半パート担当声優の一例)', actor: '日高のり子' },
+      { character: 'ポプ子(後半パート担当声優の一例)', actor: '悠木碧' },
+      { character: 'ピピ美(後半パート担当声優の一例)', actor: '竹達彩奈' }
+    ]
+  },
+  {
+    id: 'fullmetal-alchemist',
+    title: '鋼の錬金術師(原作準拠版 / FULLMETAL ALCHEMIST)',
+    rating: 5,
+    category: 'hof',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/fullmetal-alchemist.jpg',
+    synopsis: '錬金術で母親を蘇らせようとして体の一部を失った兄弟、エドワードとアルフォンス・エルリックが、失った体を取り戻すため「賢者の石」を求めて旅をする。荒川弘の原作漫画に完全準拠したリメイク版で、国家錬金術師としての葛藤や賢者の石を巡る陰謀を、原作の結末まで描き切った。',
+    studio: 'ボンズ',
+    creator: '荒川弘(原作)・入江泰浩(監督)',
+    year: 2009,
+    episodes: 64,
+    genres: ['ダークファンタジー', '冒険', 'ドラマ'],
+    cast: [
+      { character: 'エドワード・エルリック', actor: '朴璐美' },
+      { character: 'アルフォンス・エルリック', actor: '釘宮理恵' },
+      { character: 'ウィンリィ・ロックベル', actor: '高本めぐみ' },
+      { character: 'ロイ・マスタング', actor: '三木眞一郎' },
+      { character: 'リザ・ホークアイ', actor: '折笠富美子' }
+    ]
+  },
+  {
+    id: 'shingeki-no-kyojin',
+    title: '進撃の巨人',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/shingeki-no-kyojin.jpg',
+    synopsis: '人類を捕食する巨人によって文明が壁の中に追いやられた世界で、故郷を巨人に蹂躙されたエレン・イェーガーが、仲間のミカサ・アッカーマン、アルミン・アルレルトと共に調査兵団に入団する。諫山創の原作漫画を映像化し、絶望的な状況下で謎が謎を呼ぶ展開と衝撃の真相が世界的ヒットとなった。',
+    studio: 'WIT STUDIO(第1〜3期)/MAPPA(最終章)',
+    creator: '諫山創(原作)・荒木哲郎(監督)',
+    year: 2013,
+    episodes: 87,
+    genres: ['ダークファンタジー', 'バトル', 'ミステリー'],
+    cast: [
+      { character: 'エレン・イェーガー', actor: '梶裕貴' },
+      { character: 'ミカサ・アッカーマン', actor: '石川由依' },
+      { character: 'アルミン・アルレルト', actor: '井上麻里奈' },
+      { character: 'リヴァイ', actor: '神谷浩史' },
+      { character: 'エルヴィン・スミス', actor: '小野大輔' }
+    ]
+  },
+  {
+    id: 'steins-gate',
+    title: 'シュタインズ・ゲート',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/steins-gate.jpg',
+    synopsis: '自称マッドサイエンティストの大学生・岡部倫太郎が、電子レンジを改造した装置でメッセージを過去に送る「電話レンジ(仮)」を偶然完成させてしまう。過去改変によって引き起こされる予想外の連鎖と、世界線を巡る運命に翻弄される仲間たちを描くSFサスペンスの金字塔。',
+    studio: 'White Fox',
+    creator: '佐藤卓哉(監督)(原作:5pb./ニトロプラス)',
+    year: 2011,
+    episodes: 24,
+    genres: ['SF', 'サスペンス', 'タイムトラベル'],
+    cast: [
+      { character: '岡部倫太郎', actor: '宮野真守' },
+      { character: '牧瀬紅莉栖', actor: '今井麻美' },
+      { character: '椎名まゆり', actor: '花澤香菜' },
+      { character: '橋田至', actor: '関智一' },
+      { character: '阿万音鈴羽', actor: '田村ゆかり' }
+    ]
+  },
+  {
+    id: 'oshi-no-ko',
+    title: '【推しの子】',
+    rating: 5,
+    category: 'hof',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/oshi-no-ko.jpg',
+    synopsis: '地方産婦人科医のゴローは、担当する人気アイドル・星野アイの子供として転生する。芸能界の光と闇を知り尽くした転生者の兄アクアと妹ルビーが、母を死に追いやった人物への復讐と、それぞれの芸能界での戦いに挑む。赤坂アカ・横槍メンゴによる衝撃的な導入で話題を呼んだ作品。',
+    studio: '動画工房',
+    creator: '赤坂アカ・横槍メンゴ(原作)・平牧大輔(監督)',
+    year: 2023,
+    episodes: 11,
+    genres: ['芸能界', 'サスペンス', 'ダークファンタジー'],
+    cast: [
+      { character: '星野アイ', actor: '高橋李依' },
+      { character: '星野アクア', actor: '大塚剛央' },
+      { character: '星野ルビー', actor: '伊駒ゆりえ' },
+      { character: '有馬かな', actor: '潘めぐみ' },
+      { character: '黒川あかね', actor: '石見舞菜香' }
+    ]
+  },
+  {
+    id: 'frieren',
+    title: '葬送のフリーレン',
+    rating: 4,
+    category: '',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/frieren.jpg',
+    synopsis: '魔王を打倒した勇者パーティーの魔法使いフリーレンは、人間よりはるかに長く生きるエルフ。勇者ヒンメルの死をきっかけに、これまで顧みなかった人との関わりの意味を見つめ直し、新たな弟子フェルンやシュタルクと共に再び長い旅に出る。喪失と時間をめぐる静謐なファンタジー。',
+    studio: 'マッドハウス',
+    creator: '山田鐘人・アベツカサ(原作)・斎藤圭一郎(監督)',
+    year: 2023,
+    episodes: 28,
+    genres: ['ファンタジー', '冒険', 'ヒューマンドラマ'],
+    cast: [
+      { character: 'フリーレン', actor: '種崎敦美' },
+      { character: 'フェルン', actor: '市ノ瀬加那' },
+      { character: 'シュタルク', actor: '小林千晃' },
+      { character: 'ヒンメル', actor: '岡本信彦' },
+      { character: 'ハイター', actor: '東地宏樹' }
+    ]
+  },
+  {
+    id: 'dungeon-meshi',
+    title: 'ダンジョン飯',
+    rating: 4,
+    category: '',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/dungeon-meshi.jpg',
+    synopsis: '妹をダンジョンの竜に食べられてしまったライオス率いるパーティーは、路銀が尽きたため、ダンジョン内に生息するモンスターを調理して食べながら攻略を進めるという奇策に出る。九井諒子によるファンタジーとグルメを融合させた原作漫画を、STUDIO TRIGGERが丁寧に映像化した。',
+    studio: 'STUDIO TRIGGER',
+    creator: '九井諒子(原作)・宮島善博(監督)',
+    year: 2024,
+    episodes: 24,
+    genres: ['ファンタジー', 'グルメ', '冒険'],
+    cast: [
+      { character: 'ライオス', actor: '熊谷健太郎' },
+      { character: 'マルシル', actor: '千本木彩花' },
+      { character: 'チルチャック', actor: '泊明日菜' },
+      { character: 'センシ', actor: '中博史' },
+      { character: 'ファリン', actor: '早見沙織' }
+    ]
+  },
+  {
+    id: 'bakemonogatari',
+    title: '化物語',
+    rating: 5,
+    category: 'hof',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/bakemonogatari.jpg',
+    synopsis: '一度は吸血鬼と化しながら人間に戻った高校生・阿良々木暦が、怪異にまつわる悩みを抱えたクラスメイトの少女たちと出会い、彼女たちを救っていく連作オムニバス。西尾維新の饒舌な会話劇と、シャフト・新房昭之監督による実験的な映像演出が融合したモノガタリシリーズの原点。',
+    studio: 'シャフト',
+    creator: '西尾維新(原作)・新房昭之(監督)',
+    year: 2009,
+    episodes: 15,
+    genres: ['ミステリー', '会話劇', 'ダークファンタジー'],
+    cast: [
+      { character: '阿良々木暦', actor: '神谷浩史' },
+      { character: '戦場ヶ原ひたぎ', actor: '斎藤千和' },
+      { character: '八九寺真宵', actor: '加藤英美里' },
+      { character: '神原駿河', actor: '沢城みゆき' },
+      { character: '千石撫子', actor: '花澤香菜' }
+    ]
+  },
+  {
+    id: 'kizumonogatari',
+    title: '傷物語',
+    rating: 5,
+    category: 'hof',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/kizumonogatari.jpg',
+    synopsis: '吸血鬼の王キスショット・アセロラオリオン・ハートアンダーブレードと出会ったことで、高校3年生の阿良々木暦は死と隣り合わせの怪異退治に巻き込まれていく。〈物語〉シリーズの前日譚を描く劇場版三部作で、尾石達也監督による幻想的な映像美とアクションが見どころ。',
+    studio: 'シャフト',
+    creator: '西尾維新(原作)・尾石達也(監督)',
+    year: 2016,
+    episodes: 3,
+    genres: ['ダークファンタジー', 'バトル', '青春'],
+    cast: [
+      { character: '阿良々木暦', actor: '神谷浩史' },
+      { character: 'キスショット・アセロラオリオン・ハートアンダーブレード', actor: '坂本真綾' },
+      { character: '羽川翼', actor: '堀江由衣' },
+      { character: '忍野メメ', actor: '櫻井孝宏' }
+    ]
+  },
+  {
+    id: 're-zero',
+    title: 'Re:ゼロから始める異世界生活',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/re-zero.jpg',
+    synopsis: 'コンビニ帰りに異世界へ召喚された高校生・ナツキ・スバルは、命を落とすたびに同じ時間へ引き戻される「死に戻り」の力に気づく。エミリアやレムたち大切な人々を救うため、絶望を繰り返しながら未来を切り開いていくダークファンタジー。',
+    studio: 'White Fox',
+    creator: '長月達平(原作)・渡邊政治(監督)',
+    year: 2016,
+    episodes: 25,
+    genres: ['異世界', 'ダークファンタジー', 'タイムリープ'],
+    cast: [
+      { character: 'ナツキ・スバル', actor: '小林裕介' },
+      { character: 'エミリア', actor: '高橋李依' },
+      { character: 'レム', actor: '水瀬いのり' },
+      { character: 'ラム', actor: '村川梨衣' },
+      { character: 'ベアトリス', actor: '新井里美' }
+    ]
+  },
+  {
+    id: 'made-in-abyss',
+    title: 'メイドインアビス',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/made-in-abyss.jpg',
+    synopsis: '底知れぬ縦穴「アビス」の縁に暮らす少女リコは、行方不明の母の手がかりを求め、記憶を失った少年型ロボット・レグとともに探窟に旅立つ。可愛らしい絵柄とは裏腹に、下降するほど過酷になる「アビスの呪い」など容赦のない展開を描くダークファンタジー。',
+    studio: 'キネマシトラス',
+    creator: 'つくしあきひと(原作)・小島正幸(監督)',
+    year: 2017,
+    episodes: 13,
+    genres: ['ダークファンタジー', '冒険', 'SF'],
+    cast: [
+      { character: 'リコ', actor: '富田美憂' },
+      { character: 'レグ', actor: '伊瀬茉莉也' },
+      { character: 'ナナチ', actor: '井澤詩織' }
+    ]
+  },
+  {
+    id: 'sword-art-online',
+    title: 'ソードアート・オンライン',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/sword-art-online.jpg',
+    synopsis: 'VR用ヘッドギア「ナーヴギア」を通じて誰もが夢見た仮想世界に旅立てるMMORPG「ソードアート・オンライン」。ログアウト不能・ゲーム内の死が現実の死に直結するデスゲームと化した世界で、主人公キリトが仲間たちと生還を目指す。',
+    studio: 'A-1 Pictures',
+    creator: '川原礫(原作)・伊藤智彦(監督)',
+    year: 2012,
+    episodes: 25,
+    genres: ['SF', '異世界', 'バトル'],
+    cast: [
+      { character: 'キリト', actor: '松岡禎丞' },
+      { character: 'アスナ', actor: '戸松遥' },
+      { character: 'シノン(朝田詩乃)', actor: '沢城みゆき' },
+      { character: 'シリカ', actor: '日高里菜' },
+      { character: 'クライン', actor: '平田広明' }
+    ]
+  },
+  {
+    id: 'one-punch-man',
+    title: 'ワンパンマン',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/one-punch-man.jpg',
+    synopsis: 'どんな敵も一撃で倒せるほど強くなりすぎたヒーロー、サイタマの日常を描くコメディバトル。あまりの強さゆえに刺激のない生活に虚しさを感じる彼と、彼を師と仰ぐサイボーグの弟子ジェノスを軸に、B級ヒーローたちの奮闘も描く。',
+    studio: 'madhouse',
+    creator: 'ONE(原作)・村田雄介(作画)・夏目真悟(監督)',
+    year: 2015,
+    episodes: 12,
+    genres: ['バトル', 'コメディ', 'ヒーロー'],
+    cast: [
+      { character: 'サイタマ', actor: '古川慎' },
+      { character: 'ジェノス', actor: '石川界人' },
+      { character: '音速のソニック', actor: '梶裕貴' },
+      { character: '戦慄のタツマキ', actor: '悠木碧' },
+      { character: 'シルバーファング', actor: '山路和弘' }
+    ]
+  },
+  {
+    id: 'nichijou',
+    title: '日常',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/nichijou.jpg',
+    synopsis: '発明好きな少女「はかせ」とロボット少女・東雲なの、みおや幸子ら女子高生たちの何気ない日常を、テンポの良いギャグとシュールな展開で描くオムニバスコメディ。京都アニメーションが手がける「非日常」寄りの「日常」。',
+    studio: '京都アニメーション',
+    creator: 'あらゐけいいち(原作)・石原立也(監督)',
+    year: 2011,
+    episodes: 26,
+    genres: ['ギャグ', 'コメディ', '日常'],
+    cast: [
+      { character: '相生祐子', actor: '本多真梨子' },
+      { character: '長野原みお', actor: '相沢舞' },
+      { character: 'はかせ', actor: '今野宏美' },
+      { character: '東雲なの', actor: '古谷静佳' },
+      { character: '阪本さん', actor: '白石稔' }
+    ]
+  },
+  {
+    id: 'world-trigger',
+    title: 'ワールドトリガー',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/world-trigger.jpg',
+    synopsis: '異世界と繋がる「門」から現れる怪異「トリオン兵」から街を守る対策組織ボーダー。主人公・三雲修が正体不明の転校生・空閑遊真と出会い、実力至上主義のボーダーで仲間たちと切磋琢磨しながら成長していく異能バトル漫画のアニメ化。',
+    studio: '東映アニメーション(1期)/ぴえろPlus(2期以降)',
+    creator: '葦原大介(原作)',
+    year: 2014,
+    episodes: 99,
+    genres: ['バトル', 'SF', '青春'],
+    cast: [
+      { character: '三雲修', actor: '梶裕貴' },
+      { character: '空閑遊真', actor: '村中知' },
+      { character: '迅悠一', actor: '中村悠一' },
+      { character: '雨取千佳', actor: '田村奈央' }
+    ]
+  },
+  {
+    id: 'ghost-in-the-shell',
+    title: '攻殻機動隊(GHOST IN THE SHELL)',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/ghost-in-the-shell.jpg',
+    synopsis: '電脳化と義体化が当たり前になった近未来、公安9課の草薙素子少佐が、ハッカー「人形使い」をめぐる事件を追う。押井守監督による哲学的な問いと圧倒的な映像美で、世界のクリエイターにも影響を与えた劇場版アニメの金字塔。',
+    studio: 'Production I.G',
+    creator: '士郎正宗(原作)・押井守(監督)',
+    year: 1995,
+    episodes: 1,
+    genres: ['SF', 'サイバーパンク', 'アクション'],
+    cast: [
+      { character: '草薙素子', actor: '田中敦子' },
+      { character: 'バトー', actor: '大塚明夫' },
+      { character: 'トグサ', actor: '山寺宏一' },
+      { character: '荒巻大輔', actor: '家弓家正' }
+    ]
+  },
+  {
+    id: 'ghost-in-the-shell-sac',
+    title: '攻殻機動隊 S.A.C.',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/ghost-in-the-shell-sac.jpg',
+    synopsis: '劇場版とは異なる神山健治監督によるオリジナルストーリーのTVシリーズ。単独犯なき連鎖的模倣犯罪「スタンド・アローン・コンプレックス」を軸に、公安9課の草薙素子たちが電脳社会の事件を1話完結型で描く。',
+    studio: 'Production I.G',
+    creator: '士郎正宗(原作)・神山健治(監督)',
+    year: 2002,
+    episodes: 26,
+    genres: ['SF', 'サイバーパンク', '刑事もの'],
+    cast: [
+      { character: '草薙素子', actor: '田中敦子' },
+      { character: 'バトー', actor: '大塚明夫' },
+      { character: 'トグサ', actor: '山寺宏一' },
+      { character: '荒巻大輔', actor: '阪脩' },
+      { character: 'タチコマ', actor: '玉川紗己子' }
+    ]
+  },
+  {
+    id: 'summer-wars',
+    title: 'サマーウォーズ',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/summer-wars.jpg',
+    synopsis: '数学が得意だが内気な高校生・小磯健二は、憧れの先輩・篠原夏希に頼まれ、彼女の実家がある信州上田を訪れ「婚約者のふり」をすることに。仮想世界OZの暴走という危機に、夏希の大家族とともに立ち向かう細田守監督のオリジナル長編。',
+    studio: 'マッドハウス',
+    creator: '細田守(監督・原作)',
+    year: 2009,
+    episodes: 1,
+    genres: ['SF', 'ヒューマンドラマ', '青春'],
+    cast: [
+      { character: '小磯健二', actor: '神木隆之介' },
+      { character: '篠原夏希', actor: '桜庭ななみ' },
+      { character: '陣内侘助', actor: '斎藤歩' },
+      { character: '池沢佳主馬', actor: '谷村美月' },
+      { character: '陣内栄', actor: '富司純子' }
+    ]
+  },
+  {
+    id: 'belle',
+    title: '竜とそばかすの姫',
+    rating: 4,
+    category: '',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/belle.jpg',
+    synopsis: '高知の田舎町に暮らす17歳のすずは、50億人が集う仮想世界「U」でベルという歌姫アバターとして活躍するようになる。ある日ベルの前に現れた竜の正体を追ううちに、すずは自分自身と向き合っていく細田守監督のオリジナル長編。',
+    studio: 'スタジオ地図',
+    creator: '細田守(監督・原作・脚本)',
+    year: 2021,
+    episodes: 1,
+    genres: ['ファンタジー', '青春', 'ミュージカル'],
+    cast: [
+      { character: 'すず/ベル', actor: '中村佳穂' },
+      { character: '竜(めめ)', actor: '佐藤健' },
+      { character: 'しのぶ(久武忍)', actor: '成田凌' },
+      { character: 'カミシン(千頭慎次郎)', actor: '染谷将太' },
+      { character: 'すずの父', actor: '役所広司' }
+    ]
+  },
+  {
+    id: 'legend-of-galactic-heroes',
+    title: '銀河英雄伝説',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/legend-of-galactic-heroes.jpg',
+    synopsis: '銀河帝国と自由惑星同盟の戦争を背景に、若き軍略家ラインハルト・フォン・ローエングラムと、同盟の英雄ヤン・ウェンリーという2人の天才の生き様を描く壮大な宇宙叙事詩。豪華声優陣から「銀河声優伝説」とも呼ばれるOVAシリーズ。',
+    studio: 'キティフィルム三鷹スタジオ',
+    creator: '田中芳樹(原作)・石黒昇(監督)',
+    year: 1988,
+    episodes: 110,
+    genres: ['SF', '宇宙戦争', '群像劇'],
+    cast: [
+      { character: 'ラインハルト・フォン・ローエングラム', actor: '堀川りょう' },
+      { character: 'ヤン・ウェンリー', actor: '富山敬' },
+      { character: 'ジークフリード・キルヒアイス', actor: '広中雅志' },
+      { character: 'ユリアン・ミンツ', actor: '佐々木望' },
+      { character: 'フレデリカ・グリーンヒル', actor: '榊原良子' }
+    ]
+  },
+  {
+    id: 'gundam-08th-ms-team',
+    title: '機動戦士ガンダム 第08MS小隊',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/gundam-08th-ms-team.jpg',
+    synopsis: '一年戦争のさなか、ジャングルの地上戦を舞台に、連邦軍の若き小隊長シロー・アマダと、ジオン軍の女性パイロット、アイナ・サハリンとの敵味方を超えた交流を描くOVA。宇宙世紀作品らしいリアルな戦場描写と人間ドラマが評価される『機動戦士ガンダム』の外伝作品。',
+    studio: 'サンライズ',
+    creator: '神田武幸→飯田馬之介(監督)',
+    year: 1996,
+    episodes: 11,
+    genres: ['ロボット', '戦争', 'ヒューマンドラマ'],
+    cast: [
+      { character: 'シロー・アマダ', actor: '檜山修之' },
+      { character: 'アイナ・サハリン', actor: '井上喜久子' },
+      { character: 'ミケル・ニノリッチ', actor: '結城比呂' },
+      { character: 'テリー・サンダースJr.', actor: '玄田哲章' },
+      { character: 'ノリス・パッカード', actor: '市川治' }
+    ]
+  },
+  {
+    id: 'gundam-witch-from-mercury',
+    title: '機動戦士ガンダム 水星の魔女',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/gundam-witch-from-mercury.jpg',
+    synopsis: 'モビルスーツ産業の複合企業体が支配する未来。辺境の水星から編入してきた少女スレッタ・マーキュリーが、名門学園アスティカシアで実力主義の決闘制度に巻き込まれながら、企業令嬢ミオリネとの出会いをきっかけに運命を変えていく。',
+    studio: 'サンライズ',
+    creator: '大河内一楼(シリーズ構成)・小林寛(監督)',
+    year: 2022,
+    episodes: 25,
+    genres: ['ロボット', '学園', 'SF'],
+    cast: [
+      { character: 'スレッタ・マーキュリー', actor: '市ノ瀬加那' },
+      { character: 'ミオリネ・レンブラン', actor: 'Lynn' },
+      { character: 'グエル・ジェターク', actor: '阿座上洋平' },
+      { character: 'エラン・ケレス', actor: '花江夏樹' },
+      { character: 'チュアチュリー・パンランチ', actor: '富田美憂' }
+    ]
+  },
+  {
+    id: 'yowamushi-pedal',
+    title: '弱虫ペダル',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/yowamushi-pedal.jpg',
+    synopsis: 'アニメとアイドルが好きなオタク少年・小野田坂道が、秋葉原まで往復90kmを走破するママチャリ通学で培った脚力を武器に、高校の自転車競技部でロードレースの世界にのめり込んでいく青春スポーツアニメ。',
+    studio: 'トムス・エンタテインメント',
+    creator: '渡辺航(原作)・鍋島修(監督)',
+    year: 2013,
+    episodes: 38,
+    genres: ['スポーツ', '青春', 'コメディ'],
+    cast: [
+      { character: '小野田坂道', actor: '山下大輝' },
+      { character: '今泉俊輔', actor: '鳥海浩輔' },
+      { character: '鳴子章吉', actor: '福島潤' },
+      { character: '巻島裕介', actor: '森久保祥太郎' },
+      { character: '田所迅', actor: '伊藤健太郎' }
+    ]
+  },
+  {
+    id: 'eizouken',
+    title: '映像研には手を出すな!',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/eizouken.jpg',
+    synopsis: '人並み外れた空想力を持つ浅草みどりが、現実主義者の金森さやか、アニメーター志望の水崎ツバメと出会い、高校で映像研を立ち上げる。「最強の世界」を作り出すアニメ制作の夢に向かって突き進む、湯浅政明監督によるものづくり青春譚。',
+    studio: 'サイエンスSARU',
+    creator: '大童澄瞳(原作)・湯浅政明(監督)',
+    year: 2020,
+    episodes: 12,
+    genres: ['青春', '部活動', 'クリエイター'],
+    cast: [
+      { character: '浅草みどり', actor: '伊藤沙莉' },
+      { character: '金森さやか', actor: '田村睦心' },
+      { character: '水崎ツバメ', actor: '松岡美里' },
+      { character: '藤本(映像研顧問)', actor: '井上和彦' },
+      { character: '百目鬼(音響部)', actor: '花守ゆみり' }
+    ]
+  },
+  {
+    id: 'gundam-unicorn',
+    title: '機動戦士ガンダムUC(ユニコーン)',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/gundam-unicorn.jpg',
+    synopsis: '宇宙世紀0096年、「シャアの反乱」から3年後。工業コロニーで暮らす少年バナージ・リンクスは、謎の少女オードリー・バーンと出会い、宇宙世紀の秘密を握る「ラプラスの箱」を巡る争いに巻き込まれていく。ユニコーンガンダムを駆り、自らの出自と向き合う全7章のOVA。',
+    studio: 'サンライズ',
+    creator: '福井晴敏(原作)・古橋一浩(監督)',
+    year: 2010,
+    episodes: 7,
+    genres: ['ロボット', '宇宙世紀', '戦争'],
+    cast: [
+      { character: 'バナージ・リンクス', actor: '内山昂輝' },
+      { character: 'オードリー・バーン(ミネバ・ザビ)', actor: '藤村歩' },
+      { character: 'リディ・マーセナス', actor: '浪川大輔' },
+      { character: 'フル・フロンタル', actor: '池田秀一' },
+      { character: 'マリーダ・クルス', actor: '甲斐田裕子' }
+    ]
+  },
+  {
+    id: 'kakushigoto',
+    title: 'かくしごと',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/kakushigoto.jpg',
+    synopsis: '下ネタ漫画家の父・後藤可久士が、娘の姫にだけは職業を隠し通そうと奮闘する日々を描くハートフルコメディ。娘が18歳になった「姫十八歳編」では、記憶を失った父の秘密がついに明かされていく。久米田康治によるギャグと家族愛が同居する原作を村野佑太監督が映像化。',
+    studio: '亜細亜堂',
+    creator: '久米田康治(原作)・村野佑太(監督)',
+    year: 2020,
+    episodes: 12,
+    genres: ['コメディ', 'ヒューマンドラマ', '日常'],
+    cast: [
+      { character: '後藤可久士', actor: '神谷浩史' },
+      { character: '後藤姫', actor: '高橋李依' },
+      { character: '十丸院五月', actor: '花江夏樹' },
+      { character: '墨田羅砂', actor: '安野希世乃' },
+      { character: '六條一子', actor: '内田真礼' }
+    ]
+  },
+  {
+    id: 'skip-and-loafer',
+    title: 'スキップとローファー',
+    rating: 4,
+    category: '',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/skip-and-loafer.jpg',
+    synopsis: '石川県の過疎地から上京した真っ直ぐな少女・岩倉美津未は、東京の進学校の入学式当日に道に迷い、同じ制服の少年・志摩聡介と出会う。クラスメイトたちとの関わりを通して不器用ながらも一歩ずつ成長していく、丁寧な筆致で描かれる青春群像劇。',
+    studio: 'P.A.WORKS',
+    creator: '高松美咲(原作)・出合小都美(監督)',
+    year: 2023,
+    episodes: 12,
+    genres: ['青春', '学園', 'ヒューマンドラマ'],
+    cast: [
+      { character: '岩倉美津未', actor: '黒沢ともよ' },
+      { character: '志摩聡介', actor: '江越彬紀' },
+      { character: '江頭ミカ', actor: '寺崎裕香' },
+      { character: '村重結月', actor: '内田真礼' },
+      { character: '久留米誠', actor: '潘めぐみ' }
+    ]
+  },
+  {
+    id: 'ushio-to-tora',
+    title: 'うしおととら',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/ushio-to-tora.jpg',
+    synopsis: '寺の息子である少年・蒼月潮は、寺の蔵で500年もの間「獣の槍」に封じられていた大妖怪「とら」と出会い、封印を解いてしまう。敵味方の間柄から始まった二人が、最強の大妖怪「白面の者」との戦いに挑んでいく、藤田和日郎原作の伝奇バトル漫画のアニメ化。',
+    studio: 'MAPPA / VOLN',
+    creator: '藤田和日郎(原作)・西村聡(監督)',
+    year: 2015,
+    episodes: 39,
+    genres: ['バトル', '妖怪', '少年漫画'],
+    cast: [
+      { character: '蒼月潮', actor: '畠中祐' },
+      { character: 'とら', actor: '小山力也' },
+      { character: '中村麻子', actor: '小松未可子' },
+      { character: '井上真由子', actor: '安野希世乃' },
+      { character: '引狭霧雄', actor: '潘めぐみ' }
+    ]
+  },
+  {
+    id: 'hajime-no-ippo',
+    title: 'はじめの一歩',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/hajime-no-ippo.jpg',
+    synopsis: 'いじめられっ子の高校生・幕之内一歩が、プロボクサー鷹村守との出会いをきっかけにボクシングの世界へ飛び込む。新人王トーナメントから日本チャンピオンへと駆け上がる成長と激闘を描く、森川ジョージ原作の王道ボクシング漫画のアニメ化第1作。',
+    studio: 'マッドハウス',
+    creator: '森川ジョージ(原作)・西村聡(監督)',
+    year: 2000,
+    episodes: 76,
+    genres: ['スポーツ', 'ボクシング', '少年漫画'],
+    cast: [
+      { character: '幕之内一歩', actor: '喜安浩平' },
+      { character: '鷹村守', actor: '小山力也' },
+      { character: '宮田一郎', actor: '関智一' },
+      { character: '間柴了', actor: '田中正彦' },
+      { character: '鴨川源二', actor: '内海賢二' }
+    ]
+  },
+  {
+    id: 'mawaru-penguindrum',
+    title: '輪るピングドラム',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/mawaru-penguindrum.jpg',
+    synopsis: '病弱な妹・陽毬が水族館で倒れて息を引き取った直後、謎のペンギン帽を被って蘇生する。「生存戦略!」を合言葉に現れた別人格に導かれ、兄弟は妹の命をつなぐため「ピングドラム」探しに奔走する。「家族」と「運命」を寓話的に描く幾原邦彦監督のオリジナル作品。',
+    studio: "Brain's Base",
+    creator: '幾原邦彦(監督・シリーズ構成)',
+    year: 2011,
+    episodes: 24,
+    genres: ['サイコロジカル', 'SF', 'ヒューマンドラマ'],
+    cast: [
+      { character: '高倉冠葉', actor: '木村昴' },
+      { character: '高倉晶馬', actor: '木村良平' },
+      { character: '高倉陽毬', actor: '荒川美穂' },
+      { character: '荻野目苹果', actor: '三宅麻理恵' },
+      { character: '多蕗桂樹', actor: '石田彰' },
+      { character: '時籠ゆり', actor: '能登麻美子' }
+    ]
+  },
+  {
+    id: 'darling-in-the-franxx',
+    title: 'ダーリン・イン・ザ・フランキス',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/darling-in-the-franxx.jpg',
+    synopsis: '謎の敵性生物と戦うため、少年少女の「パラサイト」が男女ペアで巨大ロボット「フランクス」を操縦する未来。適合者が見つからず落ちこぼれ扱いだったヒロは、叫竜の血を引くと噂される少女ゼロツーと出会い、運命的な絆を結んでいく。TRIGGERとA-1 Picturesが共同制作したオリジナルロボットアニメ。',
+    studio: 'A-1 Pictures / TRIGGER',
+    creator: '錦織敦史(監督)',
+    year: 2018,
+    episodes: 24,
+    genres: ['ロボット', 'SF', '恋愛'],
+    cast: [
+      { character: 'ヒロ', actor: '上村祐翔' },
+      { character: 'ゼロツー', actor: '戸松遥' },
+      { character: 'イチゴ', actor: '市ノ瀬加那' },
+      { character: 'ゴロー', actor: '梅原裕一郎' },
+      { character: 'ゾロメ', actor: '田村睦心' }
+    ]
+  },
+  {
+    id: 'cowboy-bebop-movie',
+    title: 'COWBOY BEBOP 天国の扉(劇場版)',
+    rating: 5,
+    category: 'hof',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/cowboy-bebop-movie.jpg',
+    synopsis: '2071年、火星で発生した謎のバイオテロ事件。賞金稼ぎのスパイクたちは巨額の賞金首ヴィンセントを追ううち、事件の裏にある壮大な陰謀に巻き込まれていく。TVシリーズと地続きの時間軸で描かれる完全新作の劇場版で、渡辺信一郎監督とスタッフが手掛けた本編クオリティの映像とジャズが冴える。',
+    studio: 'ボンズ',
+    creator: '渡辺信一郎(監督)',
+    year: 2001,
+    episodes: 1,
+    genres: ['SF', 'ノワール', 'アクション'],
+    cast: [
+      { character: 'スパイク・スピーゲル', actor: '山寺宏一' },
+      { character: 'ジェット・ブラック', actor: '石塚運昇' },
+      { character: 'フェイ・ヴァレンタイン', actor: '林原めぐみ' },
+      { character: 'エドワード', actor: '多田葵' },
+      { character: 'ヴィンセント・ボラージュ', actor: '磯部勉' }
+    ]
+  },
+  {
+    id: 'evangelion-rebuild',
+    title: 'エヴァンゲリオン新劇場版シリーズ',
+    rating: 5,
+    category: 'hof',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/evangelion-rebuild.jpg',
+    synopsis: 'TVシリーズ『新世紀エヴァンゲリオン』を新たな設定で再構築した全4部作「序」「破」「Q」「シン・エヴァンゲリオン劇場版」。使徒との戦いを描く物語は「破」以降TV版から大きく展開を変え、2021年公開の完結編で14年に及ぶシリーズに一つの結末をもたらした。',
+    studio: 'カラー',
+    creator: '庵野秀明(総監督)',
+    year: 2007,
+    episodes: 4,
+    genres: ['SF', 'ロボット', 'サイコロジカル'],
+    cast: [
+      { character: '碇シンジ', actor: '緒方恵美' },
+      { character: '綾波レイ', actor: '林原めぐみ' },
+      { character: '式波・アスカ・ラングレー', actor: '宮村優子' },
+      { character: '真希波・マリ・イラストリアス', actor: '坂本真綾' },
+      { character: '渚カヲル', actor: '石田彰' },
+      { character: '葛城ミサト', actor: '三石琴乃' }
+    ]
+  },
+  {
+    id: 'yofukashi-no-uta',
+    title: 'よふかしのうた',
+    rating: 4,
+    category: '',
+    tags: ['人を選ぶ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/yofukashi-no-uta.jpg',
+    synopsis: '眠れずに夜の街をさまよう中学生・夜守コウは、夜の住人である謎の美女・七草ナズナと出会う。「眠れないなら夜更かししよう」と誘われるまま、コウは彼女に血を吸われて吸血鬼になることを夢見て夜の街を歩き回るようになる。コトヤマ原作のダークな青春ラブストーリー。',
+    studio: 'LIDENFILMS',
+    creator: 'コトヤマ(原作)・板村智幸(監督)',
+    year: 2022,
+    episodes: 13,
+    genres: ['ダーク', '恋愛', '吸血鬼'],
+    cast: [
+      { character: '夜守コウ', actor: '佐藤元' },
+      { character: '七草ナズナ', actor: '雨宮天' },
+      { character: '朝井アキラ', actor: '花守ゆみり' },
+      { character: '桔梗セリ', actor: '戸松遥' },
+      { character: '平田ニコ', actor: '喜多村英梨' }
+    ]
+  },
+  {
+    id: 'tamako-love-story',
+    title: 'たまこラブストーリー(劇場版)',
+    rating: 4,
+    category: '',
+    tags: ['誰でもおすすめ'],
+    comment: '',
+    addedDate: '2026-08-18',
+    image: 'images/favorite-anime/tamako-love-story.jpg',
+    synopsis: '高校3年生になっても餅屋の跡取りとしか将来を考えていない北白川たまこ。向かいの家に住む幼なじみの大路もち蔵は、ずっと抱いてきた想いを伝える決意を固める。TVアニメ『たまこまーけっと』の続編にあたる、山田尚子監督による京都アニメーション制作の劇場版恋愛物語。',
+    studio: '京都アニメーション',
+    creator: '山田尚子(監督)・吉田玲子(脚本)',
+    year: 2014,
+    episodes: 1,
+    genres: ['青春', '恋愛', '日常'],
+    cast: [
+      { character: '北白川たまこ', actor: '洲崎綾' },
+      { character: '大路もち蔵', actor: '田丸篤志' },
+      { character: '牧野かんな', actor: '金子有希' },
+      { character: '常盤みどり', actor: '長妻樹里' }
+    ]
+  }
+];
+
+let state = { view: 'list', category: 'all' };
+
+function setView(view) {
+  state.view = view;
+  document.getElementById('btn-view-list').classList.toggle('active', view === 'list');
+  document.getElementById('btn-view-gallery').classList.toggle('active', view === 'gallery');
+  render();
+}
+
+function setCategory(category) {
+  state.category = category;
+  document.querySelectorAll('.filter-badges button').forEach(function (btn) {
+    btn.classList.toggle('active', btn.dataset.category === category);
+  });
+  render();
+}
+
+function getFilteredSorted() {
+  const query = document.getElementById('search-box').value.trim().toLowerCase();
+  const sortKey = document.getElementById('sort-select').value;
+
+  let items = ANIME_DATA.filter(function (item) {
+    if (state.category !== 'all' && item.category !== state.category) return false;
+    if (!query) return true;
+    const haystack = (item.title + ' ' + item.tags.join(' ') + ' ' + item.genres.join(' ')).toLowerCase();
+    return haystack.indexOf(query) !== -1;
+  });
+
+  items.sort(function (a, b) {
+    if (sortKey === 'rating') return b.rating - a.rating;
+    if (sortKey === 'added') return b.addedDate.localeCompare(a.addedDate);
+    return a.title.localeCompare(b.title, 'ja');
+  });
+
+  return items;
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function renderList(items) {
+  return items.map(function (item) {
+    const badgeHtml = item.category === 'hof' ? '<span class="badge hof">殿堂入り</span>' : '';
+    const castText = item.cast.map(function (c) { return c.character + ':' + c.actor; }).join(' / ');
+    const tags = item.tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
+    return (
+      '<div class="card">' +
+      '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
+      '<div class="card-body">' +
+      '<div class="card-title-row"><h2 class="card-title">' + escapeHtml(item.title) + '</h2>' +
+      badgeHtml + '</div>' +
+      '<div class="meta-row">' + item.year + '年 / ' + escapeHtml(item.studio) + ' / ' + escapeHtml(item.creator) + ' / 全' + item.episodes + '話 / ' + item.genres.map(escapeHtml).join('・') + '</div>' +
+      '<p class="synopsis">' + escapeHtml(item.synopsis) + '</p>' +
+      '<p class="cast-list">' + escapeHtml(castText) + '</p>' +
+      '<div class="tag-row">' + tags + '</div>' +
+      '<div class="rating">' + '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating) + '</div>' +
+      '<p class="comment">' + escapeHtml(item.comment) + '</p>' +
+      '</div></div>'
+    );
+  }).join('');
+}
+
+function renderGallery(items) {
+  return '<div class="card-grid">' + items.map(function (item) {
+    return (
+      '<div class="gallery-item">' +
+      '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
+      '<div class="gallery-title">' + escapeHtml(item.title) + '</div>' +
+      '</div>'
+    );
+  }).join('') + '</div>';
+}
+
+function render() {
+  const items = getFilteredSorted();
+  const app = document.getElementById('app');
+  if (items.length === 0) {
+    app.innerHTML = '<div class="empty-state">該当する作品がありません</div>';
+    return;
+  }
+  if (state.view === 'list') {
+    app.innerHTML = '<div class="card-list">' + renderList(items) + '</div>';
+  } else {
+    app.innerHTML = renderGallery(items);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
