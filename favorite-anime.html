@@ -91,21 +91,38 @@
   .modal-box { background: var(--card-bg); border-radius: 12px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; position: relative; }
   .modal-close { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; }
   .modal-image { width: 100%; max-height: 320px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; background: var(--border); }
+  .page-nav { display: flex; gap: 8px; margin-bottom: 12px; }
+  .page-nav a { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); text-decoration: none; font-size: 0.85rem; }
+  .page-nav a.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #back-to-top {
+    position: fixed; bottom: 24px; right: 24px; z-index: 90;
+    padding: 10px 16px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 0.85rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  #back-to-top:hover { background: var(--border); }
 </style>
 </head>
 <body>
 <header class="page-header">
   <h1>お気に入りアニメ一覧</h1>
+  <nav class="page-nav">
+    <a href="./favorite-anime.html" class="active">アニメ一覧</a>
+    <a href="./favorite-manga.html">漫画一覧</a>
+  </nav>
   <p class="subtitle">見てよかった作品の記録です。</p>
   <div class="controls">
     <div class="view-toggle">
-      <button id="btn-view-list" class="active" onclick="setView('list')">詳細一覧</button>
-      <button id="btn-view-gallery" onclick="setView('gallery')">サムネイルギャラリー</button>
+      <button id="btn-view-gallery" class="active" onclick="setView('gallery')">サムネ</button>
+      <button id="btn-view-list" onclick="setView('list')">詳細</button>
     </div>
     <div class="filter-badges">
       <button class="active" data-category="all" onclick="setCategory('all')">すべて</button>
       <button data-category="hof" onclick="setCategory('hof')">殿堂入り</button>
     </div>
+    <select id="genre-filter" onchange="render()">
+      <option value="all">すべてのジャンル</option>
+    </select>
     <select id="decade-select" onchange="render()">
       <option value="all">すべての年代</option>
       <option value="1980">1980年代</option>
@@ -139,6 +156,7 @@
     <div id="modal-body"></div>
   </div>
 </div>
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページ上部に戻る">↑ 上に戻る</button>
 <script>
 const ANIME_DATA = [
   {
@@ -1869,7 +1887,7 @@ const ANIME_DATA = [
   }
 ];
 
-let state = { view: 'list', category: 'all', sortDir: 'desc' };
+let state = { view: 'gallery', category: 'all', sortDir: 'desc' };
 
 function setView(view) {
   state.view = view;
@@ -1893,13 +1911,26 @@ function setSortDir(dir) {
   render();
 }
 
+function populateGenreFilter() {
+  const select = document.getElementById('genre-filter');
+  const genres = Array.from(new Set(ANIME_DATA.reduce(function (acc, item) { return acc.concat(item.genres); }, []))).sort(function (a, b) { return a.localeCompare(b, 'ja'); });
+  genres.forEach(function (g) {
+    const opt = document.createElement('option');
+    opt.value = g;
+    opt.textContent = g;
+    select.appendChild(opt);
+  });
+}
+
 function getFilteredSorted() {
   const query = document.getElementById('search-box').value.trim().toLowerCase();
+  const genre = document.getElementById('genre-filter').value;
   const sortKey = document.getElementById('sort-select').value;
   const decade = document.getElementById('decade-select').value;
 
   let items = ANIME_DATA.filter(function (item) {
     if (state.category !== 'all' && item.category !== state.category) return false;
+    if (genre !== 'all' && item.genres.indexOf(genre) === -1) return false;
     if (decade !== 'all' && Math.floor(item.year / 10) * 10 !== Number(decade)) return false;
     if (!query) return true;
     const haystack = (item.title + ' ' + item.genres.join(' ')).toLowerCase();
@@ -2014,6 +2045,7 @@ function render() {
   }
 }
 
+populateGenreFilter();
 renderSidebar();
 render();
 </script>
