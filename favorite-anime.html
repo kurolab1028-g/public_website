@@ -65,13 +65,29 @@
   .rating { color: var(--badge-hof); font-size: 0.9rem; }
   .comment { font-size: 0.82rem; font-style: italic; color: var(--text-muted); }
   .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-  .gallery-item { text-align: center; }
+  .gallery-item { text-align: center; cursor: pointer; }
   .gallery-item img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--border); }
-  .gallery-item .gallery-title { font-size: 0.78rem; margin-top: 6px; line-height: 1.3; }
+  .gallery-item .gallery-title { font-size: 0.98rem; font-weight: 600; margin-top: 8px; line-height: 1.35; }
   @media (max-width: 480px) {
     .card { flex-direction: column; }
     .card img { width: 100%; height: 200px; }
   }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; z-index: 100;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal-card {
+    background: var(--card-bg); border-radius: 14px; max-width: 640px; width: 100%;
+    max-height: 90vh; overflow-y: auto; padding: 20px; position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 12px; right: 12px; border: none; background: var(--border);
+    color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem;
+  }
+  .modal-card .card { border: none; padding: 0; }
+  .modal-card .card img { width: 140px; height: 196px; }
 </style>
 </head>
 <body>
@@ -88,14 +104,25 @@
       <button data-category="hof" onclick="setCategory('hof')">殿堂入り</button>
     </div>
     <input type="search" id="search-box" placeholder="タイトル・ジャンル・タグで検索" oninput="render()">
+    <select id="genre-filter" onchange="render()">
+      <option value="all">すべてのジャンル</option>
+    </select>
     <select id="sort-select" onchange="render()">
       <option value="rating">評価が高い順</option>
       <option value="added">新しく追加した順</option>
       <option value="title">タイトル順</option>
+      <option value="year">制作年順</option>
+    </select>
+    <select id="sort-direction" onchange="render()">
+      <option value="desc">降順</option>
+      <option value="asc">昇順</option>
     </select>
   </div>
 </header>
 <main id="app"></main>
+<div class="modal-overlay hidden" id="modal-overlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal-card" id="modal-card"></div>
+</div>
 <script>
 const ANIME_DATA = [
   {
@@ -1412,21 +1439,38 @@ function setCategory(category) {
   render();
 }
 
+function populateGenreFilter() {
+  const select = document.getElementById('genre-filter');
+  const genres = Array.from(new Set(ANIME_DATA.reduce(function (acc, item) { return acc.concat(item.genres); }, []))).sort(function (a, b) { return a.localeCompare(b, 'ja'); });
+  genres.forEach(function (g) {
+    const opt = document.createElement('option');
+    opt.value = g;
+    opt.textContent = g;
+    select.appendChild(opt);
+  });
+}
+
 function getFilteredSorted() {
   const query = document.getElementById('search-box').value.trim().toLowerCase();
+  const genre = document.getElementById('genre-filter').value;
   const sortKey = document.getElementById('sort-select').value;
+  const sign = document.getElementById('sort-direction').value === 'asc' ? 1 : -1;
 
   let items = ANIME_DATA.filter(function (item) {
     if (state.category !== 'all' && item.category !== state.category) return false;
+    if (genre !== 'all' && item.genres.indexOf(genre) === -1) return false;
     if (!query) return true;
     const haystack = (item.title + ' ' + item.tags.join(' ') + ' ' + item.genres.join(' ')).toLowerCase();
     return haystack.indexOf(query) !== -1;
   });
 
   items.sort(function (a, b) {
-    if (sortKey === 'rating') return b.rating - a.rating;
-    if (sortKey === 'added') return b.addedDate.localeCompare(a.addedDate);
-    return a.title.localeCompare(b.title, 'ja');
+    let cmp;
+    if (sortKey === 'rating') cmp = a.rating - b.rating;
+    else if (sortKey === 'added') cmp = a.addedDate.localeCompare(b.addedDate);
+    else if (sortKey === 'year') cmp = a.year - b.year;
+    else cmp = a.title.localeCompare(b.title, 'ja');
+    return cmp * sign;
   });
 
   return items;
@@ -1438,37 +1482,55 @@ function escapeHtml(str) {
   });
 }
 
+function buildDetailHtml(item) {
+  const badgeHtml = item.category === 'hof' ? '<span class="badge hof">殿堂入り</span>' : '';
+  const castText = item.cast.map(function (c) { return c.character + ':' + c.actor; }).join(' / ');
+  const tags = item.tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
+  return (
+    '<div class="card">' +
+    '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
+    '<div class="card-body">' +
+    '<div class="card-title-row"><h2 class="card-title">' + escapeHtml(item.title) + '</h2>' +
+    badgeHtml + '</div>' +
+    '<div class="meta-row">' + item.year + '年 / ' + escapeHtml(item.studio) + ' / ' + escapeHtml(item.creator) + ' / 全' + item.episodes + '話 / ' + item.genres.map(escapeHtml).join('・') + '</div>' +
+    '<p class="synopsis">' + escapeHtml(item.synopsis) + '</p>' +
+    '<p class="cast-list">' + escapeHtml(castText) + '</p>' +
+    '<div class="tag-row">' + tags + '</div>' +
+    '<div class="rating">' + '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating) + '</div>' +
+    '<p class="comment">' + escapeHtml(item.comment) + '</p>' +
+    '</div></div>'
+  );
+}
+
 function renderList(items) {
-  return items.map(function (item) {
-    const badgeHtml = item.category === 'hof' ? '<span class="badge hof">殿堂入り</span>' : '';
-    const castText = item.cast.map(function (c) { return c.character + ':' + c.actor; }).join(' / ');
-    const tags = item.tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
-    return (
-      '<div class="card">' +
-      '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
-      '<div class="card-body">' +
-      '<div class="card-title-row"><h2 class="card-title">' + escapeHtml(item.title) + '</h2>' +
-      badgeHtml + '</div>' +
-      '<div class="meta-row">' + item.year + '年 / ' + escapeHtml(item.studio) + ' / ' + escapeHtml(item.creator) + ' / 全' + item.episodes + '話 / ' + item.genres.map(escapeHtml).join('・') + '</div>' +
-      '<p class="synopsis">' + escapeHtml(item.synopsis) + '</p>' +
-      '<p class="cast-list">' + escapeHtml(castText) + '</p>' +
-      '<div class="tag-row">' + tags + '</div>' +
-      '<div class="rating">' + '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating) + '</div>' +
-      '<p class="comment">' + escapeHtml(item.comment) + '</p>' +
-      '</div></div>'
-    );
-  }).join('');
+  return items.map(buildDetailHtml).join('');
 }
 
 function renderGallery(items) {
   return '<div class="card-grid">' + items.map(function (item) {
     return (
-      '<div class="gallery-item">' +
+      '<div class="gallery-item" onclick="openModal(\'' + item.id + '\')">' +
       '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
       '<div class="gallery-title">' + escapeHtml(item.title) + '</div>' +
       '</div>'
     );
   }).join('') + '</div>';
+}
+
+function openModal(id) {
+  const item = ANIME_DATA.find(function (d) { return d.id === id; });
+  if (!item) return;
+  document.getElementById('modal-card').innerHTML =
+    '<button class="modal-close" onclick="closeModal()" aria-label="閉じる">×</button>' + buildDetailHtml(item);
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+function closeModalOnOverlay(event) {
+  if (event.target.id === 'modal-overlay') closeModal();
 }
 
 function render() {
@@ -1485,6 +1547,7 @@ function render() {
   }
 }
 
+populateGenreFilter();
 render();
 </script>
 </body>
