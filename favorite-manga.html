@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>お気に入り漫画一覧</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #666666;
+    --border: #e0e0e0;
+    --accent: #e85d75;
+    --badge-hof: #f5a623;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --card-bg: #1e2126;
+      --text: #eaeaea;
+      --text-muted: #9a9a9a;
+      --border: #33363c;
+      --accent: #ff7a93;
+      --badge-hof: #f5a623;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header.page-header { padding: 24px 20px 16px; max-width: 1100px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 1.6rem; }
+  .subtitle { color: var(--text-muted); margin: 0 0 20px; font-size: 0.9rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .view-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .view-toggle button { padding: 8px 14px; border: none; background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 0.85rem; }
+  .view-toggle button.active { background: var(--accent); color: #fff; }
+  .filter-badges { display: inline-flex; gap: 6px; }
+  .filter-badges button { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 0.8rem; }
+  .filter-badges button.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  input[type="search"] { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.85rem; min-width: 180px; }
+  select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.85rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; }
+  .count-line { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 12px; }
+  .empty-state { text-align: center; color: var(--text-muted); padding: 60px 20px; }
+  .card-list { display: flex; flex-direction: column; gap: 16px; }
+  .card { display: flex; gap: 16px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .card img { width: 120px; height: 168px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: var(--border); }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card-title { font-size: 1.1rem; font-weight: 600; margin: 0; }
+  .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; color: #fff; }
+  .badge.hof { background: var(--badge-hof); }
+  .meta-row { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 4px; }
+  .meta-row + .meta-row { margin-top: -2px; }
+  .genre-row { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+  .tag { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-muted); }
+  .amazon-link { font-size: 0.8rem; }
+  .amazon-link a { color: var(--accent); }
+  .comment { font-size: 0.82rem; font-style: italic; color: var(--text-muted); margin: 6px 0 0; }
+  .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  @media (max-width: 900px) {
+    .card-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .gallery-item { text-align: center; }
+  .gallery-item img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--border); }
+  .gallery-item .gallery-title { font-size: 0.78rem; margin-top: 6px; line-height: 1.3; }
+  @media (max-width: 480px) {
+    .card { flex-direction: column; }
+    .card img { width: 100%; height: 200px; }
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <h1>お気に入り漫画一覧</h1>
+  <p class="subtitle">読んでよかった作品の記録です。</p>
+  <div class="controls">
+    <div class="view-toggle">
+      <button id="btn-view-list" class="active" onclick="setView('list')">詳細一覧</button>
+      <button id="btn-view-gallery" onclick="setView('gallery')">サムネイルギャラリー</button>
+    </div>
+    <div class="filter-badges">
+      <button class="active" data-category="all" onclick="setCategory('all')">すべて</button>
+      <button data-category="hof" onclick="setCategory('hof')">殿堂入り</button>
+    </div>
+    <input type="search" id="search-box" placeholder="タイトル・作者・ジャンルで検索" oninput="render()">
+    <select id="sort-select" onchange="render()">
+      <option value="firstVolume" selected>第1巻の出版日が新しい順</option>
+      <option value="added">新しく追加した順</option>
+      <option value="title">タイトル順</option>
+      <option value="volumes">巻数が多い順</option>
+    </select>
+  </div>
+</header>
+<main id="app"></main>
+<script>
+const MANGA_DATA = [
+  { id: 'tsuiho-cheat-second-life', title: '追放されたチート付与魔術師は気ままなセカンドライフを謳歌する。', author: '原作:六志麻あさ/漫画:業務用餅/キャラクター原案:kisui', volumeCount: 21, volumes: '21巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/tsuiho-cheat-second-life.jpg', magazine: '月刊少年マガジン', firstVolumeDate: '2022-02-09', genres: ['異世界ファンタジー', 'コメディ', '成り上がり'], amazonUrl: 'https://www.amazon.co.jp/dp/4065269210' },
+  { id: 'juou-to-yakusou', title: '獣王と薬草', author: '原作:艮田竜和/作画:坂野旭/キャラクター原案:ももちち', volumeCount: 9, volumes: '9巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/juou-to-yakusou.jpg', magazine: '裏サンデー', firstVolumeDate: '2023-11-10', genres: ['医療ファンタジー', '異種族', 'ヒューマンドラマ'], amazonUrl: 'https://www.amazon.co.jp/dp/B0H6PSSTXH' },
+  { id: 'ikensenki-verndio', title: '異剣戦記ヴェルンディオ', author: '七尾ナナキ', volumeCount: 9, volumes: '9巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/ikensenki-verndio.jpg', magazine: '裏サンデー', firstVolumeDate: '2021-02-12', genres: ['ダークファンタジー', 'バトル', '経営'], amazonUrl: 'https://www.amazon.co.jp/dp/4098504561' },
+  { id: 'spy-family', title: 'SPY×FAMILY', author: '遠藤達哉', volumeCount: 17, volumes: '17巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/spy-family.jpg', magazine: '少年ジャンプ+', firstVolumeDate: '2019-07-04', genres: ['アクション', 'コメディ', 'ホームドラマ'], amazonUrl: 'https://www.amazon.co.jp/dp/4088850092' },
+  { id: 'ryuu-okuri-no-isagi', title: '竜送りのイサギ', author: '星野真', volumeCount: 7, volumes: '7巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/ryuu-okuri-no-isagi.jpg', magazine: 'サンデーうぇぶり', firstVolumeDate: '2023-01-12', genres: ['時代劇ファンタジー', 'バトル', '和風'], amazonUrl: 'https://www.amazon.co.jp/dp/B0GXZ76MBD' },
+  { id: 'nige-jouzu-no-wakagimi', title: '逃げ上手の若君', author: '松井優征', volumeCount: 26, volumes: '既刊26巻(27巻で完結予定)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/nige-jouzu-no-wakagimi.jpg', magazine: '週刊少年ジャンプ', firstVolumeDate: '2021-07-02', genres: ['歴史', 'バトル', 'ダークファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/B0H6BQWJFJ' },
+  { id: 'yomi-no-tsugai', title: '黄泉のツガイ', author: '荒川弘', volumeCount: 13, volumes: '13巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/yomi-no-tsugai.jpg', magazine: '月刊少年ガンガン', firstVolumeDate: '2022-06-10', genres: ['和風ファンタジー', 'バトル', '伝奇'], amazonUrl: 'https://www.amazon.co.jp/dp/4301006346' },
+  { id: 'mairimashita-iruma-kun', title: '魔入りました！入間くん', author: '西修', volumeCount: 49, volumes: '49巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/mairimashita-iruma-kun.jpg', magazine: '週刊少年チャンピオン', firstVolumeDate: '2017-07-07', genres: ['学園コメディ', 'ファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/B0GJSF8JM4' },
+  { id: 'tongari-boushi-no-atelier', title: 'とんがり帽子のアトリエ', author: '白浜鴎', volumeCount: 16, volumes: '16巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/tongari-boushi-no-atelier.jpg', magazine: '月刊モーニングtwo', firstVolumeDate: '2017-01-23', genres: ['ファンタジー', '魔法', '青春'], amazonUrl: 'https://www.amazon.co.jp/dp/4065431522' },
+  { id: 'tenmaku-no-jadoogar', title: '天幕のジャードゥーガル', author: 'トマトスープ', volumeCount: 6, volumes: '6巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/tenmaku-no-jadoogar.jpg', magazine: 'Souffle(秋田書店)', firstVolumeDate: '2022-08-16', genres: ['歴史', '伝記', 'ヒューマンドラマ'], amazonUrl: 'https://www.amazon.co.jp/dp/4253018181' },
+  { id: 'sousou-no-frieren', title: '葬送のフリーレン', author: '原作:山田鐘人/作画:アベツカサ', volumeCount: 15, volumes: '15巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/sousou-no-frieren.jpg', magazine: '週刊少年サンデー', firstVolumeDate: '2020-08-18', genres: ['ファンタジー', '冒険', 'ヒューマンドラマ'], amazonUrl: 'https://www.amazon.co.jp/dp/409854346X' },
+  { id: 'world-trigger', title: 'ワールドトリガー', author: '葦原大介', volumeCount: 29, volumes: '29巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/world-trigger.jpg', magazine: 'ジャンプSQ.', firstVolumeDate: '2013-07-04', genres: ['SF', 'バトルアクション'], amazonUrl: 'https://www.amazon.co.jp/dp/4088847636' },
+  { id: 'rairairai', title: '雷雷雷', author: 'ヨシアキ', volumeCount: 7, volumes: '7巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/rairairai.jpg', magazine: '裏サンデー/マンガワン', firstVolumeDate: '2023-11-17', genres: ['SFアクション', 'コメディ', '宇宙'], amazonUrl: 'https://www.amazon.co.jp/dp/B0CLKWM4WQ' },
+  { id: 'miharu-no-senjou', title: 'ミハルの戦場', author: '原作:濱田轟天/作画:藤本ケンシ', volumeCount: 4, volumes: '4巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/miharu-no-senjou.jpg', magazine: 'マンガワン/裏サンデー', firstVolumeDate: '2025-05-19', genres: ['戦争', 'ミリタリー', 'サバイバル'], amazonUrl: 'https://www.amazon.co.jp/dp/4098545225' },
+  { id: 'kaihen-no-mahoutsukai', title: '界変の魔法使い', author: '田辺イエロウ', volumeCount: 4, volumes: '4巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/kaihen-no-mahoutsukai.jpg', magazine: '週刊少年サンデー', firstVolumeDate: '2025-02-18', genres: ['オリエンタルファンタジー', 'バトル', '師弟'], amazonUrl: 'https://www.amazon.co.jp/dp/4098546566' },
+  { id: 'lord-magia-no-deshi', title: 'ロードマギアの弟子', author: 'FLIPFLOPs', volumeCount: 7, volumes: '7巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/lord-magia-no-deshi.jpg', magazine: 'サンデーうぇぶり', firstVolumeDate: '2024-11-12', genres: ['ファンタジー', '剣と魔法', 'アクション'], amazonUrl: 'https://www.amazon.co.jp/dp/B0H622H1PJ' },
+  { id: 'tensei-shitara-dainana-oji', title: '転生したら第七王子だったので、気ままに魔術を極めます', author: '原作:謙虚なサークル/作画:石沢庸介/キャラクター原案:メル。', volumeCount: 24, volumes: '24巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/tensei-shitara-dainana-oji.jpg', magazine: 'マガジンポケット', firstVolumeDate: '2020-11-09', genres: ['異世界転生', 'ファンタジー', '魔法'], amazonUrl: 'https://www.amazon.co.jp/dp/B0HBPDPJK4' },
+  { id: 'akumade-kujaku-no-hanashi', title: 'あくまでクジャクの話です。', author: '小出もと貴', volumeCount: 8, volumes: '8巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/akumade-kujaku-no-hanashi.jpg', magazine: 'コミックDAYS/モーニングKC', firstVolumeDate: '2024-04-10', genres: ['ラブコメ', '青春', '生物学コメディ'], amazonUrl: 'https://www.amazon.co.jp/dp/B0HCNJM5J3' },
+  { id: 'oda-chan-to-akechi-kun', title: '織田ちゃんと明智くん', author: '常盤ギヨ', volumeCount: 7, volumes: '7巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/oda-chan-to-akechi-kun.jpg', magazine: 'モーニング(講談社)', firstVolumeDate: '2024-11-21', genres: ['ラブコメ', '学園', '歴史パロディ'], amazonUrl: 'https://www.amazon.co.jp/dp/4065373638' },
+  { id: 'gundam-thunderbolt', title: '機動戦士ガンダム サンダーボルト', author: '太田垣康男(原作:矢立肇・富野由悠季)', volumeCount: 27, volumes: '全27巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/gundam-thunderbolt.jpg', magazine: 'ビッグコミックスペリオール', firstVolumeDate: '2012-10-30', genres: ['ロボット/SF', '戦争'], amazonUrl: 'https://www.amazon.co.jp/dp/4098638169' },
+  { id: 'bakemonogatari', title: '化物語', author: '原作:西尾維新/作画:大暮維人', volumeCount: 22, volumes: '全22巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/bakemonogatari.jpg', magazine: '週刊少年マガジン', firstVolumeDate: '2018-06-15', genres: ['怪異譚', 'ミステリー', '青春'], amazonUrl: 'https://www.amazon.co.jp/dp/4065315751' },
+  { id: 'jormungand', title: 'ヨルムンガンド', author: '高橋慶太郎', volumeCount: 11, volumes: '全11巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/jormungand.jpg', magazine: '月刊サンデーGX', firstVolumeDate: '2006-11-01', genres: ['軍事アクション', 'ガンアクション'], amazonUrl: 'https://www.amazon.co.jp/dp/4091573053' },
+  { id: 'area-88', title: 'エリア88', author: '新谷かおる', volumeCount: 23, volumes: '全23巻(完結・初版)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/area-88.jpg', magazine: '少年ビッグコミック', firstVolumeDate: '1979-11-05', genres: ['戦争', 'アクション', '航空ドラマ'], amazonUrl: 'https://www.amazon.co.jp/dp/4091501311' },
+  { id: 'break-blade', title: 'ブレイクブレイド', author: '吉永裕ノ介', volumeCount: 20, volumes: '全20巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/break-blade.jpg', magazine: '月刊少年ブラッド系', firstVolumeDate: '2007-04-12', genres: ['ロボット', '異世界ファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/4866752467' },
+  { id: 'yotsubato', title: 'よつばと！', author: 'あずまきよひこ', volumeCount: 16, volumes: '16巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/yotsubato.jpg', magazine: '月刊コミック電撃大王', firstVolumeDate: '2003-08-27', genres: ['日常', 'コメディ', 'ほのぼの'], amazonUrl: 'https://www.amazon.co.jp/dp/404916194X' },
+  { id: 'not-simple', title: 'not simple', author: 'オノ・ナツメ', volumeCount: 1, volumes: '全1巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/not-simple.jpg', magazine: 'IKKI(単行本)', firstVolumeDate: '2006-10-30', genres: ['ヒューマンドラマ', '青年漫画', '群像劇'], amazonUrl: 'https://www.amazon.co.jp/dp/4091883443' },
+  { id: 'ryuu-no-gakkou-wa-yama-no-ue', title: '竜の学校は山の上', author: '九井諒子', volumeCount: 1, volumes: '全1巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/ryuu-no-gakkou-wa-yama-no-ue.jpg', magazine: 'イースト・プレス(単行本)', firstVolumeDate: '2011-03-01', genres: ['ファンタジー', '短編集', 'SF'], amazonUrl: 'https://www.amazon.co.jp/dp/4781605451' },
+  { id: 'ryuu-no-kawaii-nanatsu-no-ko', title: '竜のかわいい七つの子', author: '九井諒子', volumeCount: 1, volumes: '全1巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/ryuu-no-kawaii-nanatsu-no-ko.jpg', magazine: 'ハルタコミックス', firstVolumeDate: '2012-10-15', genres: ['ファンタジー', '短編集', '家族'], amazonUrl: 'https://www.amazon.co.jp/dp/4047284084' },
+  { id: '25ji-no-vacance', title: '25時のバカンス', author: '市川春子', volumeCount: 1, volumes: '全1巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/25ji-no-vacance.jpg', magazine: '月刊アフタヌーン(単行本)', firstVolumeDate: '2011-09-23', genres: ['SF', '短編集', 'ヒューマンドラマ'], amazonUrl: 'https://www.amazon.co.jp/dp/4063107809' },
+  { id: '3gatsu-no-lion', title: '3月のライオン', author: '羽海野チカ', volumeCount: 18, volumes: '18巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/3gatsu-no-lion.jpg', magazine: '月刊ヤングアニマル', firstVolumeDate: '2008-02-22', genres: ['将棋', '青春', 'ヒューマンドラマ'], amazonUrl: 'https://www.amazon.co.jp/dp/4592160282' },
+  { id: 'koukoku-no-shugosha', title: '皇国の守護者', author: '原作:佐藤大輔/漫画:伊藤悠', volumeCount: 5, volumes: '全5巻(未完・連載終了)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/koukoku-no-shugosha.jpg', magazine: 'ウルトラジャンプ', firstVolumeDate: '2005-03-18', genres: ['戦記', 'ファンタジー', '軍事もの'], amazonUrl: 'https://www.amazon.co.jp/dp/4088767624' },
+  { id: 'kaijuu-no-kodomo', title: '海獣の子供', author: '五十嵐大介', volumeCount: 5, volumes: '全5巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/kaijuu-no-kodomo.jpg', magazine: '月刊IKKI', firstVolumeDate: '2007-07-30', genres: ['SF', 'ファンタジー', '青春'], amazonUrl: 'https://www.amazon.co.jp/dp/409188590X' },
+  { id: 'blame', title: 'BLAME!', author: '弐瓶勉', volumeCount: 10, volumes: '全10巻(完結・新装版全6巻)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/blame.jpg', magazine: '月刊アフタヌーン', firstVolumeDate: '1998-06-20', genres: ['SF', 'サイバーパンク', 'アクション'], amazonUrl: 'https://www.amazon.co.jp/dp/B008B751FS' },
+  { id: 'gunjou-gakusha', title: '群青学舎', author: '入江亜季', volumeCount: 4, volumes: '全4巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/gunjou-gakusha.jpg', magazine: '月刊コミックビーム', firstVolumeDate: '2006-08-31', genres: ['青春群像劇', 'オムニバス'], amazonUrl: 'https://www.amazon.co.jp/dp/4047304646' },
+  { id: 'kodama-no-tani', title: 'コダマの谷 王立大学騒乱劇', author: '入江亜季', volumeCount: 1, volumes: '全1巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/kodama-no-tani.jpg', magazine: '単行本描き下ろし中心', firstVolumeDate: '2006-08-31', genres: ['ファンタジー', '学園もの'], amazonUrl: 'https://www.amazon.co.jp/dp/4757729197' },
+  { id: 'hikidashi-ni-terrarium', title: 'ひきだしにテラリウム', author: '九井諒子', volumeCount: 1, volumes: '全1巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/hikidashi-ni-terrarium.jpg', magazine: 'マトグロッソ', firstVolumeDate: '2013-03-16', genres: ['短編集', 'SF', 'ファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/B00E59A03O' },
+  { id: 'moyashimon', title: 'もやしもん', author: '石川雅之', volumeCount: 13, volumes: '全13巻(完結・本編)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/moyashimon.jpg', magazine: 'イブニング→月刊モーニングtwo', firstVolumeDate: '2005-05-23', genres: ['学園コメディ', '青春群像劇'], amazonUrl: 'https://www.amazon.co.jp/dp/406388306X' },
+  { id: 'five-star-stories', title: 'ファイブスター物語', author: '永野護', volumeCount: 19, volumes: '19巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/five-star-stories.jpg', magazine: '月刊ニュータイプ', firstVolumeDate: '1987-05-14', genres: ['SFファンタジー', 'ロボット'], amazonUrl: 'https://www.amazon.co.jp/dp/4041173337' },
+  { id: 'moonlight-mile', title: 'MOONLIGHT MILE', author: '太田垣康男', volumeCount: 24, volumes: '24巻(要確認・電子配信体制へ移行中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/moonlight-mile.jpg', magazine: '週刊ビッグコミックスピリッツ→ビッグコミック→電子配信', firstVolumeDate: '2007-06-01', genres: ['ハードSF', '宇宙開発', '青春'], amazonUrl: 'https://www.amazon.co.jp/dp/B0GX2ZPNZD' },
+  { id: 'dungeon-meshi', title: 'ダンジョン飯', author: '九井諒子', volumeCount: 14, volumes: '全14巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/dungeon-meshi.jpg', magazine: 'ハルタ', firstVolumeDate: '2015-01-15', genres: ['ファンタジー', 'グルメ', '冒険'], amazonUrl: 'https://www.amazon.co.jp/dp/4047377406' },
+  { id: 'sono-bisque-doll-wa-koi-wo-suru', title: 'その着せ替え人形は恋をする', author: '福田晋一', volumeCount: 15, volumes: '全15巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/sono-bisque-doll-wa-koi-wo-suru.jpg', magazine: 'ヤングガンガン', firstVolumeDate: '2018-11-24', genres: ['ラブコメ', '青春'], amazonUrl: 'https://www.amazon.co.jp/dp/4757599722' },
+  { id: 'boku-to-kimi-no-taisetsu-na-hanashi', title: '僕と君の大切な話', author: 'ろびこ', volumeCount: 7, volumes: '全7巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/boku-to-kimi-no-taisetsu-na-hanashi.jpg', magazine: 'デザート', firstVolumeDate: '2016-03-11', genres: ['ラブコメ', '学園'], amazonUrl: 'https://www.amazon.co.jp/dp/4065189691' },
+  { id: 'tonari-no-kaibutsu-kun', title: 'となりの怪物くん', author: 'ろびこ', volumeCount: 13, volumes: '全13巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/tonari-no-kaibutsu-kun.jpg', magazine: 'デザート', firstVolumeDate: '2011-04-08', genres: ['ラブコメ', '学園'], amazonUrl: 'https://www.amazon.co.jp/dp/4063657558' },
+  { id: 'air-gear', title: 'エア・ギア', author: '大暮維人', volumeCount: 37, volumes: '全37巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/air-gear.jpg', magazine: '週刊少年マガジン', firstVolumeDate: '2003-05-16', genres: ['アクション', 'バトル', 'スポーツ'], amazonUrl: 'https://www.amazon.co.jp/dp/4063847020' },
+  { id: 'kaze-no-tani-no-nausicaa', title: '風の谷のナウシカ', author: '宮崎駿', volumeCount: 7, volumes: '全7巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/kaze-no-tani-no-nausicaa.jpg', magazine: 'アニメージュ', firstVolumeDate: '1983-08-25', genres: ['SF', 'ファンタジー', '冒険'], amazonUrl: 'https://www.amazon.co.jp/dp/B00B47YY9G' },
+  { id: 'hagane-no-renkinjutsushi', title: '鋼の錬金術師', author: '荒川弘', volumeCount: 27, volumes: '全27巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/hagane-no-renkinjutsushi.jpg', magazine: '月刊少年ガンガン', firstVolumeDate: '2002-01-22', genres: ['ファンタジー', 'アクション'], amazonUrl: 'https://www.amazon.co.jp/dp/4757530544' },
+  { id: 'kimetsu-no-yaiba', title: '鬼滅の刃', author: '吾峠呼世晴', volumeCount: 23, volumes: '全23巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/kimetsu-no-yaiba.jpg', magazine: '週刊少年ジャンプ', firstVolumeDate: '2016-06-03', genres: ['バトル', '時代劇ファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/4088824954' },
+  { id: 'ansatsu-kyoushitsu', title: '暗殺教室', author: '松井優征', volumeCount: 21, volumes: '全21巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/ansatsu-kyoushitsu.jpg', magazine: '週刊少年ジャンプ', firstVolumeDate: '2012-11-02', genres: ['学園コメディ', 'バトル'], amazonUrl: 'https://www.amazon.co.jp/dp/4088807278' },
+  { id: 'seihantai-na-kimi-to-boku', title: '正反対な君と僕', author: '阿賀沢紅茶', volumeCount: 8, volumes: '全8巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/seihantai-na-kimi-to-boku.jpg', magazine: '少年ジャンプ+', firstVolumeDate: '2022-07-04', genres: ['学園', 'ラブコメディ'], amazonUrl: 'https://www.amazon.co.jp/dp/4088842944' },
+  { id: 'futatsu-no-spica', title: 'ふたつのスピカ', author: '柳沼行', volumeCount: 16, volumes: '全16巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/futatsu-no-spica.jpg', magazine: '月刊コミックフラッパー', firstVolumeDate: '2002-01-31', genres: ['SF', '青春'], amazonUrl: 'https://www.amazon.co.jp/dp/4840129231' },
+  { id: 'made-in-abyss', title: 'メイドインアビス', author: 'つくしあきひと', volumeCount: 15, volumes: '15巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/made-in-abyss.jpg', magazine: '竹コミ!', firstVolumeDate: '2013-07-31', genres: ['ダークファンタジー', 'アドベンチャー'], amazonUrl: 'https://www.amazon.co.jp/dp/4801990312' },
+  { id: 'oshi-no-ko', title: '【推しの子】', author: '原作:赤坂アカ/作画:横槍メンゴ', volumeCount: 16, volumes: '全16巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/oshi-no-ko.jpg', magazine: '週刊ヤングジャンプ', firstVolumeDate: '2020-07-17', genres: ['エンタメ業界もの', 'サスペンス'], amazonUrl: 'https://www.amazon.co.jp/dp/4088934741' },
+  { id: 'ran-to-haiiro-no-sekai', title: '乱と灰色の世界', author: '入江亜季', volumeCount: 7, volumes: '全7巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/ran-to-haiiro-no-sekai.jpg', magazine: 'Fellows!→ハルタ', firstVolumeDate: '2009-11-16', genres: ['ファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/4047305820' },
+  { id: 'hokuhokusei-ni-kumo-to-yuke', title: '北北西に曇と往け', author: '入江亜季', volumeCount: 7, volumes: '既刊7巻+続編(連載中・要確認)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/hokuhokusei-ni-kumo-to-yuke.jpg', magazine: 'ハルタ→青騎士→雪割草', firstVolumeDate: '2017-10-13', genres: ['ミステリー', 'ジュブナイル'], amazonUrl: 'https://www.amazon.co.jp/dp/4911278021' },
+  { id: 'yowamushi-pedal', title: '弱虫ペダル', author: '渡辺航', volumeCount: 101, volumes: '101巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/yowamushi-pedal.jpg', magazine: '週刊少年チャンピオン', firstVolumeDate: '2008-07-08', genres: ['スポーツ(自転車)', '学園'], amazonUrl: 'https://www.amazon.co.jp/dp/B0H1BR9TGW' },
+  { id: 'one-punch-man', title: 'ワンパンマン', author: '原作:ONE/作画:村田雄介', volumeCount: 37, volumes: '37巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/one-punch-man.jpg', magazine: 'となりのヤングジャンプ', firstVolumeDate: '2013-09-02', genres: ['バトル', 'ギャグ', 'ヒーローもの'], amazonUrl: 'https://www.amazon.co.jp/dp/4088850858' },
+  { id: 'arslan-senki', title: 'アルスラーン戦記', author: '漫画:荒川弘/原作:田中芳樹', volumeCount: 24, volumes: '24巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/arslan-senki.jpg', magazine: '別冊少年マガジン', firstVolumeDate: '2014-04-09', genres: ['歴史ファンタジー', '戦記もの'], amazonUrl: 'https://www.amazon.co.jp/dp/4065429633' },
+  { id: 'seikai-suru-kado', title: '正解するカド', author: '漫画:奥橋睦/原作:野崎まど', volumeCount: 3, volumes: '全3巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/seikai-suru-kado.jpg', magazine: '月刊モーニングtwo', firstVolumeDate: '2017-06-23', genres: ['SF'], amazonUrl: 'https://www.amazon.co.jp/dp/4065113504' },
+  { id: 'shutohern', title: 'シュトヘル', author: '伊藤悠', volumeCount: 14, volumes: '全14巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/shutohern.jpg', magazine: '月刊!スピリッツ', firstVolumeDate: '2009-03-30', genres: ['歴史', 'アクション'], amazonUrl: 'https://www.amazon.co.jp/dp/4091895743' },
+  { id: 'gekkan-shoujo-nozaki-kun', title: '月刊少女野崎くん', author: '椿いづみ', volumeCount: 18, volumes: '18巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/gekkan-shoujo-nozaki-kun.jpg', magazine: 'ガンガンONLINE', firstVolumeDate: '2012-04-20', genres: ['学園コメディ', 'ラブコメ'], amazonUrl: 'https://www.amazon.co.jp/dp/4301005471' },
+  { id: 'magi', title: 'マギ', author: '大高忍', volumeCount: 37, volumes: '全37巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/magi.jpg', magazine: '週刊少年サンデー', firstVolumeDate: '2012-07-20', genres: ['バトル', 'ファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/4091278760' },
+  { id: 'hunter-x-hunter', title: 'HUNTER×HUNTER', author: '冨樫義博', volumeCount: 39, volumes: '39巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/hunter-x-hunter.jpg', magazine: '週刊少年ジャンプ', firstVolumeDate: '1998-06-04', genres: ['バトルアクション', 'ダークファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/4088851749' },
+  { id: 'nagi-no-oitoma', title: '凪のお暇', author: 'コナリミサト', volumeCount: 12, volumes: '全12巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/nagi-no-oitoma.jpg', magazine: 'エレガンスイブ', firstVolumeDate: '2017-06-16', genres: ['ヒューマンドラマ', '恋愛'], amazonUrl: 'https://www.amazon.co.jp/dp/4253157122' },
+  { id: 'ningyo-no-kuni', title: '人形の国', author: '弐瓶勉', volumeCount: 9, volumes: '全9巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/ningyo-no-kuni.jpg', magazine: '月刊少年シリウス', firstVolumeDate: '2017-05-09', genres: ['ダークファンタジー', 'SF', 'バトル'], amazonUrl: 'https://www.amazon.co.jp/dp/4065262194' },
+  { id: 'ginga-eiyuu-densetsu', title: '銀河英雄伝説', author: '田中芳樹(原作)/藤崎竜(漫画)', volumeCount: 35, volumes: '全35巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/ginga-eiyuu-densetsu.jpg', magazine: '週刊ヤングジャンプ→ウルトラジャンプ', firstVolumeDate: '2016-02-19', genres: ['SF', 'スペースオペラ', '戦記'], amazonUrl: 'https://www.amazon.co.jp/dp/408894142X' },
+  { id: 'bread-and-butter', title: 'Bread&Butter', author: '芦原妃名子', volumeCount: 10, volumes: '全10巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/bread-and-butter.jpg', magazine: 'ココハナ', firstVolumeDate: '2014-03-25', genres: ['恋愛', 'ヒューマンドラマ', 'グルメ'], amazonUrl: 'https://www.amazon.co.jp/dp/4088444302' },
+  { id: 'amaama-to-inazuma', title: '甘々と稲妻', author: '雨隠ギド', volumeCount: 12, volumes: '全12巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/amaama-to-inazuma.jpg', magazine: 'good!アフタヌーン', firstVolumeDate: '2013-09-06', genres: ['料理・グルメ', 'ホームドラマ'], amazonUrl: 'https://www.amazon.co.jp/dp/4065144981' },
+  { id: 'hare-nochi-guu', title: 'ジャングルはいつもハレのちグゥ', author: '金田一蓮十郎', volumeCount: 10, volumes: '全10巻(完結・第1部)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/hare-nochi-guu.jpg', magazine: '月刊少年ガンガン', firstVolumeDate: '1998-01-01', genres: ['シュールコメディ', 'ギャグ'], amazonUrl: 'https://www.amazon.co.jp/dp/4757508530' },
+  { id: 'horimiya', title: 'ホリミヤ', author: 'HERO(原作)/萩原ダイスケ(作画)', volumeCount: 16, volumes: '全16巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/horimiya.jpg', magazine: '月刊Gファンタジー', firstVolumeDate: '2012-03-27', genres: ['青春', '学園', 'ラブコメ'], amazonUrl: 'https://www.amazon.co.jp/dp/4757572824' },
+  { id: 'nejimaki-kagyu', title: 'ねじまきカギュー', author: '中山敦支', volumeCount: 16, volumes: '全16巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/nejimaki-kagyu.jpg', magazine: '週刊ヤングジャンプ', firstVolumeDate: '2011-06-17', genres: ['バトル', 'ラブコメディ', '学園'], amazonUrl: 'https://www.amazon.co.jp/dp/4088798732' },
+  { id: 'liar-x-liar', title: 'ライアー×ライアー', author: '金田一蓮十郎', volumeCount: 10, volumes: '全10巻(完結・電子限定11巻あり)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/liar-x-liar.jpg', magazine: 'デザート', firstVolumeDate: '2010-11-25', genres: ['恋愛コメディ', '学園'], amazonUrl: 'https://www.amazon.co.jp/dp/4063659313' },
+  { id: 'toaru-majutsu-no-index', title: 'とある魔術の禁書目録', author: '原作:鎌池和馬/漫画:近木野中哉', volumeCount: 33, volumes: '33巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/toaru-majutsu-no-index.jpg', magazine: '月刊少年ガンガン', firstVolumeDate: '2007-12-10', genres: ['バトル', 'ファンタジー', 'SF'], amazonUrl: 'https://www.amazon.co.jp/dp/4301003193' },
+  { id: 'eiga-daisuki-pompo-san', title: '映画大好きポンポさん', author: '杉谷庄吾【人間プラモ】', volumeCount: 3, volumes: '全3巻(完結・関連派生作あり)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/eiga-daisuki-pompo-san.jpg', magazine: '月刊コミックジーン', firstVolumeDate: '2017-08-26', genres: ['お仕事もの', '青春', 'コメディ'], amazonUrl: 'https://www.amazon.co.jp/dp/4040646363' },
+  { id: 'boku-dake-ga-inai-machi', title: '僕だけがいない街', author: '三部けい', volumeCount: 9, volumes: '全9巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/boku-dake-ga-inai-machi.jpg', magazine: '角川コミックス・エース/ヤングエース', firstVolumeDate: '2013-01-25', genres: ['サスペンス・ミステリー', 'タイムリープ'], amazonUrl: 'https://www.amazon.co.jp/dp/4041048796' },
+  { id: 'acca-13', title: 'ACCA13区監察課', author: 'オノ・ナツメ', volumeCount: 6, volumes: '全6巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/acca-13.jpg', magazine: '月刊ビッグガンガン', firstVolumeDate: '2013-11-25', genres: ['政治サスペンス', 'ミステリー'], amazonUrl: 'https://www.amazon.co.jp/dp/475754149X' },
+  { id: 'inari-konkon-koi-iroha', title: 'いなり、こんこん、恋いろは。', author: 'よしだもろへ', volumeCount: 10, volumes: '全10巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/inari-konkon-koi-iroha.jpg', magazine: 'ヤングエース', firstVolumeDate: '2011-08-25', genres: ['ラブコメ', '学園', '和風ファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/B0093G5XJK' },
+  { id: 'terra-e', title: '地球へ…', author: '竹宮惠子', volumeCount: 3, volumes: '全3巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/terra-e.jpg', magazine: '月刊まんが少年', firstVolumeDate: '1977-01-01', genres: ['SF', 'スペースオペラ', '伝奇'], amazonUrl: 'https://www.amazon.co.jp/dp/4757520093' },
+  { id: 'konjiki-no-gash', title: '金色のガッシュ!!', author: '雷句誠', volumeCount: 33, volumes: '全33巻(完結・完全版全16巻)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/konjiki-no-gash.jpg', magazine: '週刊少年サンデー', firstVolumeDate: '2001-05-18', genres: ['バトル', 'ファンタジー', '友情'], amazonUrl: 'https://www.amazon.co.jp/dp/4091262317' },
+  { id: 'ushio-to-tora', title: 'うしおととら', author: '藤田和日郎', volumeCount: 33, volumes: '全33巻(完結・完全版全20巻)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/ushio-to-tora.jpg', magazine: '週刊少年サンデー', firstVolumeDate: '1990-11-17', genres: ['バトル', 'ホラー', '伝奇ファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/B009JZGVNW' },
+  { id: 'dai-no-daibouken', title: 'ダイの大冒険', author: '原作:三条陸/作画:稲田浩司(監修:堀井雄二)', volumeCount: 37, volumes: '全37巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/dai-no-daibouken.jpg', magazine: '週刊少年ジャンプ', firstVolumeDate: '1990-03-15', genres: ['ファンタジー', 'バトル', '冒険'], amazonUrl: 'https://www.amazon.co.jp/dp/4088710711' },
+  { id: 'dai-no-daibouken-yuusha-avan', title: 'ダイの大冒険 勇者アバンと獄炎の魔王', author: '原作:三条陸/作画:芝田優作', volumeCount: 15, volumes: '15巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/dai-no-daibouken-yuusha-avan.jpg', magazine: '少年ジャンプ+/Vジャンプ', firstVolumeDate: '2021-03-04', genres: ['ファンタジー', 'バトル', '冒険'], amazonUrl: 'https://www.amazon.co.jp/dp/4088825896' },
+  { id: 'junketsu-no-maria', title: '純潔のマリア', author: '石川雅之', volumeCount: 3, volumes: '全3巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/junketsu-no-maria.jpg', magazine: 'good!アフタヌーン', firstVolumeDate: '2010-02-05', genres: ['ファンタジー', '歴史', 'コメディ'], amazonUrl: 'https://www.amazon.co.jp/dp/4063106225' },
+  { id: 'majin-tantei-nougami-neuro', title: '魔人探偵脳噛ネウロ', author: '松井優征', volumeCount: 23, volumes: '全23巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/majin-tantei-nougami-neuro.jpg', magazine: '週刊少年ジャンプ', firstVolumeDate: '2005-07-04', genres: ['ミステリー', 'バトル', 'コメディ'], amazonUrl: 'https://www.amazon.co.jp/dp/4088738349' },
+  { id: 'mugen-no-junin', title: '無限の住人', author: '沙村広明', volumeCount: 30, volumes: '全30巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/mugen-no-junin.jpg', magazine: '月刊アフタヌーン', firstVolumeDate: '1994-09-19', genres: ['時代劇', 'バトル', 'ダークファンタジー'], amazonUrl: 'https://www.amazon.co.jp/dp/4063140903' },
+  { id: 'hitoribocchi-no-chikyuu-shinryaku', title: 'ひとりぼっちの地球侵略', author: '小川麻衣子', volumeCount: 15, volumes: '全15巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/hitoribocchi-no-chikyuu-shinryaku.jpg', magazine: 'ゲッサン', firstVolumeDate: '2012-07-12', genres: ['SF', '青春', 'コメディ'], amazonUrl: 'https://www.amazon.co.jp/dp/4091237541' },
+  { id: 'dagashi-kashi', title: 'だがしかし', author: 'コトヤマ', volumeCount: 11, volumes: '全11巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/dagashi-kashi.jpg', magazine: '週刊少年サンデー', firstVolumeDate: '2014-09-18', genres: ['コメディ', '日常', 'グルメ'], amazonUrl: 'https://www.amazon.co.jp/dp/B07D6NHQFB' },
+  { id: 'kin-no-kuni-mizu-no-kuni', title: '金の国 水の国', author: '岩本ナオ', volumeCount: 1, volumes: '全1巻(完結)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/kin-no-kuni-mizu-no-kuni.jpg', magazine: '月刊flowers', firstVolumeDate: '2016-07-08', genres: ['ファンタジー', 'ロマンス', 'コメディ'], amazonUrl: 'https://www.amazon.co.jp/dp/4091386687' },
+  { id: 'medaka-box', title: 'めだかボックス', author: '原作:西尾維新/作画:暁月あきら', volumeCount: 22, volumes: '全22巻(完結・モノクロ版)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/medaka-box.jpg', magazine: '週刊少年ジャンプ', firstVolumeDate: '2009-10-02', genres: ['バトル', '学園', 'コメディ'], amazonUrl: 'https://www.amazon.co.jp/dp/4088747763' }
+];
+
+let currentView = 'list';
+let currentCategory = 'all';
+
+function setView(view) {
+  currentView = view;
+  document.getElementById('btn-view-list').classList.toggle('active', view === 'list');
+  document.getElementById('btn-view-gallery').classList.toggle('active', view === 'gallery');
+  render();
+}
+
+function setCategory(category) {
+  currentCategory = category;
+  document.querySelectorAll('.filter-badges button').forEach(function (btn) {
+    btn.classList.toggle('active', btn.dataset.category === category);
+  });
+  render();
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function getFilteredSorted() {
+  const query = document.getElementById('search-box').value.trim().toLowerCase();
+  const sortKey = document.getElementById('sort-select').value;
+
+  let items = MANGA_DATA.filter(function (item) {
+    if (currentCategory === 'hof' && !item.hof) return false;
+    if (!query) return true;
+    const haystack = (item.title + ' ' + item.author + ' ' + item.genres.join(' ')).toLowerCase();
+    return haystack.indexOf(query) !== -1;
+  });
+
+  items = items.slice().sort(function (a, b) {
+    if (sortKey === 'title') return a.title.localeCompare(b.title, 'ja');
+    if (sortKey === 'volumes') return b.volumeCount - a.volumeCount;
+    if (sortKey === 'added') return 0;
+    return (b.firstVolumeDate || '').localeCompare(a.firstVolumeDate || '');
+  });
+
+  return items;
+}
+
+function renderList(items) {
+  return items.map(function (item) {
+    const badgeHtml = item.hof ? '<span class="badge hof">殿堂入り</span>' : '';
+    const genreTags = item.genres.map(function (g) { return '<span class="tag">' + escapeHtml(g) + '</span>'; }).join('');
+    const commentHtml = item.comment ? '<p class="comment">' + escapeHtml(item.comment) + '</p>' : '';
+    return (
+      '<div class="card">' +
+      '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
+      '<div class="card-body">' +
+      '<div class="card-title-row"><h2 class="card-title">' + escapeHtml(item.title) + '</h2>' +
+      badgeHtml + '</div>' +
+      '<div class="meta-row">' + escapeHtml(item.author) + '</div>' +
+      '<div class="meta-row">' + escapeHtml(item.magazine) + ' / ' + escapeHtml(item.volumes) + ' / 第1巻: ' + escapeHtml(item.firstVolumeDate) + '</div>' +
+      '<div class="genre-row">' + genreTags + '</div>' +
+      '<div class="amazon-link"><a href="' + escapeHtml(item.amazonUrl) + '" target="_blank" rel="noopener">Amazonで見る</a></div>' +
+      commentHtml +
+      '</div></div>'
+    );
+  }).join('');
+}
+
+function renderGallery(items) {
+  return '<div class="card-grid">' + items.map(function (item) {
+    return (
+      '<div class="gallery-item">' +
+      '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
+      '<div class="gallery-title">' + escapeHtml(item.title) + '</div>' +
+      '</div>'
+    );
+  }).join('') + '</div>';
+}
+
+function render() {
+  const items = getFilteredSorted();
+  const app = document.getElementById('app');
+  const countLine = '<p class="count-line">' + items.length + ' 件表示中(全' + MANGA_DATA.length + '作品)</p>';
+  if (items.length === 0) {
+    app.innerHTML = countLine + '<div class="empty-state">該当する作品がありません。</div>';
+    return;
+  }
+  if (currentView === 'gallery') {
+    app.innerHTML = countLine + renderGallery(items);
+  } else {
+    app.innerHTML = countLine + '<div class="card-list">' + renderList(items) + '</div>';
+  }
+}
+
+render();
+</script>
+</body>
+</html>
