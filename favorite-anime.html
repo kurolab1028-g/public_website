@@ -14,7 +14,6 @@
     --border: #e0e0e0;
     --accent: #e85d75;
     --badge-hof: #f5a623;
-    --badge-history: #4a90d9;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -25,7 +24,6 @@
       --border: #33363c;
       --accent: #ff7a93;
       --badge-hof: #f5a623;
-      --badge-history: #5aa3e8;
     }
   }
   * { box-sizing: border-box; }
@@ -35,7 +33,7 @@
     background: var(--bg);
     color: var(--text);
   }
-  header.page-header { padding: 24px 20px 16px; max-width: 1100px; margin: 0 auto; }
+  header.page-header { padding: 24px 20px 16px; max-width: 1320px; margin: 0 auto; }
   h1 { margin: 0 0 4px; font-size: 1.6rem; }
   .subtitle { color: var(--text-muted); margin: 0 0 20px; font-size: 0.9rem; }
   .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
@@ -47,7 +45,21 @@
   .filter-badges button.active { background: var(--text); color: var(--bg); border-color: var(--text); }
   input[type="search"] { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.85rem; min-width: 180px; }
   select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.85rem; }
-  main { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; }
+  .page-layout { max-width: 1320px; margin: 0 auto; padding: 0 20px 40px; display: flex; gap: 24px; align-items: flex-start; }
+  .sidebar {
+    width: 220px; flex-shrink: 0; border-right: 1px solid var(--border); padding-right: 16px;
+    max-height: calc(100vh - 160px); overflow-y: auto; position: sticky; top: 20px;
+  }
+  .sidebar-heading { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin: 0 0 8px; }
+  .sidebar-item { padding: 6px 8px; border-radius: 8px; cursor: pointer; margin-bottom: 2px; }
+  .sidebar-item:hover { background: var(--border); }
+  .sidebar-title { font-size: 0.82rem; font-weight: 600; line-height: 1.3; }
+  .sidebar-year { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+  main { flex: 1; min-width: 0; }
+  @media (max-width: 780px) {
+    .page-layout { flex-direction: column; }
+    .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 12px; max-height: 240px; position: static; }
+  }
   .empty-state { text-align: center; color: var(--text-muted); padding: 60px 20px; }
   .card-list { display: flex; flex-direction: column; gap: 16px; }
   .card { display: flex; gap: 16px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
@@ -60,34 +72,25 @@
   .meta-row { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 8px; }
   .synopsis { font-size: 0.85rem; margin: 0 0 8px; line-height: 1.6; }
   .cast-list { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 8px; }
-  .tag-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
-  .tag { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-muted); }
-  .rating { color: var(--badge-hof); font-size: 0.9rem; }
   .comment { font-size: 0.82rem; font-style: italic; color: var(--text-muted); }
-  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
   .gallery-item { text-align: center; cursor: pointer; }
   .gallery-item img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--border); }
-  .gallery-item .gallery-title { font-size: 0.98rem; font-weight: 600; margin-top: 8px; line-height: 1.35; }
+  .gallery-item .gallery-title { font-size: 0.95rem; margin-top: 8px; line-height: 1.3; font-weight: 500; }
+  @media (max-width: 900px) {
+    .card-grid { grid-template-columns: repeat(3, 1fr); }
+  }
   @media (max-width: 480px) {
     .card { flex-direction: column; }
     .card img { width: 100%; height: 200px; }
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .modal-box { max-width: 100%; }
   }
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px; z-index: 100;
-  }
-  .modal-overlay.hidden { display: none; }
-  .modal-card {
-    background: var(--card-bg); border-radius: 14px; max-width: 640px; width: 100%;
-    max-height: 90vh; overflow-y: auto; padding: 20px; position: relative;
-  }
-  .modal-close {
-    position: absolute; top: 12px; right: 12px; border: none; background: var(--border);
-    color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem;
-  }
-  .modal-card .card { border: none; padding: 0; }
-  .modal-card .card img { width: 140px; height: 196px; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--card-bg); border-radius: 12px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; position: relative; }
+  .modal-close { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; }
+  .modal-image { width: 100%; max-height: 320px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; background: var(--border); }
 </style>
 </head>
 <body>
@@ -103,25 +106,38 @@
       <button class="active" data-category="all" onclick="setCategory('all')">すべて</button>
       <button data-category="hof" onclick="setCategory('hof')">殿堂入り</button>
     </div>
-    <input type="search" id="search-box" placeholder="タイトル・ジャンル・タグで検索" oninput="render()">
-    <select id="genre-filter" onchange="render()">
-      <option value="all">すべてのジャンル</option>
+    <select id="decade-select" onchange="render()">
+      <option value="all">すべての年代</option>
+      <option value="1980">1980年代</option>
+      <option value="1990">1990年代</option>
+      <option value="2000">2000年代</option>
+      <option value="2010">2010年代</option>
+      <option value="2020">2020年代</option>
     </select>
+    <input type="search" id="search-box" placeholder="タイトル・ジャンルで検索" oninput="render()">
     <select id="sort-select" onchange="render()">
-      <option value="rating">評価が高い順</option>
+      <option value="year">制作年順</option>
       <option value="added">新しく追加した順</option>
       <option value="title">タイトル順</option>
-      <option value="year">制作年順</option>
     </select>
-    <select id="sort-direction" onchange="render()">
-      <option value="desc">降順</option>
-      <option value="asc">昇順</option>
-    </select>
+    <div class="view-toggle" id="sort-dir-toggle">
+      <button id="btn-sort-desc" class="active" onclick="setSortDir('desc')">降順</button>
+      <button id="btn-sort-asc" onclick="setSortDir('asc')">昇順</button>
+    </div>
   </div>
 </header>
-<main id="app"></main>
-<div class="modal-overlay hidden" id="modal-overlay" onclick="closeModalOnOverlay(event)">
-  <div class="modal-card" id="modal-card"></div>
+<div class="page-layout">
+  <aside class="sidebar">
+    <p class="sidebar-heading">全作品(タイトル順)</p>
+    <div id="sidebar-list"></div>
+  </aside>
+  <main id="app"></main>
+</div>
+<div id="modal-overlay" class="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-body"></div>
+  </div>
 </div>
 <script>
 const ANIME_DATA = [
@@ -1419,10 +1435,441 @@ const ANIME_DATA = [
       { character: '牧野かんな', actor: '金子有希' },
       { character: '常盤みどり', actor: '長妻樹里' }
     ]
+  },
+  {
+    id: 'black-lagoon',
+    title: 'ブラックラグーン',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/black-lagoon.jpg',
+    synopsis: '日本の商社マン岡島緑郎は、東南アジアへの出張中、海賊まがいの運び屋"ブラックラグーン"のメンバーに拉致される。会社にあっさり見捨てられたことを機に、岡島は"ロック"としてブラックラグーンに加わり、犯罪都市ロアナプラを舞台に裏社会の仕事をこなしていく。荒くれ者たちが繰り広げる、銃撃戦とハードボイルドな人間ドラマが持ち味のクライムアクション。',
+    studio: 'マッドハウス',
+    creator: '広江礼威(原作)・片渕須直(監督)',
+    year: 2006,
+    episodes: 12,
+    genres: ['アクション', 'クライム', 'ハードボイルド'],
+    cast: [
+      { character: 'レヴィ', actor: '豊口めぐみ' },
+      { character: 'ロック', actor: '浪川大輔' },
+      { character: 'ダッチ', actor: '磯部勉' },
+      { character: 'ベニー', actor: '平田広明' },
+      { character: 'バラライカ', actor: '小山茉美' }
+    ]
+  },
+  {
+    id: 'komi-san-wa-komyushou-desu',
+    title: '古見さんは、コミュ症です。',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/komi-san-wa-komyushou-desu.jpg',
+    synopsis: '誰もが振り返る美少女・古見硝子は、極度のコミュニケーション障害を抱えている。周囲からは近寄りがたい高嶺の花と誤解されているが、本当の望みは「友達を100人作る」こと。ひょんなことから彼女の秘密に気づいた同級生・只野仁人が最初の友達となり、二人三脚で目標を目指す学園コメディ。',
+    studio: 'OLM',
+    creator: 'オダトモヒト(原作)',
+    year: 2021,
+    episodes: 12,
+    genres: ['学園コメディ', 'ラブコメ', '日常'],
+    cast: [
+      { character: '古見硝子', actor: '古賀葵' },
+      { character: '只野仁人', actor: '梶原岳人' },
+      { character: '長名なじみ', actor: '村川梨衣' },
+      { character: '山井恋', actor: '日高里菜' },
+      { character: '中々思春', actor: '大久保瑠美' }
+    ]
+  },
+  {
+    id: 'asobi-asobase',
+    title: 'あそびあそばせ',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/asobi-asobase.jpg',
+    synopsis: '英語がまったくできない金髪美少女オリヴィア、真面目な優等生の香純、リア充になれない華子。3人の女子中学生が結成した「遊び人研究会」を舞台に、少女たちが本気で繰り広げるくだらない遊びと変顔ギャグを描くハイテンションなガールズコメディ。',
+    studio: 'Lerche',
+    creator: '涼川りん(原作)・岸誠二(監督)',
+    year: 2018,
+    episodes: 12,
+    genres: ['コメディ', '学園', '日常'],
+    cast: [
+      { character: '本田華子', actor: '木野日菜' },
+      { character: 'オリヴィア', actor: '長江里加' },
+      { character: '野村香純', actor: '小原好美' },
+      { character: '前多', actor: '置鮎龍太郎' },
+      { character: '生徒会長', actor: '井上ほの花' }
+    ]
+  },
+  {
+    id: 'sentou-yousei-yukikaze',
+    title: '戦闘妖精・雪風',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/sentou-yousei-yukikaze.jpg',
+    synopsis: '地球侵略を目論む未知の異星体ジャムと、地球防衛機構フェアリイ空軍との戦い。信じるものは愛機のみという虚無的なパイロット・深井零と、高度なAIを搭載した戦闘機"雪風"との関係を軸に、フルCGで描かれる緻密な航空戦とSF的な謎を描く。神林長平の同名小説を原作としたOVA作品。',
+    studio: 'GONZO',
+    creator: '神林長平(原作)・大倉雅彦(監督)',
+    year: 2002,
+    episodes: 5,
+    genres: ['SF', 'ミリタリー', 'メカ'],
+    cast: [
+      { character: '深井零', actor: '堺雅人' },
+      { character: 'ジェイムズ・ブッカー', actor: '中田譲治' },
+      { character: 'リディア・クーリィ', actor: '麻上洋子' },
+      { character: 'エディス・フォス', actor: '山田美穂' },
+      { character: 'マーニィ', actor: '田中敦子' }
+    ]
+  },
+  {
+    id: 'gquuuuuux',
+    title: 'ジークアクス(機動戦士Gundam GQuuuuuuX)',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/gquuuuuux.jpg',
+    synopsis: '宇宙に浮かぶスペース・コロニーで平穏に暮らしていた女子高生アマテ・ユズリハは、少女ニャアンと出会ったことで、非合法なモビルスーツ決闘競技"クランバトル"に巻き込まれる。エントリーネーム"マチュ"として戦う彼女の前に、正体不明のモビルスーツ"ガンダム"とそのパイロット・シュウジが現れる。庵野秀明が企画し鶴巻和哉が監督を務める、宇宙世紀ガンダムを題材にした新シリーズ。',
+    studio: 'スタジオカラー・サンライズ',
+    creator: '鶴巻和哉(監督)・庵野秀明(企画)',
+    year: 2025,
+    episodes: 12,
+    genres: ['ロボット', 'SF', 'ガンダム'],
+    cast: [
+      { character: 'アマテ・ユズリハ(マチュ)', actor: '黒沢ともよ' },
+      { character: 'ニャアン', actor: '石川由依' },
+      { character: 'シュウジ・イトウ', actor: '土屋神葉' },
+      { character: 'シャリア・ブル', actor: '川田紳司' }
+    ]
+  },
+  {
+    id: 'dandadan',
+    title: 'ダンダダン',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/dandadan.jpg',
+    synopsis: '霊媒師の家系に生まれ幽霊は信じるが宇宙人は否定派の女子高生モモと、宇宙人は信じるが幽霊は否定派のオカルトマニア・オカルンが、互いの主張を証明しようと肝試しに向かった先で本物の怪異に遭遇する。怪奇と因縁の力を手に入れた二人が、オカルトとバトルとラブコメが入り乱れる騒動に挑む。',
+    studio: 'サイエンスSARU',
+    creator: '龍幸伸(原作)・山代風我(監督)',
+    year: 2024,
+    episodes: 12,
+    genres: ['オカルト', 'バトルアクション', 'ラブコメ'],
+    cast: [
+      { character: '綾瀬桃', actor: '若山詩音' },
+      { character: '高倉健(オカルン)', actor: '花江夏樹' },
+      { character: '星子', actor: '水樹奈々' },
+      { character: '白鳥愛羅', actor: '佐倉綾音' },
+      { character: 'ターボババア', actor: '田中真弓' }
+    ]
+  },
+  {
+    id: 'jormungand',
+    title: 'ヨルムンガンド',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/jormungand.jpg',
+    synopsis: '戦争で両親を失った少年兵ヨナは、武器を憎みながらも敏腕武器商人ココ・ヘクマティアルの私設軍隊に加わることになる。世界各地でハードな武器取引を繰り広げるココの一行に同行しながら、ヨナは自らの憎しみと向き合っていく。ガンアクションとブラックな国際政治劇が同居する高橋慶太郎原作の傭兵アクション。',
+    studio: 'WHITE FOX',
+    creator: '高橋慶太郎(原作)・元永慶太郎(監督)',
+    year: 2012,
+    episodes: 12,
+    genres: ['ミリタリー', 'アクション', 'クライム'],
+    cast: [
+      { character: 'ココ・ヘクマティアル', actor: '伊藤静' },
+      { character: 'ヨナ', actor: '田村睦心' },
+      { character: 'レーム', actor: '石塚運昇' },
+      { character: 'バルメ', actor: '大原さやか' },
+      { character: 'アール', actor: '小西克幸' }
+    ]
+  },
+  {
+    id: 'sono-bisque-doll-wa-koi-wo-suru',
+    title: 'その着せ替え人形は恋をする',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/sono-bisque-doll-wa-koi-wo-suru.jpg',
+    synopsis: '雛人形の"頭師"を目指す男子高校生・五条新菜は、周囲に馴染めず自分の趣味を隠して生活していた。ひょんなことからクラスの人気者・喜多川海夢に趣味を知られ、彼女のコスプレ衣装作りを手伝うことになる。互いの"好き"を尊重し合いながら距離を縮めていく、ものづくり×青春ラブコメ。',
+    studio: 'CloverWorks',
+    creator: '福田晋一(原作)・篠原啓輔(監督)',
+    year: 2022,
+    episodes: 12,
+    genres: ['ラブコメ', '学園', '日常'],
+    cast: [
+      { character: '喜多川海夢', actor: '直田姫奈' },
+      { character: '五条新菜', actor: '石毛翔弥' },
+      { character: '乾紗寿叶', actor: '種﨑敦美' },
+      { character: '乾心寿', actor: '羊宮妃那' },
+      { character: '五条薫', actor: '斧アツシ' }
+    ]
+  },
+  {
+    id: 'kanojo-mo-kanojo',
+    title: '彼女も彼女',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/kanojo-mo-kanojo.jpg',
+    synopsis: '幼なじみの咲に告白し続け、高校生になってようやく付き合えるようになった直也。しかし同級生の渚から突然告白され、彼女がいることを正直に伝えても「二股でもいい」と迫られてしまう。一人の女の子だけを選べない誠実な優柔不断男が繰り広げる、賛否両論のマルチエンディング系ラブコメディ。',
+    studio: '手塚プロダクション',
+    creator: 'ヒロユキ(原作)・桑原智(監督)',
+    year: 2021,
+    episodes: 12,
+    genres: ['ラブコメ', '学園', 'コメディ'],
+    cast: [
+      { character: '向井直也', actor: '榎木淳弥' },
+      { character: '佐木咲', actor: '佐倉綾音' },
+      { character: '水瀬渚', actor: '和氣あず未' },
+      { character: '星崎理香(ミリカ)', actor: '竹達彩奈' },
+      { character: '桐生紫乃', actor: '高橋李依' }
+    ]
+  },
+  {
+    id: 'himesama-goumon-no-jikan-desu',
+    title: '姫様"拷問"の時間です',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/himesama-goumon-no-jikan-desu.jpg',
+    synopsis: '7世代にわたり国王軍と魔王軍が争いを続ける中、魔王軍に捕らわれた国王軍の姫は、美味しそうなB級グルメやもふもふの動物を見せつけられるという名の"拷問"を受け続けている。姫が誘惑に負けそうになりながらも意地を張るコミカルなやり取りを描く、異世界コメディ。',
+    studio: 'PINE JAM',
+    creator: '春原ロビンソン(原作)・ひらけい(作画)・金森陽子(監督)',
+    year: 2024,
+    episodes: 12,
+    genres: ['異世界', 'コメディ', 'ファンタジー'],
+    cast: [
+      { character: '姫', actor: '白石晴香' },
+      { character: 'エクス', actor: '小林親弘' },
+      { character: 'トーチャー・トルチュール', actor: '伊藤静' },
+      { character: '陽鬼', actor: '永瀬アンナ' },
+      { character: '陰鬼', actor: '井上ほの花' }
+    ]
+  },
+  {
+    id: 'burn-the-witch',
+    title: 'BURN THE WITCH',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/burn-the-witch.jpg',
+    synopsis: '表の世界の裏には、人々の目に見えない"ドラゴン"と呼ばれる異形の存在が潜むリバース・ロンドン。ドラゴンの保護管理を担う機関"ウイング・バインド"に所属する魔女コンビ、新橋のえるとニニー・スパンコールの活躍を描く。『BLEACH』の久保帯人が原作を手がけたスピンオフ的世界観のダークファンタジー。',
+    studio: 'スタジオコロリド',
+    creator: '久保帯人(原作)・川野達朗(監督)',
+    year: 2020,
+    episodes: 1,
+    genres: ['ダークファンタジー', 'アクション', '魔女'],
+    cast: [
+      { character: 'ニニー・スパンコール', actor: '田野アサミ' },
+      { character: '新橋のえる', actor: '山田唯菜' },
+      { character: 'バルゴ・パークス', actor: '土屋神葉' },
+      { character: 'チーフ', actor: '平田広明' }
+    ]
+  },
+  {
+    id: 'rakuen-tsuiho',
+    title: '楽園追放(EXPELLED FROM PARADISE)',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/rakuen-tsuiho.jpg',
+    synopsis: 'ナノハザードにより荒廃した西暦2400年の地球。人類の大半は電脳世界に生きる中、地上の異変を追う捜査官アンジェラは、地上調査員ディンゴと共に高度な戦闘スーツ"アーハン"を身につけて地上へと降り立つ。虚淵玄の脚本と東映アニメーション×ニトロプラスのフルCG制作による、SFアクション劇場作品。',
+    studio: '東映アニメーション・ニトロプラス',
+    creator: '虚淵玄(脚本)・水島精二(監督)',
+    year: 2014,
+    episodes: 1,
+    genres: ['SF', 'CGアニメ', 'アクション'],
+    cast: [
+      { character: 'アンジェラ・バルザック', actor: '釘宮理恵' },
+      { character: 'ディンゴ', actor: '三木眞一郎' },
+      { character: 'フロンティアセッター', actor: '神谷浩史' },
+      { character: 'チセ', actor: '林原めぐみ' }
+    ]
+  },
+  {
+    id: 'jujutsu-kaisen',
+    title: '呪術廻戦',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/jujutsu-kaisen.jpg',
+    synopsis: 'ごく普通の高校生活を送っていた虎杖悠仁は、呪術高専の1年生・伏黒恵と出会ったことをきっかけに、特級呪物"両面宿儺の指"を飲み込んで宿儺と体を共有することになる。呪術師として生きることを決意した虎杖が、様々な呪霊や呪術師たちと渡り合っていく、芥見下々原作のダークファンタジーバトル。',
+    studio: 'MAPPA',
+    creator: '芥見下々(原作)・朴性厚(監督)',
+    year: 2020,
+    episodes: 24,
+    genres: ['ダークファンタジー', 'バトルアクション', '学園'],
+    cast: [
+      { character: '虎杖悠仁', actor: '榎木淳弥' },
+      { character: '伏黒恵', actor: '内田雄馬' },
+      { character: '釘崎野薔薇', actor: '瀬戸麻沙美' },
+      { character: '五条悟', actor: '中村悠一' },
+      { character: '七海建人', actor: '津田健次郎' }
+    ]
+  },
+  {
+    id: 'alya-sometimes-hides-her-feelings',
+    title: '時々ボソッとロシア語でデレる隣のアーリャさん',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/alya-sometimes-hides-her-feelings.jpg',
+    synopsis: '生徒会の副会長を務める久世政近の隣の席には、氷の令嬢と呼ばれる美少女アリサ・ミハイロヴナ・九条が座っている。彼女は時々ロシア語でボソッと本音を漏らすが、実は政近はロシア語のリスニングがネイティブレベル。気づかれていないと思い込むアリサと、気づかない振りをする政近のじれったい恋模様を描くラブコメ。',
+    studio: '動画工房',
+    creator: '燦々SUN(原作)・原口浩(監督)',
+    year: 2024,
+    episodes: 12,
+    genres: ['ラブコメ', '学園', '日常'],
+    cast: [
+      { character: '久世政近', actor: '天﨑滉平' },
+      { character: 'アリサ・ミハイロヴナ・九条', actor: '上坂すみれ' },
+      { character: '周防有希', actor: '丸岡和佳奈' },
+      { character: 'マリヤ・ミハイロヴナ・九条', actor: '藤井ゆきよ' }
+    ]
+  },
+  {
+    id: 'tensei-shitara-dainanaouji',
+    title: '転生したら第七王子だったので、気ままに魔術を極めます',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/tensei-shitara-dainanaouji.jpg',
+    synopsis: '魔術を深く愛しながらも、才能に恵まれず非業の死を遂げた"凡人"の魔術師。死の間際の願いが叶い、彼が転生したのは強い魔術の血統を持つサルーム王国の第七王子・ロイドだった。前世の知識と桁外れの才能を併せ持つロイドが、気ままに魔術を極めていく異世界転生ファンタジー。',
+    studio: 'つむぎ秋田アニメLab',
+    creator: '石沢庸介(原作)',
+    year: 2024,
+    episodes: 12,
+    genres: ['異世界', 'ファンタジー', '無双'],
+    cast: [
+      { character: 'ロイド', actor: '小市眞琴' },
+      { character: 'グリモ', actor: 'ファイルーズあい' },
+      { character: 'シルファ', actor: 'Lynn' },
+      { character: 'タオ', actor: '関根明良' },
+      { character: 'レン', actor: '高橋李依' }
+    ]
+  },
+  {
+    id: 'nier-automata',
+    title: 'ニーア オートマタ(NieR:Automata Ver1.1a)',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/nier-automata.jpg',
+    synopsis: '人類が地球を追われ月に逃れた未来、人類軍YoRHaのアンドロイド2Bと9Sは、エイリアンの手先である機械生命体との代理戦争の最前線に立つ。ゲーム『NieR:Automata』を原作に、荒廃した地球を舞台にした戦いと存在の意味を問うシリアスなSFドラマをアニメ化。',
+    studio: 'A-1 Pictures',
+    creator: 'ヨコオタロウ(原作)・益山亮司(監督)',
+    year: 2023,
+    episodes: 24,
+    genres: ['SF', 'ポストアポカリプス', 'アクション'],
+    cast: [
+      { character: '2B', actor: '石川由依' },
+      { character: '9S', actor: '花江夏樹' },
+      { character: 'A2', actor: '諏訪彩花' },
+      { character: 'パスカル', actor: '悠木碧' }
+    ]
+  },
+  {
+    id: 'ao-no-exorcist',
+    title: '青のエクソシスト',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/ao-no-exorcist.jpg',
+    synopsis: '人間の住む物質界と悪魔の住む虚無界。魔神サタンの子として生まれた兄・奥村燐と、兄を守るため祓魔師を志す弟・雪男。血の運命に抗うため、双子の兄弟がそれぞれの決意を胸に悪魔と戦う道を選ぶ、加藤和恵原作の学園ダークファンタジー。',
+    studio: 'A-1 Pictures',
+    creator: '加藤和恵(原作)・岡村天斎(監督)',
+    year: 2011,
+    episodes: 25,
+    genres: ['ダークファンタジー', 'バトルアクション', '学園'],
+    cast: [
+      { character: '奥村燐', actor: '岡本信彦' },
+      { character: '奥村雪男', actor: '福山潤' },
+      { character: '杜山しえみ', actor: '花澤香菜' },
+      { character: '勝呂竜士', actor: '中井和哉' },
+      { character: '霧隠シュラ', actor: '佐藤利奈' }
+    ]
+  },
+  {
+    id: 'kobayashi-san-chi-no-maid-dragon',
+    title: '小林さんちのメイドラゴン',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/kobayashi-san-chi-no-maid-dragon.jpg',
+    synopsis: '独り身で疲れ気味のOL・小林さんのもとに、ある晩酔った勢いで拾ったメイド姿の美少女トールが転がり込む。角と尻尾を持つ彼女の正体は本物のドラゴンで、あれよあれよという間に小林さんちのメイドとして働くことに。ドラゴンと人間の奇妙な同居生活を描く、京都アニメーション制作の日常コメディ。',
+    studio: '京都アニメーション',
+    creator: 'クール教信者(原作)・武本康弘(監督)',
+    year: 2017,
+    episodes: 13,
+    genres: ['日常', 'コメディ', 'ファンタジー'],
+    cast: [
+      { character: '小林', actor: '田村睦心' },
+      { character: 'トール', actor: '桑原由気' },
+      { character: 'カンナ', actor: '長縄まりあ' },
+      { character: 'エルマ', actor: '高田憂希' },
+      { character: 'ファフニール', actor: '小野大輔' }
+    ]
+  },
+  {
+    id: 'dagashi-kashi',
+    title: 'だがしかし',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-19',
+    image: 'images/favorite-anime/dagashi-kashi.jpg',
+    synopsis: '家業の駄菓子屋を継ぎたくない主人公・鹿田ココノツのもとに、駄菓子マニアの謎の美少女・枝垂ほたるが現れる。実在する駄菓子の魅力を熱く語るほたるに振り回されながら、ココノツの将来をめぐる騒動が繰り広げられる、駄菓子愛にあふれたコメディ。',
+    studio: 'feel.',
+    creator: 'コトヤマ(原作)・高柳滋仁(監督)',
+    year: 2016,
+    episodes: 12,
+    genres: ['コメディ', '日常', '学園'],
+    cast: [
+      { character: '枝垂ほたる', actor: '竹達彩奈' },
+      { character: '鹿田ココノツ', actor: '阿部敦' },
+      { character: '遠藤サヤ', actor: '沼倉愛美' },
+      { character: '遠藤豆', actor: '鈴木達央' }
+    ]
   }
 ];
 
-let state = { view: 'list', category: 'all' };
+let state = { view: 'list', category: 'all', sortDir: 'desc' };
 
 function setView(view) {
   state.view = view;
@@ -1439,38 +1886,32 @@ function setCategory(category) {
   render();
 }
 
-function populateGenreFilter() {
-  const select = document.getElementById('genre-filter');
-  const genres = Array.from(new Set(ANIME_DATA.reduce(function (acc, item) { return acc.concat(item.genres); }, []))).sort(function (a, b) { return a.localeCompare(b, 'ja'); });
-  genres.forEach(function (g) {
-    const opt = document.createElement('option');
-    opt.value = g;
-    opt.textContent = g;
-    select.appendChild(opt);
-  });
+function setSortDir(dir) {
+  state.sortDir = dir;
+  document.getElementById('btn-sort-desc').classList.toggle('active', dir === 'desc');
+  document.getElementById('btn-sort-asc').classList.toggle('active', dir === 'asc');
+  render();
 }
 
 function getFilteredSorted() {
   const query = document.getElementById('search-box').value.trim().toLowerCase();
-  const genre = document.getElementById('genre-filter').value;
   const sortKey = document.getElementById('sort-select').value;
-  const sign = document.getElementById('sort-direction').value === 'asc' ? 1 : -1;
+  const decade = document.getElementById('decade-select').value;
 
   let items = ANIME_DATA.filter(function (item) {
     if (state.category !== 'all' && item.category !== state.category) return false;
-    if (genre !== 'all' && item.genres.indexOf(genre) === -1) return false;
+    if (decade !== 'all' && Math.floor(item.year / 10) * 10 !== Number(decade)) return false;
     if (!query) return true;
-    const haystack = (item.title + ' ' + item.tags.join(' ') + ' ' + item.genres.join(' ')).toLowerCase();
+    const haystack = (item.title + ' ' + item.genres.join(' ')).toLowerCase();
     return haystack.indexOf(query) !== -1;
   });
 
   items.sort(function (a, b) {
     let cmp;
-    if (sortKey === 'rating') cmp = a.rating - b.rating;
+    if (sortKey === 'year') cmp = a.year - b.year;
     else if (sortKey === 'added') cmp = a.addedDate.localeCompare(b.addedDate);
-    else if (sortKey === 'year') cmp = a.year - b.year;
     else cmp = a.title.localeCompare(b.title, 'ja');
-    return cmp * sign;
+    return state.sortDir === 'asc' ? cmp : -cmp;
   });
 
   return items;
@@ -1485,31 +1926,30 @@ function escapeHtml(str) {
 function buildDetailHtml(item) {
   const badgeHtml = item.category === 'hof' ? '<span class="badge hof">殿堂入り</span>' : '';
   const castText = item.cast.map(function (c) { return c.character + ':' + c.actor; }).join(' / ');
-  const tags = item.tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
   return (
-    '<div class="card">' +
-    '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
-    '<div class="card-body">' +
     '<div class="card-title-row"><h2 class="card-title">' + escapeHtml(item.title) + '</h2>' +
     badgeHtml + '</div>' +
     '<div class="meta-row">' + item.year + '年 / ' + escapeHtml(item.studio) + ' / ' + escapeHtml(item.creator) + ' / 全' + item.episodes + '話 / ' + item.genres.map(escapeHtml).join('・') + '</div>' +
     '<p class="synopsis">' + escapeHtml(item.synopsis) + '</p>' +
     '<p class="cast-list">' + escapeHtml(castText) + '</p>' +
-    '<div class="tag-row">' + tags + '</div>' +
-    '<div class="rating">' + '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating) + '</div>' +
-    '<p class="comment">' + escapeHtml(item.comment) + '</p>' +
-    '</div></div>'
+    (item.comment ? '<p class="comment">' + escapeHtml(item.comment) + '</p>' : '')
   );
 }
 
 function renderList(items) {
-  return items.map(buildDetailHtml).join('');
+  return items.map(function (item) {
+    return (
+      '<div class="card">' +
+      '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
+      '<div class="card-body">' + buildDetailHtml(item) + '</div></div>'
+    );
+  }).join('');
 }
 
 function renderGallery(items) {
   return '<div class="card-grid">' + items.map(function (item) {
     return (
-      '<div class="gallery-item" onclick="openModal(\'' + item.id + '\')">' +
+      '<div class="gallery-item" data-id="' + escapeHtml(item.id) + '">' +
       '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
       '<div class="gallery-title">' + escapeHtml(item.title) + '</div>' +
       '</div>'
@@ -1518,19 +1958,46 @@ function renderGallery(items) {
 }
 
 function openModal(id) {
-  const item = ANIME_DATA.find(function (d) { return d.id === id; });
+  const item = ANIME_DATA.find(function (i) { return i.id === id; });
   if (!item) return;
-  document.getElementById('modal-card').innerHTML =
-    '<button class="modal-close" onclick="closeModal()" aria-label="閉じる">×</button>' + buildDetailHtml(item);
-  document.getElementById('modal-overlay').classList.remove('hidden');
+  document.getElementById('modal-body').innerHTML =
+    '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" class="modal-image">' +
+    buildDetailHtml(item);
+  document.getElementById('modal-overlay').classList.add('open');
 }
 
 function closeModal() {
-  document.getElementById('modal-overlay').classList.add('hidden');
+  document.getElementById('modal-overlay').classList.remove('open');
 }
 
-function closeModalOnOverlay(event) {
+function handleOverlayClick(event) {
   if (event.target.id === 'modal-overlay') closeModal();
+}
+
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'Escape') closeModal();
+});
+
+document.getElementById('app').addEventListener('click', function (event) {
+  const galleryItem = event.target.closest('.gallery-item');
+  if (galleryItem) openModal(galleryItem.dataset.id);
+});
+
+document.getElementById('sidebar-list').addEventListener('click', function (event) {
+  const sidebarItem = event.target.closest('.sidebar-item');
+  if (sidebarItem) openModal(sidebarItem.dataset.id);
+});
+
+function renderSidebar() {
+  const sorted = ANIME_DATA.slice().sort(function (a, b) { return a.title.localeCompare(b.title, 'ja'); });
+  document.getElementById('sidebar-list').innerHTML = sorted.map(function (item) {
+    return (
+      '<div class="sidebar-item" data-id="' + escapeHtml(item.id) + '">' +
+      '<div class="sidebar-title">' + escapeHtml(item.title) + '</div>' +
+      '<div class="sidebar-year">' + item.year + '年</div>' +
+      '</div>'
+    );
+  }).join('');
 }
 
 function render() {
@@ -1547,7 +2014,7 @@ function render() {
   }
 }
 
-populateGenreFilter();
+renderSidebar();
 render();
 </script>
 </body>
