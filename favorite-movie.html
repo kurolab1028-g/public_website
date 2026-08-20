@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>お気に入り映画一覧</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #666666;
+    --border: #e0e0e0;
+    --accent: #e85d75;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --card-bg: #1e2126;
+      --text: #eaeaea;
+      --text-muted: #9a9a9a;
+      --border: #33363c;
+      --accent: #ff7a93;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header.page-header { padding: 24px 20px 16px; max-width: 1320px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 1.6rem; }
+  .subtitle { color: var(--text-muted); margin: 0 0 20px; font-size: 0.9rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .view-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .view-toggle button { padding: 8px 14px; border: none; background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 0.85rem; }
+  .view-toggle button.active { background: var(--accent); color: #fff; }
+  input[type="search"] { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.85rem; min-width: 180px; }
+  select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.85rem; }
+  .page-layout { max-width: 1320px; margin: 0 auto; padding: 0 20px 40px; display: flex; gap: 24px; align-items: flex-start; }
+  .sidebar {
+    width: 220px; flex-shrink: 0; border-right: 1px solid var(--border); padding-right: 16px;
+    max-height: calc(100vh - 160px); overflow-y: auto; position: sticky; top: 20px;
+  }
+  .sidebar-heading { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin: 0 0 8px; }
+  .sidebar-item { padding: 6px 8px; border-radius: 8px; cursor: pointer; margin-bottom: 2px; }
+  .sidebar-item:hover { background: var(--border); }
+  .sidebar-title { font-size: 0.82rem; font-weight: 600; line-height: 1.3; }
+  .sidebar-year { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+  main { flex: 1; min-width: 0; }
+  @media (max-width: 780px) {
+    .page-layout { flex-direction: column; }
+    .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 12px; max-height: 240px; position: static; }
+  }
+  .empty-state { text-align: center; color: var(--text-muted); padding: 60px 20px; }
+  .card-list { display: flex; flex-direction: column; gap: 16px; }
+  .card { display: flex; gap: 16px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .card img { width: 120px; height: 168px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: var(--border); }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card-title { font-size: 1.1rem; font-weight: 600; margin: 0; }
+  .meta-row { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 8px; }
+  .synopsis { font-size: 0.85rem; margin: 0; line-height: 1.6; }
+  .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .gallery-item { text-align: center; cursor: pointer; }
+  .gallery-thumb { position: relative; }
+  .gallery-item img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--border); }
+  .gallery-item .gallery-title { font-size: 0.95rem; margin-top: 8px; line-height: 1.3; font-weight: 500; }
+  @media (max-width: 900px) {
+    .card-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .card { flex-direction: column; }
+    .card img { width: 100%; height: 200px; }
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .modal-box { max-width: 100%; }
+  }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--card-bg); border-radius: 12px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; position: relative; }
+  .modal-close { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; }
+  .modal-image { width: 100%; max-height: 320px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; background: var(--border); }
+  .page-nav { display: flex; gap: 8px; margin-bottom: 12px; }
+  .page-nav a { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); text-decoration: none; font-size: 0.85rem; }
+  .page-nav a.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #back-to-top {
+    position: fixed; bottom: 24px; right: 24px; z-index: 90;
+    padding: 10px 16px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 0.85rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  #back-to-top:hover { background: var(--border); }
+</style>
+</head>
+<body>
+<header class="page-header">
+  <h1>お気に入り映画一覧</h1>
+  <nav class="page-nav">
+    <a href="./favorite-anime.html">アニメ一覧</a>
+    <a href="./favorite-manga.html">漫画一覧</a>
+    <a href="./favorite-movie.html" class="active">映画一覧</a>
+  </nav>
+  <p class="subtitle">見てよかった作品の記録です。</p>
+  <div class="controls">
+    <div class="view-toggle">
+      <button id="btn-view-gallery" class="active" onclick="setView('gallery')">サムネ</button>
+      <button id="btn-view-list" onclick="setView('list')">詳細</button>
+    </div>
+    <select id="genre-filter" onchange="render()">
+      <option value="all">すべてのジャンル</option>
+    </select>
+    <select id="decade-select" onchange="render()">
+      <option value="all">すべての年代</option>
+      <option value="1980">1980年代</option>
+      <option value="1990">1990年代</option>
+      <option value="2000">2000年代</option>
+      <option value="2010">2010年代</option>
+      <option value="2020">2020年代</option>
+    </select>
+    <input type="search" id="search-box" placeholder="タイトル・ジャンルで検索" oninput="render()">
+    <select id="sort-select" onchange="render()">
+      <option value="year">制作年順</option>
+      <option value="added">新しく追加した順</option>
+      <option value="title">タイトル順</option>
+    </select>
+    <div class="view-toggle" id="sort-dir-toggle">
+      <button id="btn-sort-desc" class="active" onclick="setSortDir('desc')">降順</button>
+      <button id="btn-sort-asc" onclick="setSortDir('asc')">昇順</button>
+    </div>
+  </div>
+</header>
+<div class="page-layout">
+  <aside class="sidebar">
+    <p class="sidebar-heading">全作品(タイトル順)</p>
+    <div id="sidebar-list"></div>
+  </aside>
+  <main id="app"></main>
+</div>
+<div id="modal-overlay" class="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページ上部に戻る">↑ 上に戻る</button>
+<script>
+const MOVIE_DATA = [
+  {
+    id: 'dark-knight',
+    title: 'ダークナイト',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/dark-knight.jpg',
+    synopsis: 'ジョーカーという狂気の犯罪者の出現により、ゴッサムシティの秩序と正義が根底から揺さぶられる。バットマンが自らの信念と倫理の限界を試されるノーラン監督のダークナイト三部作第2作。',
+    studio: 'Warner Bros. Pictures',
+    creator: 'クリストファー・ノーラン(監督)',
+    year: 2008,
+    genres: ['アクション', 'クライム', 'スリラー']
+  },
+  {
+    id: 'river-nagarenaide-yo',
+    title: 'リバー、流れないでよ',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/river-nagarenaide-yo.jpg',
+    synopsis: '京都・貴船の老舗旅館を舞台に、繰り返す2分間のループに巻き込まれた人々を描く群像劇。ヨーロッパ企画によるオリジナル長編映画。',
+    studio: 'ヨーロッパ企画 / トリウッド',
+    creator: '山口淳太(監督)',
+    year: 2023,
+    genres: ['SFコメディ', 'タイムループ', '群像劇']
+  },
+  {
+    id: 'kisaragi',
+    title: 'キサラギ',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/kisaragi.jpg',
+    synopsis: '自殺したとされる無名アイドルの1周忌に集まったファン5人が、密室で彼女の死の真相について語り合ううちに、それぞれの秘密が明らかになっていくミステリー。',
+    studio: '松竹',
+    creator: '佐藤祐市(監督)',
+    year: 2007,
+    genres: ['ミステリー', 'コメディ', 'サスペンス']
+  },
+  {
+    id: 'dogville',
+    title: 'ドッグビル',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/dogville.jpg',
+    synopsis: '舞台劇のような簡素なセット上で展開される寓話劇。ロッキー山中の閉鎖的な村に匿われた女性が、住民に受け入れられる代償として徐々に搾取されていく様を描く。',
+    studio: 'Zentropa Entertainments',
+    creator: 'ラース・フォン・トリアー(監督)',
+    year: 2003,
+    genres: ['ドラマ', 'スリラー']
+  },
+  {
+    id: 'shawshank-redemption',
+    title: 'ショーシャンクの空に',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/shawshank-redemption.jpg',
+    synopsis: '無実の罪で投獄された銀行員アンディが、刑務所での長い年月をかけて希望を失わずに自由を目指す。スティーヴン・キング原作のヒューマンドラマ。',
+    studio: 'Castle Rock Entertainment',
+    creator: 'フランク・ダラボン(監督)',
+    year: 1994,
+    genres: ['ドラマ']
+  },
+  {
+    id: 'interstellar',
+    title: 'インターステラー',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/interstellar.jpg',
+    synopsis: '環境が悪化し滅びゆく地球を救うため、元宇宙飛行士が家族と別れワームホールの先の新天地を探す旅に出るSF大作。時間と重力、そして家族の絆を描く。',
+    studio: 'Paramount Pictures / Legendary Pictures',
+    creator: 'クリストファー・ノーラン(監督)',
+    year: 2014,
+    genres: ['SF', 'ドラマ', '冒険']
+  },
+  {
+    id: 'matrix',
+    title: 'マトリックス',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/matrix.jpg',
+    synopsis: '現実だと思っていた世界が仮想現実「マトリックス」であることを知った青年ネオが、人類を支配する機械との戦いに身を投じるSFアクション。バレットタイムなど革新的な映像表現で一時代を築いた。',
+    studio: 'Warner Bros. Pictures',
+    creator: 'ウォシャウスキー姉妹(監督)',
+    year: 1999,
+    genres: ['SF', 'アクション']
+  },
+  {
+    id: 'green-mile',
+    title: 'グリーンマイル',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/green-mile.jpg',
+    synopsis: '大恐慌時代、死刑囚監房「グリーンマイル」の看守長ポールと、不思議な力を持つ死刑囚コーフィとの交流を描くヒューマンドラマ。スティーヴン・キング原作。',
+    studio: 'Castle Rock Entertainment',
+    creator: 'フランク・ダラボン(監督)',
+    year: 1999,
+    genres: ['ドラマ', 'ファンタジー']
+  },
+  {
+    id: 'back-to-the-future',
+    title: 'バック・トゥ・ザ・フューチャー',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/back-to-the-future.jpg',
+    synopsis: '高校生マーティが親友ドクの発明したタイムマシンで1955年にタイムスリップし、両親の出会いに影響を与えてしまったことから元の時代に戻ろうと奔走するSFコメディの金字塔。',
+    studio: 'Universal Pictures / Amblin Entertainment',
+    creator: 'ロバート・ゼメキス(監督)',
+    year: 1985,
+    genres: ['SF', 'コメディ', '冒険']
+  },
+  {
+    id: 'edge-of-tomorrow',
+    title: 'オール・ユー・ニード・イズ・キル',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/edge-of-tomorrow.jpg',
+    synopsis: '謎の敵エイリアンとの戦いで死ぬたびに同じ1日を繰り返すことになった兵士が、戦闘スキルを磨きながら人類滅亡を防ぐ道を探るSFアクション。桜坂洋の同名ライトノベルが原作。',
+    studio: 'Warner Bros. Pictures',
+    creator: 'ダグ・リーマン(監督)',
+    year: 2014,
+    genres: ['SF', 'アクション']
+  },
+  {
+    id: 'project-hail-mary',
+    title: 'プロジェクト・ヘイル・メアリー',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/project-hail-mary.jpg',
+    synopsis: '人類滅亡の危機を救うため、記憶を失った状態で目覚めた宇宙飛行士がたった一人でミッションの真相を思い出しながら奮闘するSF。アンディ・ウィアーの同名ベストセラー小説が原作。',
+    studio: 'Amazon MGM Studios / ソニー・ピクチャーズ',
+    creator: 'フィル・ロード & クリストファー・ミラー(監督)',
+    year: 2026,
+    genres: ['SF', '冒険']
+  },
+  {
+    id: 'godzilla-minus-one',
+    title: 'ゴジラ-1.0',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/godzilla-minus-one.jpg',
+    synopsis: '戦後まもない焦土と化した日本に現れたゴジラと、特攻から生き残った青年たちの姿を描く怪獣映画。アカデミー賞視覚効果賞を受賞した。',
+    studio: '東宝',
+    creator: '山崎貴(監督)',
+    year: 2023,
+    genres: ['怪獣', 'ドラマ', '戦争']
+  },
+  {
+    id: 'shin-godzilla',
+    title: 'シン・ゴジラ',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/shin-godzilla.jpg',
+    synopsis: '突如出現した謎の巨大生物ゴジラに対し、縦割り組織の限界と向き合いながら対応する日本政府の姿をリアリズム重視で描いたゴジラ映画。',
+    studio: '東宝',
+    creator: '庵野秀明(総監督) / 樋口真嗣(監督)',
+    year: 2016,
+    genres: ['怪獣', 'パニック', '特撮']
+  },
+  {
+    id: 'mondays',
+    title: 'MONDAYS/このタイムループ、上司に気づかせないと終わらない',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/mondays.jpg',
+    synopsis: '小さな広告代理店の制作部員たちが、繰り返す月曜日に閉じ込められる。原因が上司の腕輪だと突き止めた一同は、上司にループを気づかせてループを終わらせようと奮闘する低予算オフィスコメディ。',
+    studio: 'CHOCOLATE / パルコ',
+    creator: '竹林亮(監督)',
+    year: 2022,
+    genres: ['SFコメディ', 'タイムループ', 'オフィスコメディ']
+  },
+  {
+    id: 'chappie',
+    title: 'チャッピー',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/chappie.jpg',
+    synopsis: '自我を持つロボット「チャッピー」が犯罪組織に育てられながら、人間らしさとは何かを学んでいくSFアクション。',
+    studio: 'Columbia Pictures',
+    creator: 'ニール・ブロムカンプ(監督)',
+    year: 2015,
+    genres: ['SF', 'アクション']
+  },
+  {
+    id: 'district-9',
+    title: '第9地区',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/district-9.jpg',
+    synopsis: 'ヨハネスブルグ上空に飛来した宇宙船に取り残されたエイリアンを難民として受け入れた南アフリカ。彼らの隔離政策に関わることになった一人の男を通して、差別と排除の構造を描く疑似ドキュメンタリー形式のSF。',
+    studio: 'TriStar Pictures',
+    creator: 'ニール・ブロムカンプ(監督)',
+    year: 2009,
+    genres: ['SF', 'アクション', '社会派']
+  },
+  {
+    id: 'american-sniper',
+    title: 'アメリカン・スナイパー',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/american-sniper.jpg',
+    synopsis: 'イラク戦争で伝説的な狙撃手となった実在の兵士クリス・カイルの、戦場での苦悩と家庭とのはざまを描く実話ベースの戦争映画。',
+    studio: 'Warner Bros. Pictures',
+    creator: 'クリント・イーストウッド(監督)',
+    year: 2014,
+    genres: ['戦争', '伝記', 'ドラマ']
+  },
+  {
+    id: 'saving-private-ryan',
+    title: 'プライベート・ライアン',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/saving-private-ryan.jpg',
+    synopsis: 'ノルマンディー上陸作戦後、戦死した兄弟の末弟ライアン二等兵を救出するため送られた分隊の姿を描く戦争映画。冒頭のオマハビーチ上陸シーンで知られる。',
+    studio: 'DreamWorks Pictures / Paramount Pictures',
+    creator: 'スティーヴン・スピルバーグ(監督)',
+    year: 1998,
+    genres: ['戦争', 'ドラマ']
+  },
+  {
+    id: 'leon',
+    title: 'レオン',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/leon.jpg',
+    synopsis: '家族を殺された少女マチルダと、孤独な殺し屋レオンとの奇妙な絆を描くクライムドラマ。ナタリー・ポートマンのスクリーンデビュー作。',
+    studio: 'Gaumont',
+    creator: 'リュック・ベッソン(監督)',
+    year: 1994,
+    genres: ['アクション', 'ドラマ', 'クライム']
+  },
+  {
+    id: 'minority-report',
+    title: 'マイノリティ・リポート',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/minority-report.jpg',
+    synopsis: '犯罪予知システムによって未来の殺人犯とされた捜査官が、自らの無実を証明するため逃走するSFサスペンス。フィリップ・K・ディックの短編が原作。',
+    studio: '20th Century Fox / DreamWorks Pictures',
+    creator: 'スティーヴン・スピルバーグ(監督)',
+    year: 2002,
+    genres: ['SF', 'サスペンス', 'アクション']
+  },
+  {
+    id: 'iron-man',
+    title: 'アイアンマン',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-movie/iron-man.jpg',
+    synopsis: '武器商人トニー・スタークが捕虜生活を経てパワードスーツを開発し、正義のヒーロー「アイアンマン」として目覚める。マーベル・シネマティック・ユニバースの第一作。',
+    studio: 'Marvel Studios',
+    creator: 'ジョン・ファヴロー(監督)',
+    year: 2008,
+    genres: ['アクション', 'SF', 'ヒーロー']
+  }
+];
+
+let state = { view: 'gallery', sortDir: 'desc' };
+
+function setView(view) {
+  state.view = view;
+  document.getElementById('btn-view-list').classList.toggle('active', view === 'list');
+  document.getElementById('btn-view-gallery').classList.toggle('active', view === 'gallery');
+  render();
+}
+
+function setSortDir(dir) {
+  state.sortDir = dir;
+  document.getElementById('btn-sort-desc').classList.toggle('active', dir === 'desc');
+  document.getElementById('btn-sort-asc').classList.toggle('active', dir === 'asc');
+  render();
+}
+
+function populateGenreFilter() {
+  const select = document.getElementById('genre-filter');
+  const genres = Array.from(new Set(MOVIE_DATA.reduce(function (acc, item) { return acc.concat(item.genres); }, []))).sort(function (a, b) { return a.localeCompare(b, 'ja'); });
+  genres.forEach(function (g) {
+    const opt = document.createElement('option');
+    opt.value = g;
+    opt.textContent = g;
+    select.appendChild(opt);
+  });
+}
+
+function getFilteredSorted() {
+  const query = document.getElementById('search-box').value.trim().toLowerCase();
+  const genre = document.getElementById('genre-filter').value;
+  const sortKey = document.getElementById('sort-select').value;
+  const decade = document.getElementById('decade-select').value;
+
+  let items = MOVIE_DATA.filter(function (item) {
+    if (genre !== 'all' && item.genres.indexOf(genre) === -1) return false;
+    if (decade !== 'all' && Math.floor(item.year / 10) * 10 !== Number(decade)) return false;
+    if (!query) return true;
+    const haystack = (item.title + ' ' + item.genres.join(' ')).toLowerCase();
+    return haystack.indexOf(query) !== -1;
+  });
+
+  items.sort(function (a, b) {
+    let cmp;
+    if (sortKey === 'year') cmp = a.year - b.year;
+    else if (sortKey === 'added') cmp = a.addedDate.localeCompare(b.addedDate);
+    else cmp = a.title.localeCompare(b.title, 'ja');
+    return state.sortDir === 'asc' ? cmp : -cmp;
+  });
+
+  return items;
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function buildDetailHtml(item) {
+  return (
+    '<div class="card-title-row"><h2 class="card-title">' + escapeHtml(item.title) + '</h2></div>' +
+    '<div class="meta-row">' + item.year + '年 / ' + escapeHtml(item.studio) + ' / ' + escapeHtml(item.creator) + ' / ' + item.genres.map(escapeHtml).join('・') + '</div>' +
+    '<p class="synopsis">' + escapeHtml(item.synopsis) + '</p>'
+  );
+}
+
+function renderList(items) {
+  return items.map(function (item) {
+    return (
+      '<div class="card">' +
+      '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
+      '<div class="card-body">' + buildDetailHtml(item) + '</div></div>'
+    );
+  }).join('');
+}
+
+function renderGallery(items) {
+  return '<div class="card-grid">' + items.map(function (item) {
+    return (
+      '<div class="gallery-item" data-id="' + escapeHtml(item.id) + '">' +
+      '<div class="gallery-thumb">' +
+      '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
+      '</div>' +
+      '<div class="gallery-title">' + escapeHtml(item.title) + '</div>' +
+      '</div>'
+    );
+  }).join('') + '</div>';
+}
+
+function openModal(id) {
+  const item = MOVIE_DATA.find(function (i) { return i.id === id; });
+  if (!item) return;
+  document.getElementById('modal-body').innerHTML =
+    '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" class="modal-image">' +
+    buildDetailHtml(item);
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function handleOverlayClick(event) {
+  if (event.target.id === 'modal-overlay') closeModal();
+}
+
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'Escape') closeModal();
+});
+
+document.getElementById('app').addEventListener('click', function (event) {
+  const galleryItem = event.target.closest('.gallery-item');
+  if (galleryItem) openModal(galleryItem.dataset.id);
+});
+
+document.getElementById('sidebar-list').addEventListener('click', function (event) {
+  const sidebarItem = event.target.closest('.sidebar-item');
+  if (sidebarItem) openModal(sidebarItem.dataset.id);
+});
+
+function renderSidebar() {
+  const sorted = MOVIE_DATA.slice().sort(function (a, b) { return a.title.localeCompare(b.title, 'ja'); });
+  document.getElementById('sidebar-list').innerHTML = sorted.map(function (item) {
+    return (
+      '<div class="sidebar-item" data-id="' + escapeHtml(item.id) + '">' +
+      '<div class="sidebar-title">' + escapeHtml(item.title) + '</div>' +
+      '<div class="sidebar-year">' + item.year + '年</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+function render() {
+  const items = getFilteredSorted();
+  const app = document.getElementById('app');
+  if (items.length === 0) {
+    app.innerHTML = '<div class="empty-state">該当する作品がありません</div>';
+    return;
+  }
+  if (state.view === 'list') {
+    app.innerHTML = '<div class="card-list">' + renderList(items) + '</div>';
+  } else {
+    app.innerHTML = renderGallery(items);
+  }
+}
+
+populateGenreFilter();
+renderSidebar();
+render();
+</script>
+</body>
+</html>
