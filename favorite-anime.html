@@ -135,12 +135,8 @@
       <option value="2010">2010年代</option>
       <option value="2020">2020年代</option>
     </select>
-    <select id="cours-filter" onchange="render()">
-      <option value="all">すべてのクール数</option>
-      <option value="1">1クール</option>
-      <option value="2">2クール</option>
-      <option value="3">3クール</option>
-      <option value="4plus">4クール以上</option>
+    <select id="season-filter" onchange="render()">
+      <option value="all">すべての季節</option>
       <option value="movie">劇場版・OVA</option>
     </select>
     <input type="search" id="search-box" placeholder="タイトル・ジャンルで検索" oninput="render()">
@@ -186,6 +182,7 @@ const ANIME_DATA = [
     year: 2022,
     episodes: 13,
     cours: 1,
+    quarter: '夏',
     genres: ['アクション', '日常', 'ガンアクション'],
     cast: [
       { character: '錦木千束', actor: '安済知佳' },
@@ -210,6 +207,7 @@ const ANIME_DATA = [
     year: 2007,
     episodes: 26,
     cours: 2,
+    quarter: '春',
     genres: ['SF', 'ジュブナイル', 'ミステリー'],
     cast: [
       { character: 'ヤサコ(小此木優子)', actor: '折笠富美子' },
@@ -234,6 +232,7 @@ const ANIME_DATA = [
     year: 1998,
     episodes: 26,
     cours: 2,
+    quarter: '春',
     genres: ['SF', 'ノワール', 'アクション'],
     cast: [
       { character: 'スパイク・スピーゲル', actor: '山寺宏一' },
@@ -257,6 +256,7 @@ const ANIME_DATA = [
     year: 2022,
     episodes: 6,
     cours: 1,
+    quarter: '冬',
     genres: ['SF', '青春', 'サバイバル'],
     cast: [
       { character: '相模登矢', actor: '藤原夏海' },
@@ -281,6 +281,7 @@ const ANIME_DATA = [
     year: 2011,
     episodes: 12,
     cours: 1,
+    quarter: '冬',
     genres: ['魔法少女', 'ダークファンタジー', 'サイコロジカル'],
     cast: [
       { character: '鹿目まどか', actor: '悠木碧' },
@@ -306,6 +307,7 @@ const ANIME_DATA = [
     year: 1997,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'ロボット', 'サイコロジカル'],
     cast: [
       { character: '碇シンジ', actor: '緒方恵美' },
@@ -330,6 +332,7 @@ const ANIME_DATA = [
     year: 2016,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['恋愛', 'SF', '青春'],
     cast: [
       { character: '立花瀧', actor: '神木隆之介' },
@@ -354,6 +357,7 @@ const ANIME_DATA = [
     year: 2007,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['恋愛', '青春', 'ヒューマンドラマ'],
     cast: [
       { character: '遠野貴樹', actor: '水橋研二' },
@@ -376,6 +380,7 @@ const ANIME_DATA = [
     year: 1988,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'サイバーパンク', 'アクション'],
     cast: [
       { character: '金田正太郎', actor: '岩田光央' },
@@ -400,6 +405,7 @@ const ANIME_DATA = [
     year: 2006,
     episodes: 25,
     cours: 2,
+    quarter: '秋',
     genres: ['ロボット', '学園', 'シリアス'],
     cast: [
       { character: 'ルルーシュ・ランペルージ', actor: '福山潤' },
@@ -423,6 +429,7 @@ const ANIME_DATA = [
     year: 2013,
     episodes: 24,
     cours: 2,
+    quarter: '秋',
     genres: ['アクション', 'コメディ', '学園'],
     cast: [
       { character: '纏流子', actor: '小清水亜美' },
@@ -446,6 +453,7 @@ const ANIME_DATA = [
     year: 2000,
     episodes: 6,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'コメディ', 'アクション'],
     cast: [
       { character: 'ナンダバ・ナオ太', actor: '水樹洵' },
@@ -469,6 +477,7 @@ const ANIME_DATA = [
     year: 2013,
     episodes: 12,
     cours: 1,
+    quarter: '秋',
     genres: ['ファンタジー', '学園', 'バトル'],
     cast: [
       { character: '栗山未来', actor: '種田梨沙' },
@@ -491,6 +500,7 @@ const ANIME_DATA = [
     year: 2012,
     episodes: 22,
     cours: 2,
+    quarter: '春',
     genres: ['ミステリー', '青春', '学園'],
     cast: [
       { character: '折木奉太郎', actor: '中村悠一' },
@@ -514,6 +524,7 @@ const ANIME_DATA = [
     year: 2022,
     episodes: 12,
     cours: 1,
+    quarter: '秋',
     genres: ['ダークファンタジー', 'アクション', 'バトル'],
     cast: [
       { character: 'デンジ', actor: '戸谷菊之介' },
@@ -538,6 +549,7 @@ const ANIME_DATA = [
     year: 2015,
     episodes: 8,
     cours: 0,
+    quarter: null,
     genres: ['ロボット', '戦争', 'ジャズ'],
     cast: [
       { character: 'イオ・フレミング', actor: '中村悠一' },
@@ -561,6 +573,7 @@ const ANIME_DATA = [
     year: 2021,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['ロボット', 'SF', 'サスペンス'],
     cast: [
       { character: 'ハサウェイ・ノア', actor: '小野賢章' },
@@ -584,6 +597,7 @@ const ANIME_DATA = [
     year: 2015,
     episodes: 6,
     cours: 0,
+    quarter: null,
     genres: ['ロボット', '戦争', 'ドラマ'],
     cast: [
       { character: 'シャア・アズナブル(青年期)', actor: '池田秀一' },
@@ -608,6 +622,7 @@ const ANIME_DATA = [
     year: 2018,
     episodes: 13,
     cours: 1,
+    quarter: '冬',
     genres: ['青春', '友情', '南極'],
     cast: [
       { character: '玉木マリ', actor: '水瀬いのり' },
@@ -631,6 +646,7 @@ const ANIME_DATA = [
     year: 2019,
     episodes: 12,
     cours: 1,
+    quarter: '夏',
     genres: ['SF', 'サバイバル', 'ミステリー'],
     cast: [
       { character: 'カナタ・ホシジマ', actor: '細谷佳正' },
@@ -655,6 +671,7 @@ const ANIME_DATA = [
     year: 2015,
     episodes: 47,
     cours: 4,
+    quarter: '冬',
     genres: ['学園', 'コメディ', 'アクション'],
     cast: [
       { character: '殺せんせー', actor: '福山潤' },
@@ -679,6 +696,7 @@ const ANIME_DATA = [
     year: 2023,
     episodes: 24,
     cours: 2,
+    quarter: '夏',
     genres: ['ファンタジー', 'バトル', 'ヒューマンドラマ'],
     cast: [
       { character: 'ヘルク', actor: '小西克幸' },
@@ -703,6 +721,7 @@ const ANIME_DATA = [
     year: 2018,
     episodes: 12,
     cours: 1,
+    quarter: '冬',
     genres: ['ギャグ', 'シュール', 'パロディ'],
     cast: [
       { character: 'ポプ子(前半パート担当声優の一例)', actor: '三ツ矢雄二' },
@@ -726,6 +745,7 @@ const ANIME_DATA = [
     year: 2009,
     episodes: 64,
     cours: 5,
+    quarter: '春',
     genres: ['ダークファンタジー', '冒険', 'ドラマ'],
     cast: [
       { character: 'エドワード・エルリック', actor: '朴璐美' },
@@ -750,6 +770,7 @@ const ANIME_DATA = [
     year: 2013,
     episodes: 87,
     cours: 7,
+    quarter: '春',
     genres: ['ダークファンタジー', 'バトル', 'ミステリー'],
     cast: [
       { character: 'エレン・イェーガー', actor: '梶裕貴' },
@@ -774,6 +795,7 @@ const ANIME_DATA = [
     year: 2011,
     episodes: 24,
     cours: 2,
+    quarter: '春',
     genres: ['SF', 'サスペンス', 'タイムトラベル'],
     cast: [
       { character: '岡部倫太郎', actor: '宮野真守' },
@@ -798,6 +820,7 @@ const ANIME_DATA = [
     year: 2023,
     episodes: 11,
     cours: 1,
+    quarter: '春',
     genres: ['芸能界', 'サスペンス', 'ダークファンタジー'],
     cast: [
       { character: '星野アイ', actor: '高橋李依' },
@@ -822,6 +845,7 @@ const ANIME_DATA = [
     year: 2023,
     episodes: 28,
     cours: 2,
+    quarter: '秋',
     genres: ['ファンタジー', '冒険', 'ヒューマンドラマ'],
     cast: [
       { character: 'フリーレン', actor: '種崎敦美' },
@@ -846,6 +870,7 @@ const ANIME_DATA = [
     year: 2024,
     episodes: 24,
     cours: 2,
+    quarter: '冬',
     genres: ['ファンタジー', 'グルメ', '冒険'],
     cast: [
       { character: 'ライオス', actor: '熊谷健太郎' },
@@ -870,6 +895,7 @@ const ANIME_DATA = [
     year: 2009,
     episodes: 15,
     cours: 1,
+    quarter: '夏',
     genres: ['ミステリー', '会話劇', 'ダークファンタジー'],
     cast: [
       { character: '阿良々木暦', actor: '神谷浩史' },
@@ -894,6 +920,7 @@ const ANIME_DATA = [
     year: 2016,
     episodes: 3,
     cours: 0,
+    quarter: null,
     genres: ['ダークファンタジー', 'バトル', '青春'],
     cast: [
       { character: '阿良々木暦', actor: '神谷浩史' },
@@ -917,6 +944,7 @@ const ANIME_DATA = [
     year: 2016,
     episodes: 25,
     cours: 2,
+    quarter: '春',
     genres: ['異世界', 'ダークファンタジー', 'タイムリープ'],
     cast: [
       { character: 'ナツキ・スバル', actor: '小林裕介' },
@@ -941,6 +969,7 @@ const ANIME_DATA = [
     year: 2017,
     episodes: 13,
     cours: 1,
+    quarter: '夏',
     genres: ['ダークファンタジー', '冒険', 'SF'],
     cast: [
       { character: 'リコ', actor: '富田美憂' },
@@ -963,6 +992,7 @@ const ANIME_DATA = [
     year: 2012,
     episodes: 25,
     cours: 2,
+    quarter: '夏',
     genres: ['SF', '異世界', 'バトル'],
     cast: [
       { character: 'キリト', actor: '松岡禎丞' },
@@ -987,6 +1017,7 @@ const ANIME_DATA = [
     year: 2015,
     episodes: 12,
     cours: 1,
+    quarter: '秋',
     genres: ['バトル', 'コメディ', 'ヒーロー'],
     cast: [
       { character: 'サイタマ', actor: '古川慎' },
@@ -1011,6 +1042,7 @@ const ANIME_DATA = [
     year: 2011,
     episodes: 26,
     cours: 2,
+    quarter: '春',
     genres: ['ギャグ', 'コメディ', '日常'],
     cast: [
       { character: '相生祐子', actor: '本多真梨子' },
@@ -1035,6 +1067,7 @@ const ANIME_DATA = [
     year: 2014,
     episodes: 99,
     cours: 8,
+    quarter: '秋',
     genres: ['バトル', 'SF', '青春'],
     cast: [
       { character: '三雲修', actor: '梶裕貴' },
@@ -1058,6 +1091,7 @@ const ANIME_DATA = [
     year: 1995,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'サイバーパンク', 'アクション'],
     cast: [
       { character: '草薙素子', actor: '田中敦子' },
@@ -1081,6 +1115,7 @@ const ANIME_DATA = [
     year: 2002,
     episodes: 26,
     cours: 2,
+    quarter: '秋',
     genres: ['SF', 'サイバーパンク', '刑事もの'],
     cast: [
       { character: '草薙素子', actor: '田中敦子' },
@@ -1105,6 +1140,7 @@ const ANIME_DATA = [
     year: 2009,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'ヒューマンドラマ', '青春'],
     cast: [
       { character: '小磯健二', actor: '神木隆之介' },
@@ -1129,6 +1165,7 @@ const ANIME_DATA = [
     year: 2021,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['ファンタジー', '青春', 'ミュージカル'],
     cast: [
       { character: 'すず/ベル', actor: '中村佳穂' },
@@ -1153,6 +1190,7 @@ const ANIME_DATA = [
     year: 1988,
     episodes: 110,
     cours: 0,
+    quarter: null,
     genres: ['SF', '宇宙戦争', '群像劇'],
     cast: [
       { character: 'ラインハルト・フォン・ローエングラム', actor: '堀川りょう' },
@@ -1177,6 +1215,7 @@ const ANIME_DATA = [
     year: 1996,
     episodes: 11,
     cours: 0,
+    quarter: null,
     genres: ['ロボット', '戦争', 'ヒューマンドラマ'],
     cast: [
       { character: 'シロー・アマダ', actor: '檜山修之' },
@@ -1201,6 +1240,7 @@ const ANIME_DATA = [
     year: 2022,
     episodes: 25,
     cours: 2,
+    quarter: '秋',
     genres: ['ロボット', '学園', 'SF'],
     cast: [
       { character: 'スレッタ・マーキュリー', actor: '市ノ瀬加那' },
@@ -1225,6 +1265,7 @@ const ANIME_DATA = [
     year: 2013,
     episodes: 38,
     cours: 3,
+    quarter: '秋',
     genres: ['スポーツ', '青春', 'コメディ'],
     cast: [
       { character: '小野田坂道', actor: '山下大輝' },
@@ -1249,6 +1290,7 @@ const ANIME_DATA = [
     year: 2020,
     episodes: 12,
     cours: 1,
+    quarter: '冬',
     genres: ['青春', '部活動', 'クリエイター'],
     cast: [
       { character: '浅草みどり', actor: '伊藤沙莉' },
@@ -1273,6 +1315,7 @@ const ANIME_DATA = [
     year: 2010,
     episodes: 7,
     cours: 0,
+    quarter: null,
     genres: ['ロボット', '宇宙世紀', '戦争'],
     cast: [
       { character: 'バナージ・リンクス', actor: '内山昂輝' },
@@ -1297,6 +1340,7 @@ const ANIME_DATA = [
     year: 2020,
     episodes: 12,
     cours: 1,
+    quarter: '春',
     genres: ['コメディ', 'ヒューマンドラマ', '日常'],
     cast: [
       { character: '後藤可久士', actor: '神谷浩史' },
@@ -1321,6 +1365,7 @@ const ANIME_DATA = [
     year: 2023,
     episodes: 12,
     cours: 1,
+    quarter: '春',
     genres: ['青春', '学園', 'ヒューマンドラマ'],
     cast: [
       { character: '岩倉美津未', actor: '黒沢ともよ' },
@@ -1345,6 +1390,7 @@ const ANIME_DATA = [
     year: 2015,
     episodes: 39,
     cours: 3,
+    quarter: '夏',
     genres: ['バトル', '妖怪', '少年漫画'],
     cast: [
       { character: '蒼月潮', actor: '畠中祐' },
@@ -1369,6 +1415,7 @@ const ANIME_DATA = [
     year: 2000,
     episodes: 76,
     cours: 6,
+    quarter: '秋',
     genres: ['スポーツ', 'ボクシング', '少年漫画'],
     cast: [
       { character: '幕之内一歩', actor: '喜安浩平' },
@@ -1393,6 +1440,7 @@ const ANIME_DATA = [
     year: 2011,
     episodes: 24,
     cours: 2,
+    quarter: '夏',
     genres: ['サイコロジカル', 'SF', 'ヒューマンドラマ'],
     cast: [
       { character: '高倉冠葉', actor: '木村昴' },
@@ -1418,6 +1466,7 @@ const ANIME_DATA = [
     year: 2018,
     episodes: 24,
     cours: 2,
+    quarter: '冬',
     genres: ['ロボット', 'SF', '恋愛'],
     cast: [
       { character: 'ヒロ', actor: '上村祐翔' },
@@ -1442,6 +1491,7 @@ const ANIME_DATA = [
     year: 2001,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'ノワール', 'アクション'],
     cast: [
       { character: 'スパイク・スピーゲル', actor: '山寺宏一' },
@@ -1466,6 +1516,7 @@ const ANIME_DATA = [
     year: 2007,
     episodes: 4,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'ロボット', 'サイコロジカル'],
     cast: [
       { character: '碇シンジ', actor: '緒方恵美' },
@@ -1491,6 +1542,7 @@ const ANIME_DATA = [
     year: 2022,
     episodes: 13,
     cours: 1,
+    quarter: '夏',
     genres: ['ダーク', '恋愛', '吸血鬼'],
     cast: [
       { character: '夜守コウ', actor: '佐藤元' },
@@ -1515,6 +1567,7 @@ const ANIME_DATA = [
     year: 2014,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['青春', '恋愛', '日常'],
     cast: [
       { character: '北白川たまこ', actor: '洲崎綾' },
@@ -1538,6 +1591,7 @@ const ANIME_DATA = [
     year: 2006,
     episodes: 12,
     cours: 1,
+    quarter: '春',
     genres: ['アクション', 'クライム', 'ハードボイルド'],
     cast: [
       { character: 'レヴィ', actor: '豊口めぐみ' },
@@ -1562,6 +1616,7 @@ const ANIME_DATA = [
     year: 2021,
     episodes: 12,
     cours: 1,
+    quarter: '秋',
     genres: ['学園コメディ', 'ラブコメ', '日常'],
     cast: [
       { character: '古見硝子', actor: '古賀葵' },
@@ -1586,6 +1641,7 @@ const ANIME_DATA = [
     year: 2018,
     episodes: 12,
     cours: 1,
+    quarter: '夏',
     genres: ['コメディ', '学園', '日常'],
     cast: [
       { character: '本田華子', actor: '木野日菜' },
@@ -1610,6 +1666,7 @@ const ANIME_DATA = [
     year: 2002,
     episodes: 5,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'ミリタリー', 'メカ'],
     cast: [
       { character: '深井零', actor: '堺雅人' },
@@ -1634,6 +1691,7 @@ const ANIME_DATA = [
     year: 2025,
     episodes: 12,
     cours: 1,
+    quarter: '春',
     genres: ['ロボット', 'SF', 'ガンダム'],
     cast: [
       { character: 'アマテ・ユズリハ(マチュ)', actor: '黒沢ともよ' },
@@ -1657,6 +1715,7 @@ const ANIME_DATA = [
     year: 2024,
     episodes: 12,
     cours: 1,
+    quarter: '秋',
     genres: ['オカルト', 'バトルアクション', 'ラブコメ'],
     cast: [
       { character: '綾瀬桃', actor: '若山詩音' },
@@ -1681,6 +1740,7 @@ const ANIME_DATA = [
     year: 2012,
     episodes: 12,
     cours: 1,
+    quarter: '春',
     genres: ['ミリタリー', 'アクション', 'クライム'],
     cast: [
       { character: 'ココ・ヘクマティアル', actor: '伊藤静' },
@@ -1705,6 +1765,7 @@ const ANIME_DATA = [
     year: 2022,
     episodes: 12,
     cours: 1,
+    quarter: '冬',
     genres: ['ラブコメ', '学園', '日常'],
     cast: [
       { character: '喜多川海夢', actor: '直田姫奈' },
@@ -1729,6 +1790,7 @@ const ANIME_DATA = [
     year: 2021,
     episodes: 12,
     cours: 1,
+    quarter: '夏',
     genres: ['ラブコメ', '学園', 'コメディ'],
     cast: [
       { character: '向井直也', actor: '榎木淳弥' },
@@ -1753,6 +1815,7 @@ const ANIME_DATA = [
     year: 2024,
     episodes: 12,
     cours: 1,
+    quarter: '冬',
     genres: ['異世界', 'コメディ', 'ファンタジー'],
     cast: [
       { character: '姫', actor: '白石晴香' },
@@ -1777,6 +1840,7 @@ const ANIME_DATA = [
     year: 2020,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['ダークファンタジー', 'アクション', '魔女'],
     cast: [
       { character: 'ニニー・スパンコール', actor: '田野アサミ' },
@@ -1800,6 +1864,7 @@ const ANIME_DATA = [
     year: 2014,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'CGアニメ', 'アクション'],
     cast: [
       { character: 'アンジェラ・バルザック', actor: '釘宮理恵' },
@@ -1823,6 +1888,7 @@ const ANIME_DATA = [
     year: 2020,
     episodes: 24,
     cours: 2,
+    quarter: '秋',
     genres: ['ダークファンタジー', 'バトルアクション', '学園'],
     cast: [
       { character: '虎杖悠仁', actor: '榎木淳弥' },
@@ -1847,6 +1913,7 @@ const ANIME_DATA = [
     year: 2024,
     episodes: 12,
     cours: 1,
+    quarter: '夏',
     genres: ['ラブコメ', '学園', '日常'],
     cast: [
       { character: '久世政近', actor: '天﨑滉平' },
@@ -1870,6 +1937,7 @@ const ANIME_DATA = [
     year: 2024,
     episodes: 12,
     cours: 1,
+    quarter: '春',
     genres: ['異世界', 'ファンタジー', '無双'],
     cast: [
       { character: 'ロイド', actor: '小市眞琴' },
@@ -1894,6 +1962,7 @@ const ANIME_DATA = [
     year: 2023,
     episodes: 24,
     cours: 2,
+    quarter: '冬',
     genres: ['SF', 'ポストアポカリプス', 'アクション'],
     cast: [
       { character: '2B', actor: '石川由依' },
@@ -1917,6 +1986,7 @@ const ANIME_DATA = [
     year: 2011,
     episodes: 25,
     cours: 2,
+    quarter: '春',
     genres: ['ダークファンタジー', 'バトルアクション', '学園'],
     cast: [
       { character: '奥村燐', actor: '岡本信彦' },
@@ -1941,6 +2011,7 @@ const ANIME_DATA = [
     year: 2017,
     episodes: 13,
     cours: 1,
+    quarter: '冬',
     genres: ['日常', 'コメディ', 'ファンタジー'],
     cast: [
       { character: '小林', actor: '田村睦心' },
@@ -1965,6 +2036,7 @@ const ANIME_DATA = [
     year: 2016,
     episodes: 12,
     cours: 1,
+    quarter: '冬',
     genres: ['コメディ', '日常', '学園'],
     cast: [
       { character: '枝垂ほたる', actor: '竹達彩奈' },
@@ -1988,6 +2060,7 @@ const ANIME_DATA = [
     year: 2025,
     episodes: 13,
     cours: 1,
+    quarter: '冬',
     genres: ['スポーツ', 'フィギュアスケート', 'ヒューマンドラマ'],
     cast: [
       { character: '結束いのり', actor: '春瀬なつみ' },
@@ -2012,6 +2085,7 @@ const ANIME_DATA = [
     year: 2024,
     episodes: 12,
     cours: 1,
+    quarter: '夏',
     genres: ['時代劇', 'バトル', '歴史'],
     cast: [
       { character: '北条時行', actor: '結川あさき' },
@@ -2036,6 +2110,7 @@ const ANIME_DATA = [
     year: 2025,
     episodes: 12,
     cours: 1,
+    quarter: '春',
     genres: ['SF', '日常', 'ロボット'],
     cast: [
       { character: 'ヤチヨ', actor: '白砂沙帆' },
@@ -2060,6 +2135,7 @@ const ANIME_DATA = [
     year: 1989,
     episodes: 161,
     cours: 13,
+    quarter: '春',
     genres: ['ラブコメ', '格闘', '学園'],
     cast: [
       { character: '早乙女乱馬(男)', actor: '山口勝平' },
@@ -2085,6 +2161,7 @@ const ANIME_DATA = [
     year: 2023,
     episodes: 12,
     cours: 1,
+    quarter: '冬',
     genres: ['異世界', 'グルメ', 'ファンタジー'],
     cast: [
       { character: '向田剛志(ムコーダ)', actor: '内田雄馬' },
@@ -2110,6 +2187,7 @@ const ANIME_DATA = [
     year: 2026,
     episodes: 12,
     cours: 1,
+    quarter: '冬',
     genres: ['ラブコメ', '学園', '日常'],
     cast: [
       { character: '鈴木みゆ', actor: '鈴代紗弓' },
@@ -2134,6 +2212,7 @@ const ANIME_DATA = [
     year: 2026,
     episodes: 24,
     cours: 2,
+    quarter: '春',
     genres: ['バトル', 'ファンタジー', 'ミステリー'],
     cast: [
       { character: 'ユル', actor: '小野賢章' },
@@ -2157,6 +2236,7 @@ const ANIME_DATA = [
     year: 2021,
     episodes: 23,
     cours: 2,
+    quarter: '冬',
     genres: ['異世界ファンタジー', 'なろう系', 'ヒューマンドラマ'],
     cast: [
       { character: 'ルーデウス・グレイラット', actor: '内山夕実' },
@@ -2181,6 +2261,7 @@ const ANIME_DATA = [
     year: 2013,
     episodes: 4,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'サイバーパンク', 'アクション'],
     cast: [
       { character: '草薙素子', actor: '坂本真綾' },
@@ -2206,6 +2287,7 @@ const ANIME_DATA = [
     year: 2026,
     episodes: 12,
     cours: 1,
+    quarter: '夏',
     genres: ['SF', 'サイバーパンク', 'アクション'],
     cast: [
       { character: '草薙素子', actor: '坂本真綾' },
@@ -2229,6 +2311,7 @@ const ANIME_DATA = [
     year: 1979,
     episodes: 43,
     cours: 3,
+    quarter: '春',
     genres: ['ロボット', 'SF', '戦争'],
     cast: [
       { character: 'アムロ・レイ', actor: '古谷徹' },
@@ -2253,6 +2336,7 @@ const ANIME_DATA = [
     year: 1985,
     episodes: 50,
     cours: 4,
+    quarter: '冬',
     genres: ['ロボット', 'SF', '戦争'],
     cast: [
       { character: 'カミーユ・ビダン', actor: '飛田展男' },
@@ -2277,6 +2361,7 @@ const ANIME_DATA = [
     year: 2022,
     episodes: 28,
     cours: 2,
+    quarter: '秋',
     genres: ['ギャグ', 'コメディ', 'SF'],
     cast: [
       { character: 'ロボコ', actor: '松尾駿(チョコレートプラネット)' },
@@ -2301,6 +2386,7 @@ const ANIME_DATA = [
     year: 2019,
     episodes: 36,
     cours: 3,
+    quarter: '冬',
     genres: ['ラブコメ', '学園', 'コメディ'],
     cast: [
       { character: '四宮かぐや', actor: '古賀葵' },
@@ -2326,6 +2412,7 @@ const ANIME_DATA = [
     year: 2023,
     episodes: 25,
     cours: 2,
+    quarter: '春',
     genres: ['ラブコメ', '青春', '学園'],
     cast: [
       { character: '市川京太郎', actor: '堀江瞬' },
@@ -2350,6 +2437,7 @@ const ANIME_DATA = [
     year: 1984,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'ファンタジー', '戦争'],
     cast: [
       { character: 'ナウシカ', actor: '島本須美' },
@@ -2374,6 +2462,7 @@ const ANIME_DATA = [
     year: 1986,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['アドベンチャー', 'ファンタジー', 'SF'],
     cast: [
       { character: 'パズー', actor: '田中真弓' },
@@ -2398,6 +2487,7 @@ const ANIME_DATA = [
     year: 1992,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['アドベンチャー', 'ロマンス', 'ヒューマンドラマ'],
     cast: [
       { character: 'ポルコ・ロッソ', actor: '森山周一郎' },
@@ -2422,6 +2512,7 @@ const ANIME_DATA = [
     year: 2015,
     episodes: 24,
     cours: 2,
+    quarter: '春',
     genres: ['ダークファンタジー', 'バトル', 'コメディ'],
     cast: [
       { character: 'レオナルド・ウォッチ', actor: '阪口大助' },
@@ -2446,6 +2537,7 @@ const ANIME_DATA = [
     year: 2016,
     episodes: 12,
     cours: 1,
+    quarter: '冬',
     genres: ['サスペンス', 'ミステリー', 'SF'],
     cast: [
       { character: '藤沼悟(29歳)', actor: '満島真之介' },
@@ -2470,6 +2562,7 @@ const ANIME_DATA = [
     year: 2016,
     episodes: 56,
     cours: 4,
+    quarter: '夏',
     genres: ['ギャグ', 'コメディ', '学園'],
     cast: [
       { character: '斉木楠雄', actor: '神谷浩史' },
@@ -2495,6 +2588,7 @@ const ANIME_DATA = [
     year: 2016,
     episodes: 44,
     cours: 4,
+    quarter: '秋',
     genres: ['ヒューマンドラマ', '将棋', '青春'],
     cast: [
       { character: '桐山零', actor: '河西健吾' },
@@ -2519,6 +2613,7 @@ const ANIME_DATA = [
     year: 2018,
     episodes: 48,
     cours: 4,
+    quarter: '春',
     genres: ['SF', '宇宙戦争', '群像劇'],
     cast: [
       { character: 'ラインハルト・フォン・ローエングラム', actor: '宮野真守' },
@@ -2544,6 +2639,7 @@ const ANIME_DATA = [
     year: 2012,
     episodes: 12,
     cours: 1,
+    quarter: '冬',
     genres: ['青春', 'SF', 'ラブコメ'],
     cast: [
       { character: '貴月イチカ', actor: '戸松遥' },
@@ -2567,6 +2663,7 @@ const ANIME_DATA = [
     year: 2005,
     episodes: 50,
     cours: 4,
+    quarter: '春',
     genres: ['ロボット', 'SF', '青春'],
     cast: [
       { character: 'レントン・サーストン', actor: '三瓶由布子' },
@@ -2592,6 +2689,7 @@ const ANIME_DATA = [
     year: 2018,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'ファンタジー', 'ジュブナイル'],
     cast: [
       { character: 'アオヤマ君', actor: '北香那' },
@@ -2617,6 +2715,7 @@ const ANIME_DATA = [
     year: 2014,
     episodes: 24,
     cours: 2,
+    quarter: '春',
     genres: ['SF', 'ロボット', '宇宙'],
     cast: [
       { character: '谷風長道', actor: '逢坂良太' },
@@ -2641,6 +2740,7 @@ const ANIME_DATA = [
     year: 2003,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['スポーツ', 'ヒューマンドラマ', '短編'],
     cast: [
       { character: 'ペペ・ベネンヘリ', actor: '大泉洋' },
@@ -2664,6 +2764,7 @@ const ANIME_DATA = [
     year: 2004,
     episodes: 1,
     cours: 0,
+    quarter: null,
     genres: ['SF', 'サイボーグ', 'アクション'],
     cast: [
       { character: 'デュナン・ナット', actor: '小林愛' },
@@ -2711,20 +2812,45 @@ function populateGenreFilter() {
   });
 }
 
+function populateSeasonFilter() {
+  const select = document.getElementById('season-filter');
+  const order = { '冬': 0, '春': 1, '夏': 2, '秋': 3 };
+  const combos = Array.from(new Set(
+    ANIME_DATA.filter(function (item) { return item.quarter; })
+      .map(function (item) { return item.year + '_' + item.quarter; })
+  ));
+  combos.sort(function (a, b) {
+    const ap = a.split('_'), bp = b.split('_');
+    const aKey = Number(ap[0]) * 10 + order[ap[1]];
+    const bKey = Number(bp[0]) * 10 + order[bp[1]];
+    return bKey - aKey;
+  });
+  const movieOption = select.querySelector('option[value="movie"]');
+  combos.forEach(function (c) {
+    const parts = c.split('_');
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = parts[0] + '年' + parts[1] + 'アニメ';
+    select.insertBefore(opt, movieOption);
+  });
+}
+
 function getFilteredSorted() {
   const query = document.getElementById('search-box').value.trim().toLowerCase();
   const genre = document.getElementById('genre-filter').value;
   const sortKey = document.getElementById('sort-select').value;
   const decade = document.getElementById('decade-select').value;
-  const cours = document.getElementById('cours-filter').value;
+  const season = document.getElementById('season-filter').value;
 
   let items = ANIME_DATA.filter(function (item) {
     if (state.category !== 'all' && item.category !== state.category) return false;
     if (genre !== 'all' && item.genres.indexOf(genre) === -1) return false;
     if (decade !== 'all' && Math.floor(item.year / 10) * 10 !== Number(decade)) return false;
-    if (cours === 'movie' && item.cours !== 0) return false;
-    if (cours === '4plus' && !(item.cours >= 4)) return false;
-    if (cours !== 'all' && cours !== 'movie' && cours !== '4plus' && item.cours !== Number(cours)) return false;
+    if (season === 'movie' && item.quarter !== null) return false;
+    if (season !== 'all' && season !== 'movie') {
+      const seasonParts = season.split('_');
+      if (String(item.year) !== seasonParts[0] || item.quarter !== seasonParts[1]) return false;
+    }
     if (!query) return true;
     const haystack = (item.title + ' ' + item.genres.join(' ')).toLowerCase();
     return haystack.indexOf(query) !== -1;
@@ -2753,7 +2879,7 @@ function buildDetailHtml(item) {
   return (
     '<div class="card-title-row"><h2 class="card-title">' + escapeHtml(item.title) + '</h2>' +
     badgeHtml + '</div>' +
-    '<div class="meta-row">' + item.year + '年(' + (item.cours > 0 ? item.cours + 'クール' : '劇場版・OVA') + ') / ' + escapeHtml(item.studio) + ' / ' + escapeHtml(item.creator) + ' / 全' + item.episodes + '話 / ' + item.genres.map(escapeHtml).join('・') + '</div>' +
+    '<div class="meta-row">' + item.year + '年' + (item.quarter ? item.quarter + 'アニメ' : '(劇場版・OVA)') + ' / ' + escapeHtml(item.studio) + ' / ' + escapeHtml(item.creator) + ' / 全' + item.episodes + '話 / ' + item.genres.map(escapeHtml).join('・') + '</div>' +
     '<p class="synopsis">' + escapeHtml(item.synopsis) + '</p>' +
     '<p class="cast-list">' + escapeHtml(castText) + '</p>' +
     (item.comment ? '<p class="comment">' + escapeHtml(item.comment) + '</p>' : '')
@@ -2843,6 +2969,7 @@ function render() {
 }
 
 populateGenreFilter();
+populateSeasonFilter();
 renderSidebar();
 render();
 </script>
