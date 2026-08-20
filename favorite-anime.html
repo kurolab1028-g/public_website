@@ -75,8 +75,10 @@
   .comment { font-size: 0.82rem; font-style: italic; color: var(--text-muted); }
   .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
   .gallery-item { text-align: center; cursor: pointer; }
+  .gallery-thumb { position: relative; }
   .gallery-item img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--border); }
   .gallery-item .gallery-title { font-size: 0.95rem; margin-top: 8px; line-height: 1.3; font-weight: 500; }
+  .gallery-badge { position: absolute; top: 6px; left: 6px; }
   @media (max-width: 900px) {
     .card-grid { grid-template-columns: repeat(3, 1fr); }
   }
@@ -132,6 +134,14 @@
       <option value="2010">2010年代</option>
       <option value="2020">2020年代</option>
     </select>
+    <select id="cours-filter" onchange="render()">
+      <option value="all">すべてのクール数</option>
+      <option value="1">1クール</option>
+      <option value="2">2クール</option>
+      <option value="3">3クール</option>
+      <option value="4plus">4クール以上</option>
+      <option value="movie">劇場版・OVA</option>
+    </select>
     <input type="search" id="search-box" placeholder="タイトル・ジャンルで検索" oninput="render()">
     <select id="sort-select" onchange="render()">
       <option value="year">制作年順</option>
@@ -174,6 +184,7 @@ const ANIME_DATA = [
     creator: '足立慎吾(監督)',
     year: 2022,
     episodes: 13,
+    cours: 1,
     genres: ['アクション', '日常', 'ガンアクション'],
     cast: [
       { character: '錦木千束', actor: '安済知佳' },
@@ -197,6 +208,7 @@ const ANIME_DATA = [
     creator: '磯光雄(原作・脚本・監督)',
     year: 2007,
     episodes: 26,
+    cours: 2,
     genres: ['SF', 'ジュブナイル', 'ミステリー'],
     cast: [
       { character: 'ヤサコ(小此木優子)', actor: '折笠富美子' },
@@ -220,6 +232,7 @@ const ANIME_DATA = [
     creator: '渡辺信一郎(監督)',
     year: 1998,
     episodes: 26,
+    cours: 2,
     genres: ['SF', 'ノワール', 'アクション'],
     cast: [
       { character: 'スパイク・スピーゲル', actor: '山寺宏一' },
@@ -242,6 +255,7 @@ const ANIME_DATA = [
     creator: '磯光雄(原作・監督)',
     year: 2022,
     episodes: 6,
+    cours: 1,
     genres: ['SF', '青春', 'サバイバル'],
     cast: [
       { character: '相模登矢', actor: '藤原夏海' },
@@ -265,6 +279,7 @@ const ANIME_DATA = [
     creator: '新房昭之(監督)・虚淵玄(脚本)',
     year: 2011,
     episodes: 12,
+    cours: 1,
     genres: ['魔法少女', 'ダークファンタジー', 'サイコロジカル'],
     cast: [
       { character: '鹿目まどか', actor: '悠木碧' },
@@ -289,6 +304,7 @@ const ANIME_DATA = [
     creator: '庵野秀明(監督)',
     year: 1997,
     episodes: 1,
+    cours: 0,
     genres: ['SF', 'ロボット', 'サイコロジカル'],
     cast: [
       { character: '碇シンジ', actor: '緒方恵美' },
@@ -312,6 +328,7 @@ const ANIME_DATA = [
     creator: '新海誠(監督・脚本)',
     year: 2016,
     episodes: 1,
+    cours: 0,
     genres: ['恋愛', 'SF', '青春'],
     cast: [
       { character: '立花瀧', actor: '神木隆之介' },
@@ -335,6 +352,7 @@ const ANIME_DATA = [
     creator: '新海誠(監督・原作・脚本)',
     year: 2007,
     episodes: 1,
+    cours: 0,
     genres: ['恋愛', '青春', 'ヒューマンドラマ'],
     cast: [
       { character: '遠野貴樹', actor: '水橋研二' },
@@ -356,6 +374,7 @@ const ANIME_DATA = [
     creator: '大友克洋(原作・監督)',
     year: 1988,
     episodes: 1,
+    cours: 0,
     genres: ['SF', 'サイバーパンク', 'アクション'],
     cast: [
       { character: '金田正太郎', actor: '岩田光央' },
@@ -379,6 +398,7 @@ const ANIME_DATA = [
     creator: '谷口悟朗(監督)・大河内一楼(シリーズ構成)・CLAMP(キャラクター原案)',
     year: 2006,
     episodes: 25,
+    cours: 2,
     genres: ['ロボット', '学園', 'シリアス'],
     cast: [
       { character: 'ルルーシュ・ランペルージ', actor: '福山潤' },
@@ -401,6 +421,7 @@ const ANIME_DATA = [
     creator: '今石洋之(監督)・中島かずき(脚本)',
     year: 2013,
     episodes: 24,
+    cours: 2,
     genres: ['アクション', 'コメディ', '学園'],
     cast: [
       { character: '纏流子', actor: '小清水亜美' },
@@ -423,6 +444,7 @@ const ANIME_DATA = [
     creator: '鶴巻和哉(監督)',
     year: 2000,
     episodes: 6,
+    cours: 0,
     genres: ['SF', 'コメディ', 'アクション'],
     cast: [
       { character: 'ナンダバ・ナオ太', actor: '水樹洵' },
@@ -445,6 +467,7 @@ const ANIME_DATA = [
     creator: '石立太一(監督)・鳥居なごむ(原作)',
     year: 2013,
     episodes: 12,
+    cours: 1,
     genres: ['ファンタジー', '学園', 'バトル'],
     cast: [
       { character: '栗山未来', actor: '種田梨沙' },
@@ -466,6 +489,7 @@ const ANIME_DATA = [
     creator: '米澤穂信(原作)・武本康弘(監督)',
     year: 2012,
     episodes: 22,
+    cours: 2,
     genres: ['ミステリー', '青春', '学園'],
     cast: [
       { character: '折木奉太郎', actor: '中村悠一' },
@@ -488,6 +512,7 @@ const ANIME_DATA = [
     creator: '藤本タツキ(原作)・中山竜(監督)',
     year: 2022,
     episodes: 12,
+    cours: 1,
     genres: ['ダークファンタジー', 'アクション', 'バトル'],
     cast: [
       { character: 'デンジ', actor: '戸谷菊之介' },
@@ -511,6 +536,7 @@ const ANIME_DATA = [
     creator: '太田垣康男(原作)・松尾衡(監督)',
     year: 2015,
     episodes: 8,
+    cours: 0,
     genres: ['ロボット', '戦争', 'ジャズ'],
     cast: [
       { character: 'イオ・フレミング', actor: '中村悠一' },
@@ -533,6 +559,7 @@ const ANIME_DATA = [
     creator: '富野由悠季(原作)・村瀬修功(監督)',
     year: 2021,
     episodes: 1,
+    cours: 0,
     genres: ['ロボット', 'SF', 'サスペンス'],
     cast: [
       { character: 'ハサウェイ・ノア', actor: '小野賢章' },
@@ -555,6 +582,7 @@ const ANIME_DATA = [
     creator: '安彦良和(原作・総監督)',
     year: 2015,
     episodes: 6,
+    cours: 0,
     genres: ['ロボット', '戦争', 'ドラマ'],
     cast: [
       { character: 'シャア・アズナブル(青年期)', actor: '池田秀一' },
@@ -578,6 +606,7 @@ const ANIME_DATA = [
     creator: '石塚敦子(監督)・花田十輝(シリーズ構成)',
     year: 2018,
     episodes: 13,
+    cours: 1,
     genres: ['青春', '友情', '南極'],
     cast: [
       { character: '玉木マリ', actor: '水瀬いのり' },
@@ -600,6 +629,7 @@ const ANIME_DATA = [
     creator: '篠原健太(原作)・安藤正臣(監督)',
     year: 2019,
     episodes: 12,
+    cours: 1,
     genres: ['SF', 'サバイバル', 'ミステリー'],
     cast: [
       { character: 'カナタ・ホシジマ', actor: '細谷佳正' },
@@ -623,6 +653,7 @@ const ANIME_DATA = [
     creator: '松井優征(原作)・岸誠二(監督)',
     year: 2015,
     episodes: 47,
+    cours: 4,
     genres: ['学園', 'コメディ', 'アクション'],
     cast: [
       { character: '殺せんせー', actor: '福山潤' },
@@ -646,6 +677,7 @@ const ANIME_DATA = [
     creator: '七尾ナナキ(原作)・佐藤竜雄(監督)',
     year: 2023,
     episodes: 24,
+    cours: 2,
     genres: ['ファンタジー', 'バトル', 'ヒューマンドラマ'],
     cast: [
       { character: 'ヘルク', actor: '小西克幸' },
@@ -669,6 +701,7 @@ const ANIME_DATA = [
     creator: '大川ぶくぶ(原作)・青木純(監督)',
     year: 2018,
     episodes: 12,
+    cours: 1,
     genres: ['ギャグ', 'シュール', 'パロディ'],
     cast: [
       { character: 'ポプ子(前半パート担当声優の一例)', actor: '三ツ矢雄二' },
@@ -691,6 +724,7 @@ const ANIME_DATA = [
     creator: '荒川弘(原作)・入江泰浩(監督)',
     year: 2009,
     episodes: 64,
+    cours: 5,
     genres: ['ダークファンタジー', '冒険', 'ドラマ'],
     cast: [
       { character: 'エドワード・エルリック', actor: '朴璐美' },
@@ -714,6 +748,7 @@ const ANIME_DATA = [
     creator: '諫山創(原作)・荒木哲郎(監督)',
     year: 2013,
     episodes: 87,
+    cours: 7,
     genres: ['ダークファンタジー', 'バトル', 'ミステリー'],
     cast: [
       { character: 'エレン・イェーガー', actor: '梶裕貴' },
@@ -737,6 +772,7 @@ const ANIME_DATA = [
     creator: '佐藤卓哉(監督)(原作:5pb./ニトロプラス)',
     year: 2011,
     episodes: 24,
+    cours: 2,
     genres: ['SF', 'サスペンス', 'タイムトラベル'],
     cast: [
       { character: '岡部倫太郎', actor: '宮野真守' },
@@ -760,6 +796,7 @@ const ANIME_DATA = [
     creator: '赤坂アカ・横槍メンゴ(原作)・平牧大輔(監督)',
     year: 2023,
     episodes: 11,
+    cours: 1,
     genres: ['芸能界', 'サスペンス', 'ダークファンタジー'],
     cast: [
       { character: '星野アイ', actor: '高橋李依' },
@@ -783,6 +820,7 @@ const ANIME_DATA = [
     creator: '山田鐘人・アベツカサ(原作)・斎藤圭一郎(監督)',
     year: 2023,
     episodes: 28,
+    cours: 2,
     genres: ['ファンタジー', '冒険', 'ヒューマンドラマ'],
     cast: [
       { character: 'フリーレン', actor: '種崎敦美' },
@@ -806,6 +844,7 @@ const ANIME_DATA = [
     creator: '九井諒子(原作)・宮島善博(監督)',
     year: 2024,
     episodes: 24,
+    cours: 2,
     genres: ['ファンタジー', 'グルメ', '冒険'],
     cast: [
       { character: 'ライオス', actor: '熊谷健太郎' },
@@ -829,6 +868,7 @@ const ANIME_DATA = [
     creator: '西尾維新(原作)・新房昭之(監督)',
     year: 2009,
     episodes: 15,
+    cours: 1,
     genres: ['ミステリー', '会話劇', 'ダークファンタジー'],
     cast: [
       { character: '阿良々木暦', actor: '神谷浩史' },
@@ -852,6 +892,7 @@ const ANIME_DATA = [
     creator: '西尾維新(原作)・尾石達也(監督)',
     year: 2016,
     episodes: 3,
+    cours: 0,
     genres: ['ダークファンタジー', 'バトル', '青春'],
     cast: [
       { character: '阿良々木暦', actor: '神谷浩史' },
@@ -874,6 +915,7 @@ const ANIME_DATA = [
     creator: '長月達平(原作)・渡邊政治(監督)',
     year: 2016,
     episodes: 25,
+    cours: 2,
     genres: ['異世界', 'ダークファンタジー', 'タイムリープ'],
     cast: [
       { character: 'ナツキ・スバル', actor: '小林裕介' },
@@ -897,6 +939,7 @@ const ANIME_DATA = [
     creator: 'つくしあきひと(原作)・小島正幸(監督)',
     year: 2017,
     episodes: 13,
+    cours: 1,
     genres: ['ダークファンタジー', '冒険', 'SF'],
     cast: [
       { character: 'リコ', actor: '富田美憂' },
@@ -918,6 +961,7 @@ const ANIME_DATA = [
     creator: '川原礫(原作)・伊藤智彦(監督)',
     year: 2012,
     episodes: 25,
+    cours: 2,
     genres: ['SF', '異世界', 'バトル'],
     cast: [
       { character: 'キリト', actor: '松岡禎丞' },
@@ -941,6 +985,7 @@ const ANIME_DATA = [
     creator: 'ONE(原作)・村田雄介(作画)・夏目真悟(監督)',
     year: 2015,
     episodes: 12,
+    cours: 1,
     genres: ['バトル', 'コメディ', 'ヒーロー'],
     cast: [
       { character: 'サイタマ', actor: '古川慎' },
@@ -964,6 +1009,7 @@ const ANIME_DATA = [
     creator: 'あらゐけいいち(原作)・石原立也(監督)',
     year: 2011,
     episodes: 26,
+    cours: 2,
     genres: ['ギャグ', 'コメディ', '日常'],
     cast: [
       { character: '相生祐子', actor: '本多真梨子' },
@@ -987,6 +1033,7 @@ const ANIME_DATA = [
     creator: '葦原大介(原作)',
     year: 2014,
     episodes: 99,
+    cours: 8,
     genres: ['バトル', 'SF', '青春'],
     cast: [
       { character: '三雲修', actor: '梶裕貴' },
@@ -1009,6 +1056,7 @@ const ANIME_DATA = [
     creator: '士郎正宗(原作)・押井守(監督)',
     year: 1995,
     episodes: 1,
+    cours: 0,
     genres: ['SF', 'サイバーパンク', 'アクション'],
     cast: [
       { character: '草薙素子', actor: '田中敦子' },
@@ -1031,6 +1079,7 @@ const ANIME_DATA = [
     creator: '士郎正宗(原作)・神山健治(監督)',
     year: 2002,
     episodes: 26,
+    cours: 2,
     genres: ['SF', 'サイバーパンク', '刑事もの'],
     cast: [
       { character: '草薙素子', actor: '田中敦子' },
@@ -1054,6 +1103,7 @@ const ANIME_DATA = [
     creator: '細田守(監督・原作)',
     year: 2009,
     episodes: 1,
+    cours: 0,
     genres: ['SF', 'ヒューマンドラマ', '青春'],
     cast: [
       { character: '小磯健二', actor: '神木隆之介' },
@@ -1077,6 +1127,7 @@ const ANIME_DATA = [
     creator: '細田守(監督・原作・脚本)',
     year: 2021,
     episodes: 1,
+    cours: 0,
     genres: ['ファンタジー', '青春', 'ミュージカル'],
     cast: [
       { character: 'すず/ベル', actor: '中村佳穂' },
@@ -1100,6 +1151,7 @@ const ANIME_DATA = [
     creator: '田中芳樹(原作)・石黒昇(監督)',
     year: 1988,
     episodes: 110,
+    cours: 0,
     genres: ['SF', '宇宙戦争', '群像劇'],
     cast: [
       { character: 'ラインハルト・フォン・ローエングラム', actor: '堀川りょう' },
@@ -1123,6 +1175,7 @@ const ANIME_DATA = [
     creator: '神田武幸→飯田馬之介(監督)',
     year: 1996,
     episodes: 11,
+    cours: 0,
     genres: ['ロボット', '戦争', 'ヒューマンドラマ'],
     cast: [
       { character: 'シロー・アマダ', actor: '檜山修之' },
@@ -1146,6 +1199,7 @@ const ANIME_DATA = [
     creator: '大河内一楼(シリーズ構成)・小林寛(監督)',
     year: 2022,
     episodes: 25,
+    cours: 2,
     genres: ['ロボット', '学園', 'SF'],
     cast: [
       { character: 'スレッタ・マーキュリー', actor: '市ノ瀬加那' },
@@ -1169,6 +1223,7 @@ const ANIME_DATA = [
     creator: '渡辺航(原作)・鍋島修(監督)',
     year: 2013,
     episodes: 38,
+    cours: 3,
     genres: ['スポーツ', '青春', 'コメディ'],
     cast: [
       { character: '小野田坂道', actor: '山下大輝' },
@@ -1192,6 +1247,7 @@ const ANIME_DATA = [
     creator: '大童澄瞳(原作)・湯浅政明(監督)',
     year: 2020,
     episodes: 12,
+    cours: 1,
     genres: ['青春', '部活動', 'クリエイター'],
     cast: [
       { character: '浅草みどり', actor: '伊藤沙莉' },
@@ -1215,6 +1271,7 @@ const ANIME_DATA = [
     creator: '福井晴敏(原作)・古橋一浩(監督)',
     year: 2010,
     episodes: 7,
+    cours: 0,
     genres: ['ロボット', '宇宙世紀', '戦争'],
     cast: [
       { character: 'バナージ・リンクス', actor: '内山昂輝' },
@@ -1238,6 +1295,7 @@ const ANIME_DATA = [
     creator: '久米田康治(原作)・村野佑太(監督)',
     year: 2020,
     episodes: 12,
+    cours: 1,
     genres: ['コメディ', 'ヒューマンドラマ', '日常'],
     cast: [
       { character: '後藤可久士', actor: '神谷浩史' },
@@ -1261,6 +1319,7 @@ const ANIME_DATA = [
     creator: '高松美咲(原作)・出合小都美(監督)',
     year: 2023,
     episodes: 12,
+    cours: 1,
     genres: ['青春', '学園', 'ヒューマンドラマ'],
     cast: [
       { character: '岩倉美津未', actor: '黒沢ともよ' },
@@ -1284,6 +1343,7 @@ const ANIME_DATA = [
     creator: '藤田和日郎(原作)・西村聡(監督)',
     year: 2015,
     episodes: 39,
+    cours: 3,
     genres: ['バトル', '妖怪', '少年漫画'],
     cast: [
       { character: '蒼月潮', actor: '畠中祐' },
@@ -1307,6 +1367,7 @@ const ANIME_DATA = [
     creator: '森川ジョージ(原作)・西村聡(監督)',
     year: 2000,
     episodes: 76,
+    cours: 6,
     genres: ['スポーツ', 'ボクシング', '少年漫画'],
     cast: [
       { character: '幕之内一歩', actor: '喜安浩平' },
@@ -1330,6 +1391,7 @@ const ANIME_DATA = [
     creator: '幾原邦彦(監督・シリーズ構成)',
     year: 2011,
     episodes: 24,
+    cours: 2,
     genres: ['サイコロジカル', 'SF', 'ヒューマンドラマ'],
     cast: [
       { character: '高倉冠葉', actor: '木村昴' },
@@ -1354,6 +1416,7 @@ const ANIME_DATA = [
     creator: '錦織敦史(監督)',
     year: 2018,
     episodes: 24,
+    cours: 2,
     genres: ['ロボット', 'SF', '恋愛'],
     cast: [
       { character: 'ヒロ', actor: '上村祐翔' },
@@ -1377,6 +1440,7 @@ const ANIME_DATA = [
     creator: '渡辺信一郎(監督)',
     year: 2001,
     episodes: 1,
+    cours: 0,
     genres: ['SF', 'ノワール', 'アクション'],
     cast: [
       { character: 'スパイク・スピーゲル', actor: '山寺宏一' },
@@ -1400,6 +1464,7 @@ const ANIME_DATA = [
     creator: '庵野秀明(総監督)',
     year: 2007,
     episodes: 4,
+    cours: 0,
     genres: ['SF', 'ロボット', 'サイコロジカル'],
     cast: [
       { character: '碇シンジ', actor: '緒方恵美' },
@@ -1424,6 +1489,7 @@ const ANIME_DATA = [
     creator: 'コトヤマ(原作)・板村智幸(監督)',
     year: 2022,
     episodes: 13,
+    cours: 1,
     genres: ['ダーク', '恋愛', '吸血鬼'],
     cast: [
       { character: '夜守コウ', actor: '佐藤元' },
@@ -1447,6 +1513,7 @@ const ANIME_DATA = [
     creator: '山田尚子(監督)・吉田玲子(脚本)',
     year: 2014,
     episodes: 1,
+    cours: 0,
     genres: ['青春', '恋愛', '日常'],
     cast: [
       { character: '北白川たまこ', actor: '洲崎綾' },
@@ -1469,6 +1536,7 @@ const ANIME_DATA = [
     creator: '広江礼威(原作)・片渕須直(監督)',
     year: 2006,
     episodes: 12,
+    cours: 1,
     genres: ['アクション', 'クライム', 'ハードボイルド'],
     cast: [
       { character: 'レヴィ', actor: '豊口めぐみ' },
@@ -1492,6 +1560,7 @@ const ANIME_DATA = [
     creator: 'オダトモヒト(原作)',
     year: 2021,
     episodes: 12,
+    cours: 1,
     genres: ['学園コメディ', 'ラブコメ', '日常'],
     cast: [
       { character: '古見硝子', actor: '古賀葵' },
@@ -1515,6 +1584,7 @@ const ANIME_DATA = [
     creator: '涼川りん(原作)・岸誠二(監督)',
     year: 2018,
     episodes: 12,
+    cours: 1,
     genres: ['コメディ', '学園', '日常'],
     cast: [
       { character: '本田華子', actor: '木野日菜' },
@@ -1538,6 +1608,7 @@ const ANIME_DATA = [
     creator: '神林長平(原作)・大倉雅彦(監督)',
     year: 2002,
     episodes: 5,
+    cours: 0,
     genres: ['SF', 'ミリタリー', 'メカ'],
     cast: [
       { character: '深井零', actor: '堺雅人' },
@@ -1561,6 +1632,7 @@ const ANIME_DATA = [
     creator: '鶴巻和哉(監督)・庵野秀明(企画)',
     year: 2025,
     episodes: 12,
+    cours: 1,
     genres: ['ロボット', 'SF', 'ガンダム'],
     cast: [
       { character: 'アマテ・ユズリハ(マチュ)', actor: '黒沢ともよ' },
@@ -1583,6 +1655,7 @@ const ANIME_DATA = [
     creator: '龍幸伸(原作)・山代風我(監督)',
     year: 2024,
     episodes: 12,
+    cours: 1,
     genres: ['オカルト', 'バトルアクション', 'ラブコメ'],
     cast: [
       { character: '綾瀬桃', actor: '若山詩音' },
@@ -1606,6 +1679,7 @@ const ANIME_DATA = [
     creator: '高橋慶太郎(原作)・元永慶太郎(監督)',
     year: 2012,
     episodes: 12,
+    cours: 1,
     genres: ['ミリタリー', 'アクション', 'クライム'],
     cast: [
       { character: 'ココ・ヘクマティアル', actor: '伊藤静' },
@@ -1629,6 +1703,7 @@ const ANIME_DATA = [
     creator: '福田晋一(原作)・篠原啓輔(監督)',
     year: 2022,
     episodes: 12,
+    cours: 1,
     genres: ['ラブコメ', '学園', '日常'],
     cast: [
       { character: '喜多川海夢', actor: '直田姫奈' },
@@ -1652,6 +1727,7 @@ const ANIME_DATA = [
     creator: 'ヒロユキ(原作)・桑原智(監督)',
     year: 2021,
     episodes: 12,
+    cours: 1,
     genres: ['ラブコメ', '学園', 'コメディ'],
     cast: [
       { character: '向井直也', actor: '榎木淳弥' },
@@ -1675,6 +1751,7 @@ const ANIME_DATA = [
     creator: '春原ロビンソン(原作)・ひらけい(作画)・金森陽子(監督)',
     year: 2024,
     episodes: 12,
+    cours: 1,
     genres: ['異世界', 'コメディ', 'ファンタジー'],
     cast: [
       { character: '姫', actor: '白石晴香' },
@@ -1698,6 +1775,7 @@ const ANIME_DATA = [
     creator: '久保帯人(原作)・川野達朗(監督)',
     year: 2020,
     episodes: 1,
+    cours: 0,
     genres: ['ダークファンタジー', 'アクション', '魔女'],
     cast: [
       { character: 'ニニー・スパンコール', actor: '田野アサミ' },
@@ -1720,6 +1798,7 @@ const ANIME_DATA = [
     creator: '虚淵玄(脚本)・水島精二(監督)',
     year: 2014,
     episodes: 1,
+    cours: 0,
     genres: ['SF', 'CGアニメ', 'アクション'],
     cast: [
       { character: 'アンジェラ・バルザック', actor: '釘宮理恵' },
@@ -1742,6 +1821,7 @@ const ANIME_DATA = [
     creator: '芥見下々(原作)・朴性厚(監督)',
     year: 2020,
     episodes: 24,
+    cours: 2,
     genres: ['ダークファンタジー', 'バトルアクション', '学園'],
     cast: [
       { character: '虎杖悠仁', actor: '榎木淳弥' },
@@ -1765,6 +1845,7 @@ const ANIME_DATA = [
     creator: '燦々SUN(原作)・原口浩(監督)',
     year: 2024,
     episodes: 12,
+    cours: 1,
     genres: ['ラブコメ', '学園', '日常'],
     cast: [
       { character: '久世政近', actor: '天﨑滉平' },
@@ -1787,6 +1868,7 @@ const ANIME_DATA = [
     creator: '石沢庸介(原作)',
     year: 2024,
     episodes: 12,
+    cours: 1,
     genres: ['異世界', 'ファンタジー', '無双'],
     cast: [
       { character: 'ロイド', actor: '小市眞琴' },
@@ -1810,6 +1892,7 @@ const ANIME_DATA = [
     creator: 'ヨコオタロウ(原作)・益山亮司(監督)',
     year: 2023,
     episodes: 24,
+    cours: 2,
     genres: ['SF', 'ポストアポカリプス', 'アクション'],
     cast: [
       { character: '2B', actor: '石川由依' },
@@ -1832,6 +1915,7 @@ const ANIME_DATA = [
     creator: '加藤和恵(原作)・岡村天斎(監督)',
     year: 2011,
     episodes: 25,
+    cours: 2,
     genres: ['ダークファンタジー', 'バトルアクション', '学園'],
     cast: [
       { character: '奥村燐', actor: '岡本信彦' },
@@ -1855,6 +1939,7 @@ const ANIME_DATA = [
     creator: 'クール教信者(原作)・武本康弘(監督)',
     year: 2017,
     episodes: 13,
+    cours: 1,
     genres: ['日常', 'コメディ', 'ファンタジー'],
     cast: [
       { character: '小林', actor: '田村睦心' },
@@ -1878,12 +1963,714 @@ const ANIME_DATA = [
     creator: 'コトヤマ(原作)・高柳滋仁(監督)',
     year: 2016,
     episodes: 12,
+    cours: 1,
     genres: ['コメディ', '日常', '学園'],
     cast: [
       { character: '枝垂ほたる', actor: '竹達彩奈' },
       { character: '鹿田ココノツ', actor: '阿部敦' },
       { character: '遠藤サヤ', actor: '沼倉愛美' },
       { character: '遠藤豆', actor: '鈴木達央' }
+    ]
+  },
+  {
+    id: 'medalist',
+    title: 'メダリスト',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/medalist.jpg',
+    synopsis: 'フィギュアスケート選手として挫折した青年・司と、氷上に憧れを抱く少女・いのりが出会い、コーチと教え子としてタッグを組んで世界を目指す。挫折からの再起と師弟の絆を丁寧に描くフィギュアスケートアニメ。',
+    studio: 'ENGI',
+    creator: 'つるまいかだ(原作)・山本靖貴(監督)',
+    year: 2025,
+    episodes: 13,
+    cours: 1,
+    genres: ['スポーツ', 'フィギュアスケート', 'ヒューマンドラマ'],
+    cast: [
+      { character: '結束いのり', actor: '春瀬なつみ' },
+      { character: '明浦路司', actor: '大塚剛央' },
+      { character: '狼嵜光', actor: '市ノ瀬加那' },
+      { character: '夜鷹純', actor: '内田雄馬' },
+      { character: '高峰瞳', actor: '加藤英美里' }
+    ]
+  },
+  {
+    id: 'nige-jouzu-no-wakagimi',
+    title: '逃げ上手の若君',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/nige-jouzu-no-wakagimi.jpg',
+    synopsis: '鎌倉幕府滅亡後の元弘三年、争いを好まず「逃げること」と「隠れること」に天賦の才を持つ少年・北条時行が、神官・諏訪頼重らと出会い、生き延びる力を武器に鎌倉奪還を目指す。史実を基にした松井優征によるバトル時代劇。',
+    studio: 'CloverWorks',
+    creator: '松井優征(原作)・山﨑雄太(監督)',
+    year: 2024,
+    episodes: 12,
+    cours: 1,
+    genres: ['時代劇', 'バトル', '歴史'],
+    cast: [
+      { character: '北条時行', actor: '結川あさき' },
+      { character: '諏訪頼重', actor: '中村悠一' },
+      { character: '足利尊氏', actor: '小西克幸' },
+      { character: '雫', actor: '矢野妃菜喜' },
+      { character: '亜也子', actor: '鈴代紗弓' }
+    ]
+  },
+  {
+    id: 'apocalypse-hotel',
+    title: 'アポカリプスホテル',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/apocalypse-hotel.jpg',
+    synopsis: '人類が姿を消してから100年、東京・銀座のホテル「銀河楼」でホテリエロボットのヤチヨたちが、いつか帰るオーナーと再び訪れる人類の客を待ち続けていた。100年ぶりに現れた客は地球外生命体だった。廃墟の地球を舞台にロボットたちの「おもてなし」を描くオリジナルアニメ。',
+    studio: 'CygamesPictures',
+    creator: '春藤佳奈(監督)',
+    year: 2025,
+    episodes: 12,
+    cours: 1,
+    genres: ['SF', '日常', 'ロボット'],
+    cast: [
+      { character: 'ヤチヨ', actor: '白砂沙帆' },
+      { character: 'ポン子', actor: '諸星すみれ' },
+      { character: 'ドアマンロボ', actor: '東地宏樹' },
+      { character: '環境チェックロボ', actor: '三木眞一郎' },
+      { character: 'オーナー', actor: '木下浩之' }
+    ]
+  },
+  {
+    id: 'ranma-1-2',
+    title: 'らんま1/2',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/ranma-1-2.jpg',
+    synopsis: '中国での修行中に呪泉郷の水を浴び、水を浴びると女に、お湯を浴びると男に戻る体質になってしまった早乙女乱馬。許嫁として天道あかねと同居することになり、個性豊かなライバルたちを巻き込んだドタバタ格闘ラブコメディが繰り広げられる。高橋留美子原作、1989年放送のオリジナルTVシリーズ。',
+    studio: 'スタジオディーン',
+    creator: '高橋留美子(原作)・芝山努(監督)',
+    year: 1989,
+    episodes: 161,
+    cours: 13,
+    genres: ['ラブコメ', '格闘', '学園'],
+    cast: [
+      { character: '早乙女乱馬(男)', actor: '山口勝平' },
+      { character: '早乙女乱馬(女)', actor: '林原めぐみ' },
+      { character: '天道あかね', actor: '日髙のり子' },
+      { character: '天道なびき', actor: '高山みなみ' },
+      { character: '响良牙', actor: '山寺宏一' },
+      { character: 'シャンプー', actor: '佐久間レイ' }
+    ]
+  },
+  {
+    id: 'tondemo-skill-de-isekai-hourou-meshi',
+    title: 'とんでもスキルで異世界放浪メシ',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/tondemo-skill-de-isekai-hourou-meshi.jpg',
+    synopsis: '料理好きの平凡なサラリーマン・向田剛志(ムコーダ)は「勇者召喚」に巻き込まれて異世界に召喚されてしまう。授かった固有スキル「ネットスーパー」で取り寄せた現代の食品や調味料が異世界では規格外の効果を発揮し、フェンリルのフェルや水属性の精霊スイと共に気ままな異世界グルメ放浪の旅をする。',
+    studio: 'MAPPA',
+    creator: '江口連(原作)・松田清(監督)',
+    year: 2023,
+    episodes: 12,
+    cours: 1,
+    genres: ['異世界', 'グルメ', 'ファンタジー'],
+    cast: [
+      { character: '向田剛志(ムコーダ)', actor: '内田雄馬' },
+      { character: 'フェル', actor: '日野聡' },
+      { character: 'スイ', actor: '木野日菜' },
+      { character: 'ニンリル', actor: '内田真礼' },
+      { character: 'アグニ', actor: '大地葉' },
+      { character: 'キシャール', actor: '甲斐田裕子' }
+    ]
+  },
+  {
+    id: 'seihantai-na-kimi-to-boku',
+    title: '正反対な君と僕',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/seihantai-na-kimi-to-boku.jpg',
+    synopsis: 'いつも元気いっぱいだけど周りの目を気にしてしまう女子・鈴木みゆと、物静かだけど自分の意見をしっかり言える男子・谷悠介。正反対な二人が互いを尊重しながらゆっくりと理解を深めていく姿と、友人たちとの学園生活を描くラブコメディ。',
+    studio: 'ラパントラック',
+    creator: '阿賀沢紅茶(原作)・長友孝和(監督)',
+    year: 2026,
+    episodes: 12,
+    cours: 1,
+    genres: ['ラブコメ', '学園', '日常'],
+    cast: [
+      { character: '鈴木みゆ', actor: '鈴代紗弓' },
+      { character: '谷悠介', actor: '坂田将吾' },
+      { character: '山田健太郎', actor: '岩田アンジ' },
+      { character: '西奈津美', actor: '大森こころ' },
+      { character: '本田梨花子', actor: '楠木ともり' }
+    ]
+  },
+  {
+    id: 'yomi-no-tsugai',
+    title: '黄泉のツガイ',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/yomi-no-tsugai.jpg',
+    synopsis: '山奥の小さな村落で野鳥を狩りながら静かに暮らす少年・ユル。双子の妹アサは村の奥にある牢で「おつとめ」を果たしているという。穏やかな村に隠された不自然な謎をきっかけに、未曾有の「ツガイ」バトルが幕を開ける、荒川弘による幻怪ファンタジー。',
+    studio: 'BONESフィルム',
+    creator: '荒川弘(原作)・安藤真裕(監督)',
+    year: 2026,
+    episodes: 24,
+    cours: 2,
+    genres: ['バトル', 'ファンタジー', 'ミステリー'],
+    cast: [
+      { character: 'ユル', actor: '小野賢章' },
+      { character: 'アサ', actor: '宮本侑芽' },
+      { character: 'デラ', actor: '中村悠一' },
+      { character: 'ガブちゃん', actor: '久野美咲' }
+    ]
+  },
+  {
+    id: 'mushoku-tensei',
+    title: '無職転生',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/mushoku-tensei.jpg',
+    synopsis: '34歳無職の引きこもり男が、両親の葬儀の日にトラックに轢かれて命を落とし、目覚めると剣と魔法の異世界で赤ん坊ルーデウス・グレイラットとして転生していた。前世の後悔を糧に「今度こそ本気で生きる」と誓い、家族や仲間との出会いを重ねながら成長していく異世界転生ファンタジー。',
+    studio: 'スタジオバインド',
+    creator: '理不尽な孫の手(原作)・岡本学(監督)',
+    year: 2021,
+    episodes: 23,
+    cours: 2,
+    genres: ['異世界ファンタジー', 'なろう系', 'ヒューマンドラマ'],
+    cast: [
+      { character: 'ルーデウス・グレイラット', actor: '内山夕実' },
+      { character: 'ロキシー・ミグルディア', actor: '小原好美' },
+      { character: 'シルフィエット', actor: '茅野愛衣' },
+      { character: 'エリス・ボレアス・グレイラット', actor: '加隈亜衣' },
+      { character: 'パウロ・グレイラット', actor: '森川智之' }
+    ]
+  },
+  {
+    id: 'ghost-in-the-shell-arise',
+    title: '攻殻機動隊ARISE',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/ghost-in-the-shell-arise.jpg',
+    synopsis: '西暦2027年、電脳犯罪が高度化する中、公安9課設立以前の草薙素子三佐の姿を描くプリクエルOVAシリーズ。全4部の「border」と、それらを再編集・新規カットを加えた劇場版「ALTERNATIVE ARCHITECTURE」で構成され、電脳ウイルス「ファイア・スターター」を巡る謎を追う。1995年劇場版・2002年S.A.C.とは異なる若い世代の草薙素子とメンバーが描かれる。',
+    studio: 'Production I.G',
+    creator: '士郎正宗(原作)・黄瀬和哉(総監督)・冲方丁(シリーズ構成)',
+    year: 2013,
+    episodes: 4,
+    cours: 0,
+    genres: ['SF', 'サイバーパンク', 'アクション'],
+    cast: [
+      { character: '草薙素子', actor: '坂本真綾' },
+      { character: 'バトー', actor: '安元洋貴' },
+      { character: 'トグサ', actor: '中村悠一' },
+      { character: 'イシカワ', actor: '後藤光祐' },
+      { character: 'サイトー', actor: '奈良徹' },
+      { character: 'ロジコマ', actor: '金田朋子' }
+    ]
+  },
+  {
+    id: 'ghost-in-the-shell-saru',
+    title: '攻殻機動隊 THE GHOST IN THE SHELL(サイエンスSARU制作)',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/ghost-in-the-shell-saru.jpg',
+    synopsis: '士郎正宗の原作漫画に立ち返り、公安9課の草薙素子たちが電脳社会の事件に挑む新作TVアニメシリーズ。2026年7月7日よりカンテレ・フジテレビ系「火アニバル!!」枠およびPrime Videoにて放送・配信開始。1995年劇場版・S.A.C.シリーズを手掛けたProduction I.Gではなく、『映像研には手を出すな！』『きみの色』のサイエンスSARUが制作を担当する新機軸の攻殻機動隊。',
+    studio: 'サイエンスSARU',
+    creator: '士郎正宗(原作)・モコちゃん(監督)・円城塔(シリーズ構成)',
+    year: 2026,
+    episodes: 12,
+    cours: 1,
+    genres: ['SF', 'サイバーパンク', 'アクション'],
+    cast: [
+      { character: '草薙素子', actor: '坂本真綾' },
+      { character: '荒巻大輔', actor: '山路和弘' },
+      { character: 'バトー', actor: '安元洋貴' },
+      { character: 'トグサ', actor: '中村悠一' }
+    ]
+  },
+  {
+    id: 'mobile-suit-gundam',
+    title: '機動戦士ガンダム',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/mobile-suit-gundam.jpg',
+    synopsis: '宇宙世紀0079年、スペースコロニー群「サイド3」がジオン公国として独立を宣言し、モビルスーツを用いて地球連邦政府に独立戦争を仕掛ける。サイド7に暮らす少年アムロ・レイは、最新鋭モビルスーツ「ガンダム」に乗り込むことになり、ジオン軍のエース「赤い彗星」シャア・アズナブルとの戦いに身を投じていく。ガンダムシリーズ第一作となるオリジナルTVシリーズ。',
+    studio: 'サンライズ',
+    creator: '富野喜幸(現・富野由悠季)(監督)',
+    year: 1979,
+    episodes: 43,
+    cours: 3,
+    genres: ['ロボット', 'SF', '戦争'],
+    cast: [
+      { character: 'アムロ・レイ', actor: '古谷徹' },
+      { character: 'シャア・アズナブル', actor: '池田秀一' },
+      { character: 'ブライト・ノア', actor: '鈴置洋孝' },
+      { character: 'セイラ・マス', actor: '井上瑤' },
+      { character: 'フラウ・ボウ', actor: '鵜飼るみ子' }
+    ]
+  },
+  {
+    id: 'zeta-gundam',
+    title: '機動戦士Ζガンダム',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/zeta-gundam.jpg',
+    synopsis: '一年戦争終結から7年後の宇宙世紀0087年、ジオン残党狩りを名目にスペースノイドへ圧政を敷く地球連邦軍のエリート部隊ティターンズと、それに対抗する反連邦組織エゥーゴとの抗争に巻き込まれた少年カミーユ・ビダンが、新型モビルスーツ「Ζガンダム」のパイロットとして戦いに身を投じていく。1979年『機動戦士ガンダム』の続編にあたるシリーズ第二作。',
+    studio: 'サンライズ',
+    creator: '富野由悠季(監督)',
+    year: 1985,
+    episodes: 50,
+    cours: 4,
+    genres: ['ロボット', 'SF', '戦争'],
+    cast: [
+      { character: 'カミーユ・ビダン', actor: '飛田展男' },
+      { character: 'シャア・アズナブル(クワトロ・バジーナ)', actor: '池田秀一' },
+      { character: 'ファ・ユイリィ', actor: '松岡ミユキ' },
+      { character: 'エマ・シーン', actor: '岡本麻弥' },
+      { character: 'ハマーン・カーン', actor: '榊原良子' }
+    ]
+  },
+  {
+    id: 'boku-to-roboco',
+    title: '僕とロボコ',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/boku-to-roboco.jpg',
+    synopsis: '平凡な小学生・平ボンドのもとに、オーダーメイドのお手伝いロボット・ロボコがやってきたことから、ギャグまみれの日常が崩壊していく。王道バトルやSFアクション、ラブコメなど別の世界線のロボコたちも登場する、テンポ重視の爆速ギャグアニメ。',
+    studio: 'ぎゃろっぷ',
+    creator: '宮崎周平(原作)・大地丙太郎(監督)',
+    year: 2022,
+    episodes: 28,
+    cours: 2,
+    genres: ['ギャグ', 'コメディ', 'SF'],
+    cast: [
+      { character: 'ロボコ', actor: '松尾駿(チョコレートプラネット)' },
+      { character: 'ボンド(平凡人)', actor: '津田美波' },
+      { character: 'ガチゴリラ', actor: '置鮎龍太郎' },
+      { character: 'モツオ', actor: '武内駿輔' },
+      { character: 'メイコ', actor: '平塚紗依' }
+    ]
+  },
+  {
+    id: 'kaguya-sama-wa-kokurasetai',
+    title: 'かぐや様は告らせたい',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/kaguya-sama-wa-kokurasetai.jpg',
+    synopsis: '秀知院学園の生徒会長・白銀御行と副会長・四宮かぐやは互いに好意を抱きながらも、先に告白した方が負けという意地の張り合いから、あの手この手で相手に告らせようとする頭脳戦を繰り広げる。天才同士のすれ違いラブコメとして人気を博した赤坂アカの漫画のアニメ化。',
+    studio: 'A-1 Pictures',
+    creator: '赤坂アカ(原作)・畠山守(監督)',
+    year: 2019,
+    episodes: 36,
+    cours: 3,
+    genres: ['ラブコメ', '学園', 'コメディ'],
+    cast: [
+      { character: '四宮かぐや', actor: '古賀葵' },
+      { character: '白銀御行', actor: '古川慎' },
+      { character: '藤原千花', actor: '小原好美' },
+      { character: '石上優', actor: '鈴木崚汰' },
+      { character: '早坂愛', actor: '花守ゆみり' },
+      { character: '柏木渚', actor: '麻倉もも' }
+    ]
+  },
+  {
+    id: 'boku-no-kokoro-no-yabai-yatsu',
+    title: '僕の心のヤバイやつ',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/boku-no-kokoro-no-yabai-yatsu.jpg',
+    synopsis: '猟奇殺人に憧れる中二病気質の中学生・市川京太郎は、クラスの人気者・山田杏奈への殺害願望めいた妄想を抱くが、彼女との交流を重ねるうちに淡い恋心へと変わっていく。歪んだ内面描写とピュアな恋愛模様のギャップが話題になった桜井のりおの漫画のアニメ化。',
+    studio: 'シンエイ動画',
+    creator: '桜井のりお(原作)・赤城博昭(監督)',
+    year: 2023,
+    episodes: 25,
+    cours: 2,
+    genres: ['ラブコメ', '青春', '学園'],
+    cast: [
+      { character: '市川京太郎', actor: '堀江瞬' },
+      { character: '山田杏奈', actor: '羊宮妃那' },
+      { character: '吉田芹那', actor: '種崎敦美' },
+      { character: '足立翔', actor: '岡本信彦' },
+      { character: '南条ハルヤ', actor: '島﨑信長' }
+    ]
+  },
+  {
+    id: 'kaze-no-tani-no-nausicaa',
+    title: '風の谷のナウシカ(劇場版アニメ)',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/kaze-no-tani-no-nausicaa.jpg',
+    synopsis: '巨大な菌類の森「腐海」に覆われ、人類の生存が脅かされる未来。風の谷の姫ナウシカは、腐海と蟲たちの秘密に気づきながら、戦争を仕掛ける大国トルメキアとの争いに巻き込まれていく。宮崎駿の漫画を自ら映画化した、スタジオジブリ設立前の原点となる劇場版アニメ。',
+    studio: 'トップクラフト',
+    creator: '宮崎駿(原作・脚本・監督)',
+    year: 1984,
+    episodes: 1,
+    cours: 0,
+    genres: ['SF', 'ファンタジー', '戦争'],
+    cast: [
+      { character: 'ナウシカ', actor: '島本須美' },
+      { character: 'ユパ・ミラルダ', actor: '納谷悟朗' },
+      { character: 'クシャナ', actor: '榊原良子' },
+      { character: 'ミト', actor: '永井一郎' },
+      { character: 'ゴル', actor: '宮内幸平' }
+    ]
+  },
+  {
+    id: 'tenkuu-no-shiro-laputa',
+    title: '天空の城ラピュタ',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/tenkuu-no-shiro-laputa.jpg',
+    synopsis: '鉱山町で働く少年パズーは、空から降ってきた少女シータと出会う。シータの首にかかる飛行石を狙う海賊ドーラ一味や軍の秘密諜報員ムスカから逃れながら、2人は伝説の天空の城ラピュタを目指す。スタジオジブリ設立第1作となる王道の空中冒険活劇。',
+    studio: 'スタジオジブリ',
+    creator: '宮崎駿(原作・脚本・監督)',
+    year: 1986,
+    episodes: 1,
+    cours: 0,
+    genres: ['アドベンチャー', 'ファンタジー', 'SF'],
+    cast: [
+      { character: 'パズー', actor: '田中真弓' },
+      { character: 'シータ', actor: '横沢啓子' },
+      { character: 'ドーラ', actor: '初井言榮' },
+      { character: 'ムスカ', actor: '寺田農' },
+      { character: 'ポムじいさん', actor: '常田富士男' }
+    ]
+  },
+  {
+    id: 'kurenai-no-buta',
+    title: '紅の豚',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/kurenai-no-buta.jpg',
+    synopsis: '魔法で豚の姿にされた元エースパイロット、通称・ポルコロッソは、アドリア海で空賊相手の賞金稼ぎとして生きている。腕利き整備士フィオや馴染みの酒場を営むジーナとの交流を通じ、戦間期イタリアを舞台に一人の男の矜持と生き様を描く。',
+    studio: 'スタジオジブリ',
+    creator: '宮崎駿(原作・脚本・監督)',
+    year: 1992,
+    episodes: 1,
+    cours: 0,
+    genres: ['アドベンチャー', 'ロマンス', 'ヒューマンドラマ'],
+    cast: [
+      { character: 'ポルコ・ロッソ', actor: '森山周一郎' },
+      { character: 'マダム・ジーナ', actor: '加藤登紀子' },
+      { character: 'フィオ・ピッコロ', actor: '岡村明美' },
+      { character: 'カーチス', actor: '大塚明夫' },
+      { character: 'マンマユート・ボス', actor: '上條恒彦' }
+    ]
+  },
+  {
+    id: 'kekkai-sensen',
+    title: '血界戦線',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/kekkai-sensen.jpg',
+    synopsis: '異界と現世が交わる特異点となったニューヨーク改め「ヘルサレムズ・ロット」。ある事件で特殊な目を持つことになった青年レオナルド・ウォッチは、怪異と渡り合う秘密結社「ライブラ」に加わり、日常と隣り合わせの異能バトルに身を投じていく。内藤泰弘の漫画をボンズが映像化したスタイリッシュなダークファンタジー。',
+    studio: 'ボンズ',
+    creator: '内藤泰弘(原作)・松本理恵(監督)',
+    year: 2015,
+    episodes: 24,
+    cours: 2,
+    genres: ['ダークファンタジー', 'バトル', 'コメディ'],
+    cast: [
+      { character: 'レオナルド・ウォッチ', actor: '阪口大助' },
+      { character: 'クラウス・V・ラインヘルツ', actor: '小山力也' },
+      { character: 'ザップ・レンフロ', actor: '中井和哉' },
+      { character: 'ツェッド・オブライエン', actor: '緑川光' },
+      { character: 'チェイン・ソウジロウ', actor: '小林ゆう' }
+    ]
+  },
+  {
+    id: 'boku-dake-ga-inai-machi',
+    title: '僕だけがいない街(アニメ)',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/boku-dake-ga-inai-machi.jpg',
+    synopsis: '売れない漫画家の藤沼悟には、事件やトラブルが起きる直前に時間が巻き戻る「再上映」という能力がある。母の死をきっかけに18年前の小学生時代へ引き戻された悟は、当時起きたクラスメイトの連続誘拐殺人事件を防ぐため奔走する。三部けいの人気サスペンス漫画をA-1 Picturesが映像化。',
+    studio: 'A-1 Pictures',
+    creator: '三部けい(原作)・伊藤智彦(監督)',
+    year: 2016,
+    episodes: 12,
+    cours: 1,
+    genres: ['サスペンス', 'ミステリー', 'SF'],
+    cast: [
+      { character: '藤沼悟(29歳)', actor: '満島真之介' },
+      { character: '藤沼悟(10歳)', actor: '土屋太鳳' },
+      { character: '雛月加代', actor: '悠木碧' },
+      { character: '片桐愛梨', actor: '赤崎千夏' },
+      { character: '藤沼佐知子', actor: '高山みなみ' }
+    ]
+  },
+  {
+    id: 'saiki-kusuo-no-psi-nan',
+    title: '斉木楠雄のΨ難',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/saiki-kusuo-no-psi-nan.jpg',
+    synopsis: '完璧な超能力を持って生まれたが故に、平穏な日常を望みながらも周囲の騒動に巻き込まれ続ける高校生・斉木楠雄。心を読む力でツッコミを入れながら、個性的すぎる友人たちに振り回される脱力系ギャグが展開される。麻生周一の漫画のアニメ化。',
+    studio: 'J.C.STAFF',
+    creator: '麻生周一(原作)・桜井弘明(監督)',
+    year: 2016,
+    episodes: 56,
+    cours: 4,
+    genres: ['ギャグ', 'コメディ', '学園'],
+    cast: [
+      { character: '斉木楠雄', actor: '神谷浩史' },
+      { character: '燃堂力', actor: '小野大輔' },
+      { character: '海藤瞬', actor: '島﨑信長' },
+      { character: '照橋心美', actor: '茅野愛衣' },
+      { character: '灰呂杵志', actor: '日野聡' },
+      { character: '鳥束零太', actor: '花江夏樹' }
+    ]
+  },
+  {
+    id: '3gatsu-no-lion',
+    title: '3月のライオン(アニメ)',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/3gatsu-no-lion.jpg',
+    synopsis: '幼くして家族を失い天涯孤独の身となったプロ棋士・桐山零は、将棋会館近くで一人暮らしをしながら、隣に住む川本家の三姉妹との温かい交流の中で少しずつ心を開いていく。将棋の厳しい勝負の世界と、思春期の孤独や成長を繊細に描いた羽海野チカの漫画をシャフトが映像化。',
+    studio: 'シャフト',
+    creator: '羽海野チカ(原作)・新房昭之(監督)',
+    year: 2016,
+    episodes: 44,
+    cours: 4,
+    genres: ['ヒューマンドラマ', '将棋', '青春'],
+    cast: [
+      { character: '桐山零', actor: '河西健吾' },
+      { character: '川本あかり', actor: '茅野愛衣' },
+      { character: '川本ひなた', actor: '花澤香菜' },
+      { character: '川本モモ', actor: '久野美咲' },
+      { character: '二海堂晴信', actor: '岡本信彦' }
+    ]
+  },
+  {
+    id: 'ginga-eiyuu-densetsu-die-neue-these',
+    title: '銀河英雄伝説 Die Neue These',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/ginga-eiyuu-densetsu-die-neue-these.jpg',
+    synopsis: '銀河帝国と自由惑星同盟の抗争を描く田中芳樹のSF大河小説を、Production I.Gが新たなキャスト・スタッフで映像化したリブート版。若き軍略家ラインハルトと同盟の英雄ヤン・ウェンリーという2人の主人公を軸に、1988年版のOVAシリーズとは異なる作画・演出で銀河の興亡を描く。',
+    studio: 'Production I.G',
+    creator: '田中芳樹(原作)・多田俊介(監督)',
+    year: 2018,
+    episodes: 48,
+    cours: 4,
+    genres: ['SF', '宇宙戦争', '群像劇'],
+    cast: [
+      { character: 'ラインハルト・フォン・ローエングラム', actor: '宮野真守' },
+      { character: 'ヤン・ウェンリー', actor: '鈴村健一' },
+      { character: 'ユリアン・ミンツ', actor: '梶裕貴' },
+      { character: 'パウル・フォン・オーベルシュタイン', actor: '諏訪部順一' },
+      { character: 'ウォルフガング・ミッターマイヤー', actor: '小野大輔' },
+      { character: 'オスカー・フォン・ロイエンタール', actor: '中村悠一' }
+    ]
+  },
+  {
+    id: 'ano-natsu-de-matteru',
+    title: 'あの夏で待ってる',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/ano-natsu-de-matteru.jpg',
+    synopsis: '夏休みの田舎町で、8ミリカメラを構えていた霧島海人は、湖に落ちてきた謎の光を目撃する。やがて転校生としてやってきた不思議な少女・貴月イチカと出会い、幼なじみたちを巻き込んで映画制作に打ち込む中で、切ないひと夏の恋物語が動き出す。長井龍雪監督によるオリジナルアニメ。',
+    studio: 'J.C.STAFF',
+    creator: '黒田洋介(脚本)・長井龍雪(監督)',
+    year: 2012,
+    episodes: 12,
+    cours: 1,
+    genres: ['青春', 'SF', 'ラブコメ'],
+    cast: [
+      { character: '貴月イチカ', actor: '戸松遥' },
+      { character: '霧島海人', actor: '島﨑信長' },
+      { character: '谷川柑菜', actor: '石原夏織' },
+      { character: '山乃檸檬', actor: '田村ゆかり' }
+    ]
+  },
+  {
+    id: 'eureka-seven',
+    title: 'エウレカセブン',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/eureka-seven.jpg',
+    synopsis: '空を飛ぶ乗機トラパーを駆るサーフィン感覚の若者たちが暮らす世界で、平凡な少年レントンは、伝説の傭兵部隊ゲッコーステイトの謎めいた少女エウレカと出会う。エウレカと共に成長していくレントンの姿を軸に、少年少女の成長と反乱、恋を壮大なスケールで描くオリジナルロボットアニメ「交響詩篇エウレカセブン」。',
+    studio: 'ボンズ',
+    creator: '京田知己(監督)',
+    year: 2005,
+    episodes: 50,
+    cours: 4,
+    genres: ['ロボット', 'SF', '青春'],
+    cast: [
+      { character: 'レントン・サーストン', actor: '三瓶由布子' },
+      { character: 'エウレカ', actor: '名塚佳織' },
+      { character: 'ホランド・ノヴァク', actor: '藤原啓治' },
+      { character: 'タルホ・ユーキ', actor: '根谷美智子' },
+      { character: 'チャールズ・ビームス', actor: '小杉十郎太' },
+      { character: 'レイ・ビームス', actor: '久川綾' }
+    ]
+  },
+  {
+    id: 'penguin-highway',
+    title: 'ペンギン・ハイウェイ',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/penguin-highway.jpg',
+    synopsis: '海のない郊外の街に、ある日突然大量のペンギンが出現する。小学4年生の「僕」アオヤマ君は、毎日ノートに研究記録をつける探究心旺盛な少年。歯科医院で働くお姉さんとの交流をきっかけに、ペンギン出現の謎と「世界の果て」の秘密を追う、森見登美彦の同名小説を原作とするひと夏の少年の冒険物語。',
+    studio: 'スタジオコロリド',
+    creator: '森見登美彦(原作)・石田祐康(監督)',
+    year: 2018,
+    episodes: 1,
+    cours: 0,
+    genres: ['SF', 'ファンタジー', 'ジュブナイル'],
+    cast: [
+      { character: 'アオヤマ君', actor: '北香那' },
+      { character: 'お姉さん', actor: '蒼井優' },
+      { character: 'ハマモトさん', actor: '潘めぐみ' },
+      { character: 'ウチダ君', actor: '福井美樹' },
+      { character: 'お姉さんの元夫', actor: '西島秀俊' },
+      { character: 'アオヤマ君の父', actor: '竹中直人' }
+    ]
+  },
+  {
+    id: 'knights-of-sidonia',
+    title: 'シドニアの騎士',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/knights-of-sidonia.jpg',
+    synopsis: '故郷の星を失った人類が、種子艦シドニアに乗り移民惑星を目指して航行を続ける遠未来。地下で育った少年・谷風長道は、正体不明の敵性生物ガウナと戦う人型兵器「衛人」の操縦者に選ばれ、シドニアの命運を賭けた戦いに身を投じていく。弐瓶勉の同名漫画をフル3DCGで映像化したSFロボットアニメ。',
+    studio: 'Polygon Pictures',
+    creator: '弐瓶勉(原作)・静野孔文・瀬下寛之(監督)',
+    year: 2014,
+    episodes: 24,
+    cours: 2,
+    genres: ['SF', 'ロボット', '宇宙'],
+    cast: [
+      { character: '谷風長道', actor: '逢坂良太' },
+      { character: '科戸瀬イザナ', actor: '豊崎愛生' },
+      { character: '緑川纈', actor: '金元寿子' },
+      { character: '白羽衣つむぎ', actor: '洲崎綾' },
+      { character: '岐神海苔夫', actor: '櫻井孝宏' }
+    ]
+  },
+  {
+    id: 'nasu-andalusia-no-natsu',
+    title: '那須アンダルシアの夏',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/nasu-andalusia-no-natsu.jpg',
+    synopsis: '南スペイン・アンダルシア地方を舞台に、世界的自転車ロードレース「ブエルタ・ア・エスパーニャ」に参戦する地元出身の選手ペペ・ベネンヘリ。その日はちょうど、兄アンヘルと自分のかつての恋人カルメンの結婚式でもあった。レース中に去来する複雑な思いを描く、黒田硫黄の漫画「茄子」を原作とするSTUDIO4°C制作の短編。',
+    studio: 'STUDIO4°C',
+    creator: '黒田硫黄(原作)・高坂希太郎(監督)',
+    year: 2003,
+    episodes: 1,
+    cours: 0,
+    genres: ['スポーツ', 'ヒューマンドラマ', '短編'],
+    cast: [
+      { character: 'ペペ・ベネンヘリ', actor: '大泉洋' },
+      { character: 'カルメン', actor: '小池栄子' },
+      { character: 'アンヘル', actor: '筧利夫' },
+      { character: 'エルナンデス', actor: '平野稔' }
+    ]
+  },
+  {
+    id: 'appleseed',
+    title: 'アップルシード',
+    rating: 4,
+    category: '',
+    tags: [],
+    comment: '',
+    addedDate: '2026-08-20',
+    image: 'images/favorite-anime/appleseed.jpg',
+    synopsis: '大戦を経た近未来、女戦士デュナンは戦場から理想都市オリュンポスへと連れ出される。そこでは感情を抑制されたクローン「バイオロイド」が行政を担い平和を維持していたが、デュナンはサイボーグとなった元恋人ブリアレオスと再会し、都市の平和の裏に潜む陰謀に巻き込まれていく。士郎正宗の原作を世界初のフル3Dライブアニメで映像化したSFアクション。',
+    studio: 'デジタル・フロンティア',
+    creator: '士郎正宗(原作)・荒牧伸志(監督)',
+    year: 2004,
+    episodes: 1,
+    cours: 0,
+    genres: ['SF', 'サイボーグ', 'アクション'],
+    cast: [
+      { character: 'デュナン・ナット', actor: '小林愛' },
+      { character: 'ブリアレオス・ヘカトンケイル', actor: '小杉十郎太' },
+      { character: 'ヒトミ', actor: '松岡由貴' },
+      { character: 'ウラノス将軍', actor: '藤本譲' },
+      { character: 'ハデス', actor: '子安武人' },
+      { character: '義経', actor: '森川智之' }
     ]
   }
 ];
@@ -1928,11 +2715,15 @@ function getFilteredSorted() {
   const genre = document.getElementById('genre-filter').value;
   const sortKey = document.getElementById('sort-select').value;
   const decade = document.getElementById('decade-select').value;
+  const cours = document.getElementById('cours-filter').value;
 
   let items = ANIME_DATA.filter(function (item) {
     if (state.category !== 'all' && item.category !== state.category) return false;
     if (genre !== 'all' && item.genres.indexOf(genre) === -1) return false;
     if (decade !== 'all' && Math.floor(item.year / 10) * 10 !== Number(decade)) return false;
+    if (cours === 'movie' && item.cours !== 0) return false;
+    if (cours === '4plus' && !(item.cours >= 4)) return false;
+    if (cours !== 'all' && cours !== 'movie' && cours !== '4plus' && item.cours !== Number(cours)) return false;
     if (!query) return true;
     const haystack = (item.title + ' ' + item.genres.join(' ')).toLowerCase();
     return haystack.indexOf(query) !== -1;
@@ -1961,7 +2752,7 @@ function buildDetailHtml(item) {
   return (
     '<div class="card-title-row"><h2 class="card-title">' + escapeHtml(item.title) + '</h2>' +
     badgeHtml + '</div>' +
-    '<div class="meta-row">' + item.year + '年 / ' + escapeHtml(item.studio) + ' / ' + escapeHtml(item.creator) + ' / 全' + item.episodes + '話 / ' + item.genres.map(escapeHtml).join('・') + '</div>' +
+    '<div class="meta-row">' + item.year + '年(' + (item.cours > 0 ? item.cours + 'クール' : '劇場版・OVA') + ') / ' + escapeHtml(item.studio) + ' / ' + escapeHtml(item.creator) + ' / 全' + item.episodes + '話 / ' + item.genres.map(escapeHtml).join('・') + '</div>' +
     '<p class="synopsis">' + escapeHtml(item.synopsis) + '</p>' +
     '<p class="cast-list">' + escapeHtml(castText) + '</p>' +
     (item.comment ? '<p class="comment">' + escapeHtml(item.comment) + '</p>' : '')
@@ -1980,9 +2771,13 @@ function renderList(items) {
 
 function renderGallery(items) {
   return '<div class="card-grid">' + items.map(function (item) {
+    const badgeHtml = item.category === 'hof' ? '<span class="badge hof gallery-badge">殿堂入り</span>' : '';
     return (
       '<div class="gallery-item" data-id="' + escapeHtml(item.id) + '">' +
+      '<div class="gallery-thumb">' +
       '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
+      badgeHtml +
+      '</div>' +
       '<div class="gallery-title">' + escapeHtml(item.title) + '</div>' +
       '</div>'
     );
