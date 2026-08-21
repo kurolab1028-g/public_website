@@ -126,15 +126,15 @@
   .pc-home-list { display: block; max-width: 900px; }
   .pc-home-list.hidden { display: none; }
   .pc-home-row {
-    display: flex; align-items: center; gap: 16px;
-    padding: 10px 8px; cursor: pointer; border-radius: 8px;
+    display: flex; align-items: center; gap: 20px;
+    padding: 12px; cursor: pointer; border-radius: 12px;
   }
   .pc-home-row:hover { background: var(--accent-bg); }
   .pc-home-row img {
-    width: 96px; height: 96px; object-fit: cover; border-radius: 10px; background: #000; flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(60,40,20,.15);
+    width: 180px; height: 180px; object-fit: cover; object-position: center 20%; border-radius: 12px; background: #000; flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(60,40,20,.15);
   }
-  .pc-home-row .name { font-size: 1rem; }
+  .pc-home-row .name { font-size: 1.15rem; font-weight: 600; }
 
   @media (max-width: 768px) {
     .layout { display: block; height: auto; }
