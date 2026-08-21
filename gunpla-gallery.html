@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>作ったプラモデル一覧</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  :root {
+    --bg: #f5f5f5;
+    --panel-bg: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #666666;
+    --border: #e0e0e0;
+    --accent: #2563eb;
+    --accent-bg: #eef2ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --panel-bg: #1e2126;
+      --text: #e8e8e8;
+      --text-muted: #999999;
+      --border: #2c2f36;
+      --accent: #6ea8fe;
+      --accent-bg: #1c2333;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .layout { display: flex; height: 100vh; }
+  .sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: var(--panel-bg);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+  }
+  .sidebar-item:hover { background: var(--accent-bg); }
+  .sidebar-item.active { background: var(--accent-bg); border-left: 3px solid var(--accent); }
+  .sidebar-item img {
+    width: 48px; height: 48px; object-fit: cover; border-radius: 6px; background: #000; flex-shrink: 0;
+  }
+  .sidebar-item .name { font-size: 0.85rem; line-height: 1.3; }
+  .main { flex: 1; overflow-y: auto; padding: 32px; }
+  .viewer {
+    position: relative;
+    max-width: 640px;
+    margin: 0 auto 24px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .viewer img {
+    width: 100%; height: 480px; object-fit: contain; display: block; background: #000;
+  }
+  .viewer .nav-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(0,0,0,0.5); color: #fff; border: none;
+    width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; cursor: pointer;
+  }
+  .viewer .prev { left: 12px; }
+  .viewer .next { right: 12px; }
+  .viewer .counter {
+    position: absolute; bottom: 12px; right: 16px;
+    background: rgba(0,0,0,0.6); color: #fff; font-size: 0.8rem;
+    padding: 2px 10px; border-radius: 10px;
+  }
+  .info { max-width: 640px; margin: 0 auto; }
+  .info h1 { font-size: 1.4rem; margin: 0 0 6px; }
+  .info .period { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 16px; }
+  .info .desc { line-height: 1.7; margin: 0 0 16px; }
+  .info .official-link { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+  .info .official-link:hover { text-decoration: underline; }
+  .home-grid { display: none; }
+  .back-btn { display: none; }
+
+  @media (max-width: 768px) {
+    .layout { display: block; height: auto; }
+    .sidebar { display: none; }
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 16px;
+    }
+    .home-grid.hidden { display: none; }
+    .home-card { cursor: pointer; }
+    .home-card img {
+      width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; background: #000;
+    }
+    .home-card .name { font-size: 0.78rem; margin-top: 6px; line-height: 1.3; }
+    .main { display: none; padding: 16px; }
+    .main.active { display: block; }
+    .back-btn {
+      display: inline-block; margin-bottom: 12px; background: none; border: none;
+      color: var(--accent); font-size: 0.9rem; cursor: pointer; padding: 4px 0;
+    }
+    .viewer img { height: 320px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="home-grid" id="homeGrid"></div>
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main" id="main">
+    <button class="back-btn" id="backBtn">← 一覧に戻る</button>
+    <div class="viewer" id="viewer">
+      <img id="viewerImg" src="" alt="">
+      <button class="nav-btn prev" id="prevBtn" aria-label="前の画像">‹</button>
+      <button class="nav-btn next" id="nextBtn" aria-label="次の画像">›</button>
+      <span class="counter" id="counter"></span>
+    </div>
+    <div class="info">
+      <h1 id="infoName"></h1>
+      <p class="period" id="infoPeriod"></p>
+      <p class="desc" id="infoDesc"></p>
+      <a class="official-link" id="infoUrl" href="#" target="_blank" rel="noopener">Bandai公式サイトで見る ↗</a>
+    </div>
+  </main>
+</div>
+
+<script>
+const WORKS = [
+  {
+    id: "hg-jesta-cannon",
+    name: "HGジェスタ・キャノン",
+    period: "2021年12月",
+    sortKey: 202112,
+    officialUrl: "https://bandai-hobby.net/item/01_5777/",
+    description: "「機動戦士ガンダムUC ep6」で活躍する、ジェスタの重装備仕様「ジェスタ・キャノン」をHGUC化。特徴的な両肩のビーム・キャノンと4連マルチ・ランチャーは上下可動ギミックを搭載。武器やハンドパーツが付属し、ノーマルのジェスタへの換装も可能。",
+    thumbIndex: 0,
+    images: ["_20211227-1.jpg", "_20211227-2.jpg", "_20211227-3.jpg", "_20211227-4.jpg", "_20211227-5.jpg"],
+  },
+  {
+    id: "ultraman-suit-forced-entry",
+    name: "ULTRAMAN SUIT 強行突入型",
+    period: "2021年12月",
+    sortKey: 202112,
+    officialUrl: "https://bandai-hobby.net/item/01_3395/",
+    description: "「月刊ホビージャパン」連載の外伝ストーリー『ULTRAMAN SUIT ANOTHER UNIVERSE』より、「ULTRAMAN SUIT Ver.7.5」の強行突入型が登場。成形色にブラックメタリックとダークグレーを採用し重厚感を表現、複数のボールジョイントで胸部・腹部を連結する新技術でひねり可動域が大幅アップ。オリジナル武器EYE SLUGGER、SPECIUM SWORD2本などが付属。",
+    thumbIndex: 0,
+    images: ["_20211227-6.jpg", "_20211227-7.jpg", "_20211227-8.jpg", "_20211227-9.jpg", "_20211227-10.jpg", "_20211227-11.jpg", "_20211227-12.jpg", "_20211227-13.jpg", "_20211227-14.jpg"],
+  },
+  {
+    id: "rg-sazabi",
+    name: "RG SAZABI",
+    period: "2021年12月",
+    sortKey: 202112,
+    officialUrl: "https://bandai-hobby.net/item/01_1408/",
+    description: "1/144スケール史上最大級のギミックを搭載した「RGサザビー」が登場。腕部のシリンダーやファンネルなどの武装を忠実に再現し、実機考証によってバーニアやバックパックなどの推進部に展開機構を設置。豊富なハンドパーツとサザビーを象徴する武装が付属し、劇中の両手持ちポーズなどを再現可能。",
+    thumbIndex: 0,
+    images: ["_20211227-15.jpg", "_20211227-16.jpg", "_20211227-17.jpg", "_20211227-18.jpg", "_20211227-19.jpg", "_20211227-20.jpg", "_20211227-21.jpg", "_20211227-22.jpg", "_20211227-23.jpg"],
+  },
+  {
+    id: "mg-wing-gundam-verka",
+    name: "MGウイングガンダム Ver.Ka",
+    period: "2021年12月",
+    sortKey: 202112,
+    officialUrl: "https://bandai-hobby.net/item/01_3158/",
+    description: "メカニックデザイナー・カトキハジメ氏が造形からパッケージまですべて監修した一作。機体のカラーリングをパーツ分割で再現し、肩関節は前後スイングでより広範囲な可動を実現。飛行形態への変形も可能で、脚部変形は最新設定を採用。コクピットは開閉式で1/100スケールのヒイロ・ユイフィギュアが付属。",
+    thumbIndex: 0,
+    images: ["_20211227-24.jpg", "_20211227-25.jpg", "_20211227-26.jpg", "_20211227-27.jpg", "_20211227-28.jpg", "_20211227-29.jpg"],
+  },
+  {
+    id: "rg-sinanju",
+    name: "RGシナンジュ",
+    period: "2021年12月",
+    sortKey: 202112,
+    officialUrl: "https://bandai-hobby.net/item/01_660/",
+    description: "『機動戦士ガンダムユニコーン RE:0096』より、フル・フロンタルが搭乗する真紅のMS「シナンジュ」がRG化。実機考証でデザインアレンジされた背面のフレキシブルスラスターは、内部メカを見せながら開閉する可動ギミックへ進化。金色のエングレービングはメッキ加工、赤いボディはグロスインジェクションで質感表現。",
+    thumbIndex: 0,
+    images: ["_20211227-30.jpg", "_20211227-31.jpg", "_20211227-32.jpg"],
+  },
+  {
+    id: "hg-gundam-kimaris-vidar",
+    name: "HGガンダムキマリスヴィダール",
+    period: "2021年12月",
+    sortKey: 202112,
+    officialUrl: "https://bandai-hobby.net/item/01_816/",
+    description: "『機動戦士ガンダム 鉄血のオルフェンズ』より、ガエリオ・ボードウィンが操る「ガンダム・キマリスヴィダール」がHGで登場。真の姿を取り戻した「ガンダム・キマリス」の雄姿を再現し、大型の「ドリルランス」や腰にマウント可能な刀を装備。ドリルランスの槍弾射撃姿勢も再現可能。",
+    thumbIndex: 0,
+    images: ["_20211227-33.jpg", "_20211227-34.jpg", "_20211227-35.jpg", "_20211227-36.jpg"],
+  },
+  {
+    id: "gundam-gp01-fb",
+    name: "RGガンダム試作1号機フルバーニアン",
+    period: "2021年12月",
+    sortKey: 202112,
+    officialUrl: "https://bandai-hobby.net/item/01_5841/",
+    description: "『機動戦士ガンダム0083』より、GP01ガンダム試作1号機の宇宙仕様「フルバーニアン」がRGで登場。精密なディテールでモビルスーツのリアルを表現し、コア・ブロック・システムやコア・ファイターIIの変形を完全再現。アドヴァンスドMSジョイント5を採用し、ビーム・ライフルやシールドなどの武装が付属。",
+    thumbIndex: 0,
+    images: ["_20211227-37.jpg", "_20211227-38.jpg", "_20211227-39.jpg", "_20211227-40.jpg"],
+  },
+  {
+    id: "msn-04-sazabi-bust",
+    name: "MSN-04 SAZABI(胸像)",
+    period: "2024年12月",
+    sortKey: 202412,
+    officialUrl: "https://www.gashapon.jp/products/detail.php?jan_code=4570118105615000",
+    description: "モビルスーツのバストアップを緻密に造形するディスプレイモデル「メカニカルバスト」シリーズ第7弾。『機動戦士ガンダム 逆襲のシャア』より「MSN-04 サザビー」がラインナップされ、シリーズ初のジオン系MSとなる。外装と内部メカを組み合わせることで細やかな造形と構造を楽しめる、ガシャポン(カプセルトイ)シリーズの一品。",
+    thumbIndex: 0,
+    images: ["_20241219-1.jpeg", "_20241219-2.jpeg", "_20241219-3.jpeg", "_20241219-4.jpeg", "_20241219-5.jpeg", "_20241219-6.jpeg", "_20241219-7.jpeg", "_20241219-8.png"],
+  },
+  {
+    id: "hg-messer-f02",
+    name: "HGメッサーF02型",
+    period: "2022年3月・6月",
+    sortKey: 202206,
+    officialUrl: "https://bandai-hobby.net/item/01_3633/",
+    description: "『機動戦士ガンダム 閃光のハサウェイ』より、反地球連邦政府組織マフティーの主力MS「メッサーF02型」をHGシリーズで商品化。",
+    thumbIndex: 0,
+    images: ["_20220305-19.jpg", "_20220305-20.jpg", "_20220305-21.jpg", "_20220305-22.jpg", "_20220305-23.jpg", "_20220305-24.jpg", "_20220305-25.jpg", "_20220305-26.jpg", "_20220305-27.jpg", "_20220305-28.jpg", "_20220305-29.jpg", "_20220305-30.jpg", "_20220305-31.jpg", "_20220305-32.jpg", "_20220305-33.jpg", "_20220305-34.jpg", "_20220305-35.jpg", "_20220305-36.jpg", "_20220615-18.jpeg", "_20220615-19.jpeg", "_20220615-20.jpeg", "_20220615-21.jpeg", "_20220615-22.jpeg", "_20220615-23.jpeg", "_20220615-24.jpeg"],
+  },
+  {
+    id: "hg-tolys-ritter",
+    name: "HGトーリスリッター",
+    period: "2022年3月",
+    sortKey: 202203,
+    officialUrl: "https://bandai-hobby.net/item/01_3286/",
+    description: "ゲームソフト『機動戦士ガンダム サイドストーリーズ』収録エピソード『機動戦士ガンダム外伝 ミッシングリンク』より、ペイルライダーがジオン軍に鹵獲・大規模改修された姿「トーリスリッター」を完全新規造形でHGシリーズ化。肩部サブアームの展開やバックパックからのインコム射出など複数のギミックを搭載。",
+    thumbIndex: 0,
+    images: ["_20220305-37.jpg", "_20220305-38.jpg", "_20220305-39.jpg", "_20220305-40.jpg", "_20220305-41.jpg", "_20220305-42.jpg"],
+  },
+  {
+    id: "rg-hi-nu-gundam",
+    name: "RG Hi-νガンダム",
+    period: "2022年6月",
+    sortKey: 202206,
+    officialUrl: "https://bandai-hobby.net/item/01_3524/",
+    description: "『機動戦士ガンダム 逆襲のシャア ベルトーチカ・チルドレン』に登場するHi-νガンダムを、新解釈のディテール表現とリアリティを追求してRG化。各関節の可動と連動して装甲がスライドする「マルチリンク・ギミック」や、フィン・ファンネル射撃形態を保持できる「アドヴァンスドMSジョイント」などを搭載。",
+    thumbIndex: 0,
+    images: ["_20220615-1.jpeg", "_20220615-2.jpeg", "_20220615-3.jpeg", "_20220615-4.jpeg", "_20220615-5.jpeg", "_20220615-6.jpeg", "_20220615-7.jpeg", "_20220615-8.jpeg", "_20220615-9.jpeg", "_20220615-10.jpeg", "_20220615-11.jpeg", "_20220615-12.jpeg", "_20220615-13.jpeg", "_20220615-14.jpeg", "_20220615-15.jpeg", "_20220615-16.jpeg", "_20220615-17.jpeg", "_20220615-25.jpeg", "_20220615-26.jpeg", "_20220615-27.jpeg"],
+  },
+  {
+    id: "rg-eva-unit-02",
+    name: "RGエヴァンゲリオン2号機",
+    period: "2022年11月",
+    sortKey: 202211,
+    officialUrl: "https://bandai-hobby.net/item/01_2855/",
+    description: "『新世紀エヴァンゲリオン』より、RGエヴァンゲリオンシリーズ第3弾として「正規実用型2号機(先行量産機)」を商品化。人造人間としてのリアルを追求し、装甲・パーツが干渉しない広い可動域により劇中の激しいアクションを再現。開脚時には筋肉をイメージした内部パーツが連動する。",
+    thumbIndex: 0,
+    images: ["_20221129-1.jpeg", "_20221129-2.jpeg", "_20221129-4.jpeg", "_20221129-8.jpeg", "_20221129-11.jpeg", "_20221129-14.jpeg", "_20221129-17.jpeg"],
+  },
+  {
+    id: "rg-zeong",
+    name: "RGジオング",
+    period: "2022年11月",
+    sortKey: 202211,
+    officialUrl: "https://bandai-hobby.net/item/01_3306/",
+    description: "ガンプラ40周年記念に合わせ、『機動戦士ガンダム』より「ジオング」を最新の技術とデザインでRG化。実機考証に基づくオリジナルギミックを1/144に凝縮し、「アドヴァンスドMSジョイント」を内蔵。モノアイは首の動きと連動して左右可動、手動で上下可動も可能。",
+    thumbIndex: 0,
+    images: ["_20221129-19.jpeg", "_20221129-20.jpeg", "_20221129-24.jpeg", "_20221129-25.jpeg", "_20221129-27.jpeg", "_20221129-31.jpeg", "_20221129-33.jpeg", "_20221129-34.jpeg"],
+  },
+  {
+    id: "hg-gundam-aerial",
+    name: "HGガンダムエアリアル",
+    period: "2023年1月",
+    sortKey: 202301,
+    officialUrl: "https://bandai-hobby.net/item/01_4257/",
+    description: "『機動戦士ガンダム 水星の魔女』より、主人公機ガンダム・エアリアルをHGシリーズで立体化。シールドは11のビットステイヴに分離可能で、機体各所に接続して劇中のイメージを再現できる。シェルユニットは発光状態と非発光状態を選択式で組み立て可能。",
+    thumbIndex: 0,
+    images: ["_20230130-137.jpeg", "_20230130-140.jpeg", "_20230130-141.jpeg", "_20230130-144.jpeg", "_20230130-146.jpeg", "_20230130-149.jpeg", "_20230130-151.jpeg", "_20230130-170.jpeg", "_20230130-181.jpeg", "_20230131-8.jpeg", "_20230131-9.jpeg", "_20230131-12.jpeg", "_20230131-14.jpeg", "_20230131-32.jpeg", "_20230131-34.jpeg", "_20230131-36.jpeg", "_20230131-38.jpeg", "_20230131-41.jpeg", "_20230131-42.jpeg", "_20230131-46.jpeg", "_20230131-47.jpeg"],
+  },
+  {
+    id: "miorine-rembran",
+    name: "ミオリネ・レンブラン",
+    period: "2023年1月",
+    sortKey: 202301,
+    officialUrl: "https://bandai-hobby.net/item/01_4264/",
+    description: "『機動戦士ガンダム 水星の魔女』より、ミオリネ・レンブランがFigure-rise Standardシリーズにラインアップ。豊富な表情をタンポ印刷パーツと水転写デカールで再現し、後ろ髪は可動、靴を脱いだ足パーツも付属して差し替え可能。ジョウロとシャベルが付属する点が特徴。",
+    thumbIndex: 0,
+    images: ["_20230130-109.jpeg", "_20230130-110.jpeg", "_20230130-119.jpeg", "_20230130-151.jpeg", "_20230130-158.jpeg", "_20230130-163.jpeg", "_20230130-166.jpeg", "_20230130-174.jpeg", "_20230130-179.jpeg", "_20230131-16.jpeg", "_20230131-17.jpeg", "_20230131-18.jpeg", "_20230131-22.jpeg", "_20230131-24.jpeg", "_20230131-26.jpeg", "_20230131-27.jpeg"],
+  },
+  {
+    id: "hg-kshatriya",
+    name: "HGUCクシャトリヤ",
+    period: "2023年9月",
+    sortKey: 202309,
+    officialUrl: "https://bandai-hobby.net/item/01_5660/",
+    description: "HGUCに『機動戦士ガンダムUC』シリーズが登場。ネオ・ジオン軍残党組織「袖付き」が擁するサイコミュ搭載型MSを完全立体化。1/144スケールで全高155mm、バインダーを含めると約200mm近い大きさを誇り、4基の超大型バインダーが自由に可動する。",
+    thumbIndex: 0,
+    images: ["_20230907-328.jpeg", "_20230907-335.jpeg", "_20230907-339.jpeg", "_20230907-342.jpeg", "_20230907-343.jpeg", "_20230907-344.jpeg", "_20230907-348.jpeg", "_20230907-351.jpeg", "_20230907-359.jpeg", "_20230907-364.jpeg", "_20230907-365.jpeg", "_20230907-372.jpeg", "_20230907-386.jpeg"],
+  },
+  {
+    id: "ms-06r-psycho-zaku",
+    name: "MS-06R サイコザク",
+    period: "2024年2月",
+    sortKey: 202402,
+    officialUrl: "https://bandai-hobby.net/item/01_549/",
+    description: "『機動戦士ガンダム サンダーボルト』より、ダリルが乗り込む真紅の「高機動型ザク」をアニメイメージカラーに刷新して商品化。豊富な武装に加え、バックパックには収納・展開を差し替えで再現するサブアームも付属。",
+    thumbIndex: 1,
+    images: ["_20240217-0.png", "_20240217-1.jpeg", "_20240217-10.jpeg", "_20240217-23.jpeg", "_20240217-24.jpeg", "_20240217-31.jpeg", "_20240218-1.jpeg", "_20240218-5.jpeg", "_20240218-8.jpeg", "_20240218-11.jpeg", "_20240218-13.jpeg", "_20240218-14.jpeg", "_20240218-23.jpeg", "_20240218-25.jpeg", "_20240218-32.jpeg", "_20240218-34.jpeg", "_20240218-37.jpeg", "_20240218-39.jpeg", "_20240218-44.jpeg"],
+  },
+  {
+    id: "nrx-055-bound-doc",
+    name: "NRX-055 バウンド・ドック",
+    period: "2024年9月",
+    sortKey: 202409,
+    officialUrl: "https://bandai-hobby.net/item/01_2848/",
+    description: "バウンド・ドックが全高約190mmのHG最新フォーマットで立体化。しなやかで強弱のある独特のプロポーションを損なうことなく、MSとMAの可変ギミックを徹底再現。上半身を腰部スカートアーマーに折り込むユニークな変形が可能。",
+    thumbIndex: 0,
+    images: ["_20240918-6.jpeg", "_20240918-9.jpeg", "_20240918-12.jpeg", "_20240918-14.jpeg", "_20240918-15.jpeg", "_20240918-17.jpeg", "_20240918-19.jpeg", "_20240918-20.jpeg"],
+  },
+  {
+    id: "msn-04ii-nightingale",
+    name: "HGUCナイチンゲール",
+    period: "2025年10月",
+    sortKey: 202510,
+    officialUrl: "https://bandai-hobby.net/item/01_3506/",
+    description: "『機動戦士ガンダム 逆襲のシャア ベルトーチカ・チルドレン』に登場したナイチンゲールをHG化。MAクラスの巨躯を1/144スケールで細部まで再現し、左右幅約400mm、全高約211mm。アンテナブロックの展開可動により内部ディテールが露出でき、モノアイは回転可動が可能。",
+    thumbIndex: 0,
+    images: ["_20251016-1.jpeg", "_20251016-5.jpeg", "_20251016-6.jpeg", "_20251016-7.jpeg", "_20251016-8.jpeg", "_20251016-9.jpeg", "_20251016-10.jpeg", "_20251016-12.jpeg", "_20251016-14.jpeg", "_20251016-15.jpeg", "_20251016-17.jpeg", "_20251016-20.jpeg", "_20251016-21.png", "_20251016-22.png"],
+  },
+];
+
+const IMG_BASE = "images/gunpla-gallery/";
+
+function imgSrc(work, filename) {
+  return IMG_BASE + work.id + "/" + filename;
+}
+
+function sortedWorks() {
+  return WORKS.slice().sort(function (a, b) { return b.sortKey - a.sortKey; });
+}
+
+let currentWork = null;
+let currentIndex = 0;
+
+function renderSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.innerHTML = "";
+  sortedWorks().forEach(function (work) {
+    const item = document.createElement("div");
+    item.className = "sidebar-item";
+    item.dataset.id = work.id;
+    item.innerHTML =
+      '<img src="' + imgSrc(work, work.images[work.thumbIndex]) + '" alt="' + work.name + '">' +
+      '<span class="name">' + work.name + '</span>';
+    item.addEventListener("click", function () { selectWork(work.id); });
+    sidebar.appendChild(item);
+  });
+}
+
+function selectWork(id) {
+  const work = WORKS.find(function (w) { return w.id === id; });
+  if (!work) return;
+  currentWork = work;
+  currentIndex = 0;
+  document.querySelectorAll(".sidebar-item").forEach(function (el) {
+    el.classList.toggle("active", el.dataset.id === id);
+  });
+  renderDetail();
+}
+
+function renderDetail() {
+  if (!currentWork) return;
+  document.getElementById("viewerImg").src = imgSrc(currentWork, currentWork.images[currentIndex]);
+  document.getElementById("counter").textContent = (currentIndex + 1) + " / " + currentWork.images.length;
+  document.getElementById("infoName").textContent = currentWork.name;
+  document.getElementById("infoPeriod").textContent = currentWork.period;
+  document.getElementById("infoDesc").textContent = currentWork.description;
+  document.getElementById("infoUrl").href = currentWork.officialUrl;
+}
+
+function showPrev() {
+  if (!currentWork) return;
+  currentIndex = (currentIndex - 1 + currentWork.images.length) % currentWork.images.length;
+  renderDetail();
+}
+
+function showNext() {
+  if (!currentWork) return;
+  currentIndex = (currentIndex + 1) % currentWork.images.length;
+  renderDetail();
+}
+
+document.getElementById("prevBtn").addEventListener("click", showPrev);
+document.getElementById("nextBtn").addEventListener("click", showNext);
+document.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowLeft") showPrev();
+  if (e.key === "ArrowRight") showNext();
+});
+
+function renderHomeGrid() {
+  const grid = document.getElementById("homeGrid");
+  grid.innerHTML = "";
+  sortedWorks().forEach(function (work) {
+    const card = document.createElement("div");
+    card.className = "home-card";
+    card.dataset.id = work.id;
+    card.innerHTML =
+      '<img src="' + imgSrc(work, work.images[work.thumbIndex]) + '" alt="' + work.name + '">' +
+      '<div class="name">' + work.name + '</div>';
+    card.addEventListener("click", function () {
+      selectWork(work.id);
+      document.getElementById("main").classList.add("active");
+      grid.classList.add("hidden");
+    });
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById("backBtn").addEventListener("click", function () {
+  document.getElementById("main").classList.remove("active");
+  document.getElementById("homeGrid").classList.remove("hidden");
+});
+
+renderSidebar();
+renderHomeGrid();
+selectWork(sortedWorks()[0].id);
+</script>
+</body>
+</html>
