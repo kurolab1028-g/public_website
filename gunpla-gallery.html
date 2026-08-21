@@ -56,6 +56,7 @@
     width: 48px; height: 48px; object-fit: cover; border-radius: 6px; background: #000; flex-shrink: 0;
   }
   .sidebar-item .name { font-size: 0.85rem; line-height: 1.3; }
+  .sidebar-list-link { font-weight: 600; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
   .main { flex: 1; overflow-y: auto; padding: 24px 32px; }
   .viewer {
     position: relative;
@@ -154,7 +155,12 @@
 <body>
 <div class="layout">
   <div class="home-grid" id="homeGrid"></div>
-  <nav class="sidebar" id="sidebar"></nav>
+  <nav class="sidebar">
+    <div class="sidebar-item sidebar-list-link active" id="sidebarListLink">
+      <span class="name">📋 一覧</span>
+    </div>
+    <div id="sidebar"></div>
+  </nav>
   <main class="main" id="main">
     <button class="back-btn" id="backBtn">← 一覧に戻る</button>
     <div class="pc-home-list" id="pcHomeList"></div>
@@ -433,6 +439,18 @@ function renderPcHomeList() {
     list.appendChild(row);
   });
 }
+
+function showList() {
+  currentWork = null;
+  document.getElementById("detailView").classList.remove("active");
+  document.getElementById("pcHomeList").classList.remove("hidden");
+  document.querySelectorAll(".sidebar-item").forEach(function (el) {
+    el.classList.remove("active");
+  });
+  document.getElementById("sidebarListLink").classList.add("active");
+}
+
+document.getElementById("sidebarListLink").addEventListener("click", showList);
 
 function renderFilmstrip(work) {
   const strip = document.getElementById("filmstrip");
