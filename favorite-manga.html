@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
 <title>お気に入り漫画一覧</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👍</text></svg>">
 <style>
@@ -177,6 +178,7 @@
 <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページ上部に戻る">↑ 上に戻る</button>
 <script>
 const MANGA_DATA = [
+  { id: 'stretch', title: 'ストレッチ', author: 'アキリ', volumeCount: 4, volumes: '全4巻(完結)', hof: false, comment: '', addedDate: '2026-08-21', image: 'images/favorite-manga/stretch.jpg', magazine: 'やわらかスピリッツ', firstVolumeDate: '2014-03-01', genres: ['日常', 'ルームシェア', 'ヒューマンドラマ'], amazonUrl: 'https://www.amazon.co.jp/dp/B00KDAATA8' },
   { id: 'tsuiho-cheat-second-life', title: '追放されたチート付与魔術師は気ままなセカンドライフを謳歌する。', author: '原作:六志麻あさ/漫画:業務用餅/キャラクター原案:kisui', volumeCount: 21, volumes: '21巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/tsuiho-cheat-second-life.jpg', magazine: '月刊少年マガジン', firstVolumeDate: '2022-02-09', genres: ['異世界ファンタジー', 'コメディ', '成り上がり'], amazonUrl: 'https://www.amazon.co.jp/dp/4065269210' },
   { id: 'juou-to-yakusou', title: '獣王と薬草', author: '原作:艮田竜和/作画:坂野旭/キャラクター原案:ももちち', volumeCount: 9, volumes: '9巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/juou-to-yakusou.jpg', magazine: '裏サンデー', firstVolumeDate: '2023-11-10', genres: ['医療ファンタジー', '異種族', 'ヒューマンドラマ'], amazonUrl: 'https://www.amazon.co.jp/dp/B0H6PSSTXH' },
   { id: 'ikensenki-verndio', title: '異剣戦記ヴェルンディオ', author: '七尾ナナキ', volumeCount: 9, volumes: '9巻(連載中)', hof: false, comment: '', addedDate: '2026-08-19', image: 'images/favorite-manga/ikensenki-verndio.jpg', magazine: '裏サンデー', firstVolumeDate: '2021-02-12', genres: ['ダークファンタジー', 'バトル', '経営'], amazonUrl: 'https://www.amazon.co.jp/dp/4098504561' },
