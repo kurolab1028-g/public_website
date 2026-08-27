@@ -1,0 +1,13 @@
+{
+  "name": "public-website-plugins",
+  "owner": {
+    "name": "kurolab1028-g"
+  },
+  "plugins": [
+    {
+      "name": "frontend-design",
+      "source": "./plugins/frontend-design",
+      "description": "Frontend design skill for UI/UX implementation"
+    }
+  ]
+}
