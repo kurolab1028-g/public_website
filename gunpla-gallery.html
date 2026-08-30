@@ -155,10 +155,30 @@
     .topbar, .hero, .layout { padding-left: 22px; padding-right: 22px; }
     .hero { padding-top: 48px; }
     .layout { flex-direction: column; gap: 0; }
-    .sidebar { width: 100%; padding-top: 24px; }
     main.main { width: 100%; padding-top: 24px; }
     .viewer img { height: 320px; }
-    .globalnav a { padding: 10px 16px 9px; font-size: 12px; }
+    .globalnav a { padding: 10px 14px 9px; font-size: 12px; letter-spacing: 0.12em; }
+    .wordmark { font-size: 10px; letter-spacing: 0.24em; }
+    /* 作品切替は縦一列だと長すぎるため、横スクロールの選択バーにする */
+    .sidebar { width: 100%; padding: 22px 0 8px; }
+    #sidebar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
+    .sidebar-item {
+      flex-direction: column; align-items: flex-start; gap: 6px;
+      width: 108px; flex-shrink: 0; border-top: 0; padding: 0;
+    }
+    .sidebar-item img { width: 108px; height: 76px; }
+    .sidebar-item .sidebar-num { width: auto; }
+    .sidebar-item .name { font-size: 11px; line-height: 1.4; }
+    .sidebar-item.active img { opacity: 1; outline: 1px solid var(--rule-strong); outline-offset: 2px; }
+  }
+  @media (max-width: 560px) {
+    .topbar { padding: 10px 16px; gap: 0; }
+    .topbar, .hero, .layout { padding-left: 16px; padding-right: 16px; }
+    .wordmark { display: none; }
+    .globalnav { width: 100%; }
+    .globalnav a { flex: 1 1 0; min-width: 0; padding: 11px 4px 10px; font-size: 12px; letter-spacing: 0.06em; }
+    .globalnav a .nav-jp { font-size: 8.5px; letter-spacing: 0.08em; }
+    .viewer img { height: 250px; }
   }
 </style>
 </head>
@@ -173,7 +193,7 @@
 <section class="hero">
   <span class="hero-index caps">Category &mdash; 04</span>
   <h1>Gunpla</h1>
-  <p class="hero-jp">これまでに組み立てたプラモデルの記録。左の一覧から作品を選ぶと、写真と製品情報を表示します。</p>
+  <p class="hero-jp">これまでに組み立てたプラモデルの記録。一覧から作品を選ぶと、写真と製品情報を表示します。</p>
   <p class="hero-count caps" id="hero-count"></p>
 </section>
 

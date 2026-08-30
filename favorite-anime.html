@@ -226,20 +226,28 @@
     .topbar, .hero, .controls, .page-layout { padding-left: 22px; padding-right: 22px; }
     .hero { padding-top: 48px; }
     .page-layout { flex-direction: column; gap: 0; }
-    .sidebar { width: 100%; padding-top: 24px; }
+    /* 索引は縦に長くなりすぎるため小さい画面では隠す(検索・絞り込みで代替) */
+    .sidebar { display: none; }
     main { padding-top: 24px; width: 100%; }
     .card-grid { grid-template-columns: repeat(3, 1fr); gap: 32px 18px; }
     .modal-box { padding: 56px 24px 60px; }
+    .globalnav a { padding: 10px 14px 9px; font-size: 12px; letter-spacing: 0.12em; }
+    .wordmark { font-size: 10px; letter-spacing: 0.24em; }
   }
-  @media (max-width: 520px) {
+  @media (max-width: 560px) {
     .card-grid { grid-template-columns: repeat(2, 1fr); }
     .gallery-title { font-size: 14px; }
     .card-title { font-size: 19px; }
     .card { flex-wrap: wrap; gap: 18px; }
     .card-num { width: 100%; padding-top: 0; }
     .card img { width: 84px; }
-    .globalnav { gap: 16px; }
-    .topbar { padding-top: 14px; padding-bottom: 14px; }
+    /* 3つのタブを横一杯に均等配置し、見切れを防ぐ */
+    .topbar { padding: 10px 16px; gap: 0; }
+    .topbar, .hero, .controls, .page-layout { padding-left: 16px; padding-right: 16px; }
+    .wordmark { display: none; }
+    .globalnav { width: 100%; }
+    .globalnav a { flex: 1 1 0; min-width: 0; padding: 11px 4px 10px; font-size: 12px; letter-spacing: 0.06em; }
+    .globalnav a .nav-jp { font-size: 8.5px; letter-spacing: 0.08em; }
   }
 </style>
 </head>
