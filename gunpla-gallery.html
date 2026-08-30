@@ -4,211 +4,203 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta charset="utf-8">
 <title>作ったプラモデル一覧</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129302;</text></svg>">
 <style>
   :root {
-    --bg: #faf7f2;
-    --panel-bg: #fffdfa;
-    --text: #2b2420;
-    --text-muted: #9c8f80;
-    --border: #ece3d6;
-    --accent: #bf6a44;
-    --accent-bg: #f3e3d6;
-    --shadow: 0 2px 16px rgba(60,40,20,.08);
-    --shadow-lg: 0 8px 30px rgba(60,40,20,.15);
+    --bg: #eceae5;
+    --bg-sub: #dedbd4;
+    --panel: #f6f5f2;
+    --text: #17171a;
+    --text-muted: #7d7c76;
+    --rule: #d2cfc8;
+    --rule-strong: #17171a;
+    --mark: #17171a;
+    --on-mark: #eceae5;
+    --stage: #1c1c1a;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1c1712;
-      --panel-bg: #241d17;
-      --text: #f2e8dd;
-      --text-muted: #a89a89;
-      --border: #3a2f26;
-      --accent: #e08a5e;
-      --accent-bg: #3a2a20;
-      --shadow: 0 2px 16px rgba(0,0,0,.35);
-      --shadow-lg: 0 8px 30px rgba(0,0,0,.45);
+      --bg: #3a3a38;
+      --bg-sub: #2e2e2c;
+      --panel: #444442;
+      --text: #f0efec;
+      --text-muted: #a5a49d;
+      --rule: #55554f;
+      --rule-strong: #f0efec;
+      --mark: #f0efec;
+      --on-mark: #3a3a38;
+      --stage: #232321;
     }
   }
   * { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
   body {
     margin: 0;
-    font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
     background: var(--bg);
     color: var(--text);
+    font-family: "Helvetica Neue", Helvetica, Arial, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    line-height: 1.9;
+    letter-spacing: 0.04em;
   }
-  .layout { display: flex; height: 100vh; }
-  .sidebar {
-    width: 300px;
-    flex-shrink: 0;
-    background: var(--panel-bg);
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
+  a { color: inherit; text-decoration: none; }
+  .caps { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; line-height: 1; font-weight: 400; }
+
+  /* ---- top bar ---- */
+  .topbar {
+    position: sticky; top: 0; z-index: 80;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    padding: 18px 40px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--rule);
   }
+  .wordmark { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; }
+  .globalnav { display: flex; border: 1px solid var(--rule-strong); }
+  .globalnav a {
+    display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center;
+    padding: 11px 26px 10px; color: var(--text);
+    border-right: 1px solid var(--rule-strong);
+    font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700;
+    transition: background .2s ease, color .2s ease;
+  }
+  .globalnav a:last-child { border-right: 0; }
+  .globalnav a .nav-jp { font-size: 9px; letter-spacing: 0.14em; font-weight: 400; color: var(--text-muted); text-transform: none; }
+  .globalnav a:hover { background: var(--panel); }
+  .globalnav a.active { background: var(--mark); color: var(--on-mark); }
+  .globalnav a.active .nav-jp { color: var(--on-mark); opacity: .72; }
+
+  /* ---- hero ---- */
+  .hero { padding: 72px 40px 40px; }
+  .hero-index { display: block; color: var(--text-muted); margin-bottom: 22px; }
+  .hero h1 {
+    margin: 0; font-size: clamp(44px, 9vw, 116px); line-height: 0.92;
+    font-weight: 400; letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  .hero-jp { margin: 20px 0 0; font-size: 13px; color: var(--text-muted); max-width: 34em; }
+  .hero-count { margin-top: 28px; color: var(--text-muted); }
+
+  /* ---- layout ---- */
+  .layout {
+    display: flex; gap: 56px; align-items: flex-start;
+    padding: 0 40px 120px; border-top: 1px solid var(--rule);
+  }
+  .sidebar { width: 268px; flex-shrink: 0; padding: 32px 0 20px; }
+  .sidebar-heading { color: var(--text-muted); margin: 0 0 14px; }
   .sidebar-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    cursor: pointer;
+    display: flex; gap: 12px; align-items: center;
+    padding: 10px 0; cursor: pointer; border-top: 1px solid var(--rule);
   }
-  .sidebar-item:hover { background: var(--accent-bg); }
-  .sidebar-item.active { background: var(--accent-bg); border-left: 3px solid var(--accent); }
   .sidebar-item img {
-    width: 48px; height: 48px; object-fit: cover; border-radius: 8px; background: #000; flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(60,40,20,.15);
+    width: 46px; height: 46px; object-fit: cover; flex-shrink: 0; background: var(--stage);
+    transition: opacity .3s ease;
   }
-  .sidebar-item .name { font-size: 0.85rem; line-height: 1.3; }
-  .sidebar-list-link { font-weight: 600; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
-  .main { flex: 1; overflow-y: auto; padding: 24px 32px; }
-  .viewer {
-    position: relative;
-    background: #1c1712;
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow-lg);
-  }
-  .viewer img {
-    width: 100%; height: 70vh; max-height: 820px; object-fit: contain; display: block; background: #1c1712;
-  }
+  .sidebar-num { font-size: 9px; letter-spacing: 0.1em; color: var(--text-muted); width: 20px; flex-shrink: 0; }
+  .sidebar-item .name { font-size: 13px; line-height: 1.45; border-bottom: 1px solid transparent; }
+  .sidebar-item:hover .name { border-bottom-color: var(--rule-strong); }
+  .sidebar-item.active .name { border-bottom-color: var(--rule-strong); }
+  .sidebar-item.active img { opacity: .6; }
+
+  main.main { flex: 1; min-width: 0; padding-top: 32px; }
+  .detail-num { display: block; color: var(--text-muted); margin-bottom: 14px; }
+
+  /* ---- viewer ---- */
+  .viewer { position: relative; background: var(--stage); margin-bottom: 22px; }
+  .viewer img { width: 100%; height: min(60vh, 560px); object-fit: contain; display: block; }
   .viewer .nav-btn {
     position: absolute; top: 50%; transform: translateY(-50%);
-    background: rgba(43,36,32,0.45); backdrop-filter: blur(2px); color: #fff; border: none;
-    width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; cursor: pointer;
+    background: none; border: 1px solid rgba(255,255,255,.55); color: #fff;
+    width: 40px; height: 40px; font-size: 18px; cursor: pointer; line-height: 1;
+    transition: background .2s ease;
   }
-  .viewer .prev { left: 12px; }
-  .viewer .next { right: 12px; }
+  .viewer .nav-btn:hover { background: rgba(255,255,255,.16); }
+  .viewer .prev { left: 16px; }
+  .viewer .next { right: 16px; }
   .viewer .counter {
-    position: absolute; bottom: 12px; right: 16px;
-    background: rgba(43,36,32,0.55); color: #fdf6ef; font-size: 0.8rem;
-    padding: 2px 10px; border-radius: 10px;
+    position: absolute; bottom: 14px; right: 16px; color: #fff;
+    font-size: 10px; letter-spacing: 0.18em;
   }
-  .filmstrip {
-    display: flex; gap: 8px; overflow-x: auto;
-    padding: 2px 2px 18px;
-  }
-  .filmstrip img {
-    width: 72px; height: 72px; object-fit: cover; border-radius: 8px;
-    flex-shrink: 0; cursor: pointer; background: #1c1712;
-    opacity: 0.5; box-shadow: 0 0 0 0 transparent; transition: box-shadow .15s, opacity .15s;
-  }
-  .filmstrip img.active { opacity: 1; box-shadow: 0 0 0 2px var(--accent); }
-  .info {
-    max-width: 900px; background: var(--panel-bg); border-radius: 14px;
-    padding: 20px 24px; box-shadow: var(--shadow);
-  }
-  .info-toggle {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    cursor: default;
-  }
-  .info-toggle h1 { font-size: 1.4rem; margin: 0; font-weight: 700; }
-  .info-toggle .chev { display: none; }
-  .info-body { display: block; }
-  .info .period {
-    display: inline-block; color: var(--accent); background: var(--accent-bg);
-    font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 20px;
-    margin: 10px 0 16px;
-  }
-  .info .desc { line-height: 1.7; margin: 0 0 18px; color: var(--text); }
-  .info .official-link {
-    display: inline-block; color: #fff; background: var(--accent);
-    text-decoration: none; font-size: 0.85rem; font-weight: 600;
-    padding: 8px 18px; border-radius: 20px;
-  }
-  .info .official-link:hover { opacity: 0.88; }
-  .home-grid { display: none; }
-  .back-btn { display: none; }
-  .detail-view { display: none; }
-  .detail-view.active { display: block; }
-  .pc-home-list { display: flex; flex-direction: column; gap: 28px; max-width: 560px; }
-  .pc-home-list.hidden { display: none; }
-  .pc-home-row { display: block; cursor: pointer; }
-  .pc-home-row img {
-    display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: center 20%;
-    border-radius: 14px; background: #000; box-shadow: var(--shadow-lg);
-    transition: box-shadow .15s;
-  }
-  .pc-home-row:hover img { box-shadow: 0 10px 34px rgba(60,40,20,.22); }
-  .pc-home-row .name {
-    display: block; margin-top: 12px; font-size: 1.15rem; font-weight: 600;
-  }
-  .pc-home-row:hover .name { color: var(--accent); }
 
-  @media (max-width: 768px) {
-    .layout { display: block; height: auto; }
-    .sidebar { display: none; }
-    .pc-home-list { display: none !important; }
-    .home-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      padding: 16px;
-    }
-    .home-grid.hidden { display: none; }
-    .home-card { cursor: pointer; }
-    .home-card img {
-      width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: center 20%; border-radius: 10px; background: #000;
-      box-shadow: 0 2px 10px rgba(60,40,20,.15);
-    }
-    .home-card .name { font-size: 0.85rem; margin-top: 6px; line-height: 1.3; }
-    .main { display: none; padding: 16px 0; }
-    .main.active { display: block; }
-    .back-btn {
-      display: inline-block; margin: 0 16px 12px; background: none; border: none;
-      color: var(--accent); font-size: 0.9rem; cursor: pointer; padding: 4px 0;
-    }
-    .viewer { border-radius: 0; margin-bottom: 8px; box-shadow: none; }
-    .viewer img { height: 58vh; }
-    .filmstrip { padding-left: 16px; padding-right: 16px; }
-    .filmstrip img { width: 56px; height: 56px; }
-    .info { margin: 0 16px; padding: 14px 18px; max-width: none; }
-    .info-toggle {
-      cursor: pointer; border-top: 1px solid var(--border); padding-top: 10px;
-    }
-    .info-toggle h1 { font-size: 1.05rem; margin: 0; }
-    .info-toggle .chev { display: inline; color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
-    .info-body { display: none; padding-top: 10px; }
-    .info.expanded .info-body { display: block; }
+  /* ---- filmstrip ---- */
+  .filmstrip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 30px; }
+  .filmstrip button {
+    border: 0; padding: 0; background: var(--stage); cursor: pointer; flex-shrink: 0;
+    width: 68px; height: 50px; opacity: .5; transition: opacity .25s ease;
+  }
+  .filmstrip button img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .filmstrip button:hover { opacity: .85; }
+  .filmstrip button.active { opacity: 1; outline: 1px solid var(--rule-strong); outline-offset: 2px; }
+
+  /* ---- info ---- */
+  .info { max-width: 62em; }
+  .info h2 { font-size: 23px; font-weight: 400; margin: 0 0 8px; line-height: 1.38; letter-spacing: 0.005em; }
+  .info .period { color: var(--text-muted); font-size: 10.5px; letter-spacing: 0.1em; margin: 0 0 16px; }
+  .info .desc { font-size: 12.5px; line-height: 1.95; margin: 0 0 20px; }
+  .ext-link {
+    display: inline-block; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    border-bottom: 1px solid var(--rule-strong); padding-bottom: 2px;
+  }
+  .ext-link:hover { color: var(--text-muted); border-bottom-color: var(--text-muted); }
+
+  .back-btn { display: none; }
+  #back-to-top {
+    position: fixed; bottom: 0; right: 0; z-index: 90;
+    padding: 14px 20px; border: 0; border-top: 1px solid var(--rule); border-left: 1px solid var(--rule);
+    background: var(--panel); color: var(--text-muted); cursor: pointer;
+    font-family: inherit; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  #back-to-top:hover { color: var(--text); }
+
+  @media (max-width: 860px) {
+    .topbar, .hero, .layout { padding-left: 22px; padding-right: 22px; }
+    .hero { padding-top: 48px; }
+    .layout { flex-direction: column; gap: 0; }
+    .sidebar { width: 100%; padding-top: 24px; }
+    main.main { width: 100%; padding-top: 24px; }
+    .viewer img { height: 320px; }
+    .globalnav a { padding: 10px 16px 9px; font-size: 12px; }
   }
 </style>
 </head>
 <body>
+<header class="topbar">
+  <span class="wordmark">FAVORITES ARCHIVE</span>
+  <nav class="globalnav">
+    <a href="#" class="active">Gunpla<span class="nav-jp">プラモデル</span></a>
+  </nav>
+</header>
+
+<section class="hero">
+  <span class="hero-index caps">Category &mdash; 04</span>
+  <h1>Gunpla</h1>
+  <p class="hero-jp">これまでに組み立てたプラモデルの記録。左の一覧から作品を選ぶと、写真と製品情報を表示します。</p>
+  <p class="hero-count caps" id="hero-count"></p>
+</section>
+
 <div class="layout">
-  <div class="home-grid" id="homeGrid"></div>
   <nav class="sidebar">
-    <div class="sidebar-item sidebar-list-link active" id="sidebarListLink">
-      <span class="name">📋 一覧</span>
-    </div>
+    <p class="sidebar-heading caps">Index &mdash; All Works</p>
     <div id="sidebar"></div>
   </nav>
   <main class="main" id="main">
-    <button class="back-btn" id="backBtn">← 一覧に戻る</button>
-    <div class="pc-home-list" id="pcHomeList"></div>
-    <div class="detail-view" id="detailView">
-      <div class="viewer" id="viewer">
-        <img id="viewerImg" src="" alt="">
-        <button class="nav-btn prev" id="prevBtn" aria-label="前の画像">‹</button>
-        <button class="nav-btn next" id="nextBtn" aria-label="次の画像">›</button>
-        <span class="counter" id="counter"></span>
-      </div>
-      <div class="filmstrip" id="filmstrip"></div>
-      <div class="info" id="info">
-        <div class="info-toggle" id="infoToggle">
-          <h1 id="infoName"></h1>
-          <span class="chev" id="infoChev">詳細 ▾</span>
-        </div>
-        <div class="info-body">
-          <p class="period" id="infoPeriod"></p>
-          <p class="desc" id="infoDesc"></p>
-          <a class="official-link" id="infoUrl" href="#" target="_blank" rel="noopener">Bandai公式サイトで見る ↗</a>
-        </div>
-      </div>
+    <span class="detail-num caps" id="detailNum"></span>
+    <div class="viewer" id="viewer">
+      <img id="viewerImg" src="" alt="">
+      <button class="nav-btn prev" id="prevBtn" aria-label="前の画像">&#8249;</button>
+      <button class="nav-btn next" id="nextBtn" aria-label="次の画像">&#8250;</button>
+      <span class="counter" id="counter"></span>
+    </div>
+    <div class="filmstrip" id="filmstrip"></div>
+    <div class="info">
+      <h2 id="infoName"></h2>
+      <p class="period" id="infoPeriod"></p>
+      <p class="desc" id="infoDesc"></p>
+      <a class="ext-link" id="infoUrl" href="#" target="_blank" rel="noopener">Bandai Hobby Site &#8599;</a>
     </div>
   </main>
 </div>
+
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページ上部に戻る">&uarr; Top</button>
 
 <script>
 const WORKS = [
@@ -414,20 +406,28 @@ function sortedWorks() {
   return WORKS.slice().sort(function (a, b) { return b.sortKey - a.sortKey; });
 }
 
+function pad(n) {
+  return String(n).padStart(3, '0');
+}
+
 let currentWork = null;
 let currentIndex = 0;
 
 function renderSidebar() {
   const sidebar = document.getElementById("sidebar");
   sidebar.innerHTML = "";
-  sortedWorks().forEach(function (work) {
+  sortedWorks().forEach(function (work, i) {
     const item = document.createElement("div");
     item.className = "sidebar-item";
     item.dataset.id = work.id;
     item.innerHTML =
+      '<span class="sidebar-num">' + pad(i + 1) + '</span>' +
       '<img src="' + imgSrc(work, work.images[work.thumbIndex]) + '" alt="' + work.name + '" loading="lazy" decoding="async">' +
       '<span class="name">' + work.name + '</span>';
-    item.addEventListener("click", function () { selectWork(work.id); });
+    item.addEventListener("click", function () {
+      selectWork(work.id);
+      document.getElementById("main").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     sidebar.appendChild(item);
   });
 }
@@ -440,76 +440,34 @@ function selectWork(id) {
   document.querySelectorAll(".sidebar-item").forEach(function (el) {
     el.classList.toggle("active", el.dataset.id === id);
   });
-  document.getElementById("info").classList.remove("expanded");
-  document.getElementById("infoChev").textContent = "詳細 ▾";
-  document.getElementById("detailView").classList.add("active");
-  document.getElementById("pcHomeList").classList.add("hidden");
-  renderFilmstrip(work);
   renderDetail();
 }
 
-function renderPcHomeList() {
-  const list = document.getElementById("pcHomeList");
-  list.innerHTML = "";
-  sortedWorks().forEach(function (work) {
-    const row = document.createElement("div");
-    row.className = "pc-home-row";
-    row.dataset.id = work.id;
-    row.innerHTML =
-      '<img src="' + imgSrc(work, work.images[work.thumbIndex]) + '" alt="' + work.name + '" loading="lazy" decoding="async">' +
-      '<span class="name">' + work.name + '</span>';
-    row.addEventListener("click", function () { selectWork(work.id); });
-    list.appendChild(row);
-  });
-}
-
-function showList() {
-  currentWork = null;
-  document.getElementById("detailView").classList.remove("active");
-  document.getElementById("pcHomeList").classList.remove("hidden");
-  document.querySelectorAll(".sidebar-item").forEach(function (el) {
-    el.classList.remove("active");
-  });
-  document.getElementById("sidebarListLink").classList.add("active");
-}
-
-document.getElementById("sidebarListLink").addEventListener("click", showList);
-
-function renderFilmstrip(work) {
+function renderFilmstrip() {
   const strip = document.getElementById("filmstrip");
   strip.innerHTML = "";
-  work.images.forEach(function (filename, idx) {
-    const img = document.createElement("img");
-    img.src = imgSrc(work, filename);
-    img.alt = work.name + " " + (idx + 1);
-    img.loading = "lazy";
-    img.decoding = "async";
-    img.dataset.index = idx;
-    img.addEventListener("click", function () {
-      currentIndex = idx;
-      renderDetail();
-    });
-    strip.appendChild(img);
-  });
-}
-
-function syncFilmstrip() {
-  document.querySelectorAll("#filmstrip img").forEach(function (img) {
-    const isActive = Number(img.dataset.index) === currentIndex;
-    img.classList.toggle("active", isActive);
-    if (isActive) img.scrollIntoView({ inline: "center", block: "nearest" });
+  currentWork.images.forEach(function (filename, i) {
+    const btn = document.createElement("button");
+    btn.className = i === currentIndex ? "active" : "";
+    btn.setAttribute("aria-label", (i + 1) + "枚目を表示");
+    btn.innerHTML = '<img src="' + imgSrc(currentWork, filename) + '" alt="" loading="lazy" decoding="async">';
+    btn.addEventListener("click", function () { currentIndex = i; renderDetail(); });
+    strip.appendChild(btn);
   });
 }
 
 function renderDetail() {
   if (!currentWork) return;
+  const order = sortedWorks().findIndex(function (w) { return w.id === currentWork.id; });
+  document.getElementById("detailNum").textContent = pad(order + 1) + " / " + pad(WORKS.length);
   document.getElementById("viewerImg").src = imgSrc(currentWork, currentWork.images[currentIndex]);
+  document.getElementById("viewerImg").alt = currentWork.name;
   document.getElementById("counter").textContent = (currentIndex + 1) + " / " + currentWork.images.length;
   document.getElementById("infoName").textContent = currentWork.name;
   document.getElementById("infoPeriod").textContent = currentWork.period;
   document.getElementById("infoDesc").textContent = currentWork.description;
   document.getElementById("infoUrl").href = currentWork.officialUrl;
-  syncFilmstrip();
+  renderFilmstrip();
 }
 
 function showPrev() {
@@ -531,39 +489,9 @@ document.addEventListener("keydown", function (e) {
   if (e.key === "ArrowRight") showNext();
 });
 
-document.getElementById("infoToggle").addEventListener("click", function () {
-  const info = document.getElementById("info");
-  const expanded = info.classList.toggle("expanded");
-  document.getElementById("infoChev").textContent = expanded ? "閉じる ▴" : "詳細 ▾";
-});
-
-function renderHomeGrid() {
-  const grid = document.getElementById("homeGrid");
-  grid.innerHTML = "";
-  sortedWorks().forEach(function (work) {
-    const card = document.createElement("div");
-    card.className = "home-card";
-    card.dataset.id = work.id;
-    card.innerHTML =
-      '<img src="' + imgSrc(work, work.images[work.thumbIndex]) + '" alt="' + work.name + '" loading="lazy" decoding="async">' +
-      '<div class="name">' + work.name + '</div>';
-    card.addEventListener("click", function () {
-      selectWork(work.id);
-      document.getElementById("main").classList.add("active");
-      grid.classList.add("hidden");
-    });
-    grid.appendChild(card);
-  });
-}
-
-document.getElementById("backBtn").addEventListener("click", function () {
-  document.getElementById("main").classList.remove("active");
-  document.getElementById("homeGrid").classList.remove("hidden");
-});
-
+document.getElementById("hero-count").textContent = WORKS.length + " Works Built";
 renderSidebar();
-renderHomeGrid();
-renderPcHomeList();
+selectWork(sortedWorks()[0].id);
 </script>
 </body>
 </html>

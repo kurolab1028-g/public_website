@@ -4,184 +4,349 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta charset="utf-8">
 <title>お気に入り漫画一覧</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👍</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128077;</text></svg>">
 <style>
+
   :root {
-    --bg: #faf7f2;
-    --card-bg: #fffdfa;
-    --text: #2b2420;
-    --text-muted: #9c8f80;
-    --border: #ece3d6;
-    --accent: #bf6a44;
-    --accent-bg: #f3e3d6;
-    --shadow: 0 2px 16px rgba(60,40,20,.08);
-    --shadow-lg: 0 8px 30px rgba(60,40,20,.15);
+    --bg: #eceae5;
+    --bg-sub: #dedbd4;
+    --panel: #f6f5f2;
+    --text: #17171a;
+    --text-muted: #7d7c76;
+    --rule: #d2cfc8;
+    --rule-strong: #17171a;
+    --mark: #17171a;
+    --on-mark: #eceae5;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1c1712;
-      --card-bg: #241d17;
-      --text: #f2e8dd;
-      --text-muted: #a89a89;
-      --border: #3a2f26;
-      --accent: #e08a5e;
-      --accent-bg: #3a2a20;
-      --shadow: 0 2px 16px rgba(0,0,0,.35);
-      --shadow-lg: 0 8px 30px rgba(0,0,0,.45);
+      --bg: #3a3a38;
+      --bg-sub: #2e2e2c;
+      --panel: #444442;
+      --text: #f0efec;
+      --text-muted: #a5a49d;
+      --rule: #55554f;
+      --rule-strong: #f0efec;
+      --mark: #f0efec;
+      --on-mark: #3a3a38;
     }
   }
   * { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
     background: var(--bg);
     color: var(--text);
+    font-family: "Helvetica Neue", Helvetica, Arial, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    line-height: 1.9;
+    letter-spacing: 0.04em;
   }
-  header.page-header { padding: 24px 20px 16px; max-width: 1320px; margin: 0 auto; }
-  h1 { margin: 0 0 4px; font-size: 1.6rem; }
-  .subtitle { color: var(--text-muted); margin: 0 0 20px; font-size: 0.9rem; }
-  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
-  .view-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .view-toggle button { padding: 8px 14px; border: none; background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 0.85rem; }
-  .view-toggle button.active { background: var(--accent); color: #fff; }
-  .filter-badges { display: inline-flex; gap: 6px; }
-  .filter-badges button { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 0.8rem; }
-  .filter-badges button.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-  input[type="search"] { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.85rem; min-width: 180px; }
-  select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.85rem; }
-  .page-layout { max-width: 1320px; margin: 0 auto; padding: 0 20px 40px; display: flex; gap: 24px; align-items: flex-start; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ---- micro caps type ---- */
+  .caps {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    line-height: 1;
+    font-weight: 400;
+  }
+
+  /* ---- top bar ---- */
+  .topbar {
+    position: sticky; top: 0; z-index: 80;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px;
+    padding: 18px 40px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--rule);
+  }
+  .wordmark { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; }
+  .globalnav { display: flex; gap: 0; border: 1px solid var(--rule-strong); }
+  .globalnav a {
+    display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center;
+    padding: 11px 26px 10px; color: var(--text);
+    border-right: 1px solid var(--rule-strong);
+    font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700;
+    transition: background .2s ease, color .2s ease;
+  }
+  .globalnav a:last-child { border-right: 0; }
+  .globalnav a .nav-jp {
+    font-size: 9px; letter-spacing: 0.14em; font-weight: 400;
+    color: var(--text-muted); text-transform: none;
+  }
+  .globalnav a:hover { background: var(--panel); }
+  .globalnav a.active { background: var(--mark); color: var(--on-mark); }
+  .globalnav a.active .nav-jp { color: var(--on-mark); opacity: .72; }
+
+  /* ---- hero ---- */
+  .hero { padding: 72px 40px 40px; }
+  .hero-index { display: block; color: var(--text-muted); margin-bottom: 22px; }
+  .hero h1 {
+    margin: 0;
+    font-size: clamp(44px, 9vw, 116px);
+    line-height: 0.92;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .hero-jp { margin: 20px 0 0; font-size: 13px; color: var(--text-muted); max-width: 34em; }
+  .hero-count { margin-top: 28px; color: var(--text-muted); }
+
+  /* ---- controls ---- */
+  .controls {
+    border-top: 1px solid var(--rule);
+    padding: 0 40px;
+  }
+  .control-row {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 28px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .control-label { color: var(--text-muted); flex-shrink: 0; min-width: 66px; }
+  .switch { display: flex; flex-wrap: wrap; gap: 18px; }
+  .switch button {
+    border: 0; background: none; padding: 0 0 3px; margin: 0; cursor: pointer;
+    color: var(--text-muted); font-family: inherit;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    border-bottom: 1px solid transparent;
+  }
+  .switch button:hover { color: var(--text); }
+  .switch button.active { color: var(--text); border-bottom-color: var(--rule-strong); }
+  .selects { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: baseline; }
+  select, input[type="search"] {
+    appearance: none; -webkit-appearance: none;
+    border: 0; border-bottom: 1px solid var(--rule);
+    background: transparent; color: var(--text);
+    font-family: inherit; font-size: 12px; letter-spacing: 0.06em;
+    padding: 4px 18px 5px 0; border-radius: 0; cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: right 5px top 55%, right 0px top 55%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+  select:focus, input[type="search"]:focus { outline: none; border-bottom-color: var(--rule-strong); }
+  input[type="search"] {
+    background-image: none; min-width: 220px; cursor: text;
+  }
+  input[type="search"]::placeholder { color: var(--text-muted); }
+  option { background: var(--bg); color: var(--text); }
+
+  /* ---- layout ---- */
+  .page-layout { display: flex; gap: 56px; align-items: flex-start; padding: 0 40px 120px; }
   .sidebar {
-    width: 220px; flex-shrink: 0; border-right: 1px solid var(--border); padding-right: 16px;
-    max-height: calc(100vh - 160px); overflow-y: auto; position: sticky; top: 20px;
+    width: 214px; flex-shrink: 0;
+    padding: 32px 0 20px;
   }
-  .sidebar-heading { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin: 0 0 8px; }
-  .sidebar-item { padding: 6px 8px; border-radius: 8px; cursor: pointer; margin-bottom: 2px; }
-  .sidebar-item:hover { background: var(--accent-bg); }
-  .sidebar-title { font-size: 0.82rem; font-weight: 600; line-height: 1.3; }
-  .sidebar-author { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
-  main { flex: 1; min-width: 0; }
-  @media (max-width: 780px) {
-    .page-layout { flex-direction: column; }
-    .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 12px; max-height: 240px; position: static; }
+  .sidebar-heading { color: var(--text-muted); margin: 0 0 14px; }
+  .sidebar-item {
+    display: flex; gap: 10px; align-items: baseline;
+    padding: 10px 0; cursor: pointer;
+    border-top: 1px solid var(--rule);
   }
-  .count-line { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 12px; }
-  .empty-state { text-align: center; color: var(--text-muted); padding: 60px 20px; }
-  .card-list { display: flex; flex-direction: column; gap: 16px; }
-  .card { display: flex; gap: 16px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-  .card img { width: 120px; height: 168px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: var(--border); box-shadow: 0 2px 8px rgba(60,40,20,.15); }
+  .sidebar-item:hover .sidebar-title { border-bottom-color: var(--rule-strong); }
+  .sidebar-num { font-size: 9px; letter-spacing: 0.1em; color: var(--text-muted); flex-shrink: 0; width: 20px; }
+  .sidebar-title { font-size: 13.5px; line-height: 1.5; border-bottom: 1px solid transparent; }
+  .sidebar-year { font-size: 9px; color: var(--text-muted); letter-spacing: 0.1em; margin-left: auto; flex-shrink: 0; }
+  main { flex: 1; min-width: 0; padding-top: 32px; }
+  .result-count { color: var(--text-muted); margin-bottom: 26px; }
+  .empty-state { padding: 90px 0; color: var(--text-muted); }
+
+  /* ---- grid view ---- */
+  .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 44px 26px; }
+  .gallery-item { cursor: pointer; }
+  .gallery-thumb { position: relative; overflow: hidden; background: var(--bg-sub); }
+  .gallery-item img {
+    display: block; width: 100%; aspect-ratio: 2 / 3; object-fit: cover;
+    transition: transform .6s cubic-bezier(.2,.7,.2,1), opacity .35s ease;
+  }
+  .gallery-item:hover img { transform: scale(1.045); opacity: .82; }
+  .gallery-num { display: block; color: var(--text-muted); margin: 13px 0 6px; font-size: 9px; letter-spacing: 0.16em; }
+  .gallery-title { font-size: 15.5px; line-height: 1.5; letter-spacing: 0.01em; }
+  .gallery-meta { font-size: 11px; letter-spacing: 0.1em; color: var(--text-muted); margin-top: 5px; }
+  .gallery-badge {
+    position: absolute; top: 0; left: 0;
+    background: var(--mark); color: var(--on-mark);
+    padding: 5px 8px 4px;
+  }
+
+  /* ---- list view ---- */
+  .card-list { border-top: 1px solid var(--rule); }
+  .card {
+    display: flex; gap: 28px; padding: 30px 0;
+    border-bottom: 1px solid var(--rule); cursor: pointer;
+  }
+  .card:hover .card-title { border-bottom-color: var(--rule-strong); }
+  .card-num { width: 34px; flex-shrink: 0; color: var(--text-muted); font-size: 9px; letter-spacing: 0.16em; padding-top: 6px; }
+  .card img { width: 108px; aspect-ratio: 2/3; object-fit: cover; flex-shrink: 0; background: var(--bg-sub); }
   .card-body { flex: 1; min-width: 0; }
-  .card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
-  .card-title { font-size: 1.1rem; font-weight: 600; margin: 0; }
-  .badge { font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
-  .badge.hof { background: var(--accent-bg); color: var(--accent); }
-  .meta-row { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 4px; }
-  .meta-row + .meta-row { margin-top: -2px; }
-  .genre-row { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
-  .tag { font-size: 0.72rem; padding: 4px 12px; border-radius: 20px; background: var(--accent-bg); color: var(--accent); font-weight: 600; }
-  .amazon-link { margin-top: 6px; }
-  .amazon-link a { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 8px 18px; border-radius: 20px; }
-  .amazon-link a:hover { opacity: 0.88; }
-  .comment { font-size: 0.82rem; font-style: italic; color: var(--text-muted); margin: 6px 0 0; }
-  .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-  @media (max-width: 900px) {
-    .card-grid { grid-template-columns: repeat(3, 1fr); }
-  }
-  .gallery-item { text-align: center; cursor: pointer; }
-  .gallery-thumb { position: relative; }
-  .gallery-item img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--border); box-shadow: 0 2px 10px rgba(60,40,20,.15); }
-  .gallery-item .gallery-title { font-size: 0.98rem; font-weight: 600; margin-top: 8px; line-height: 1.35; }
-  .gallery-badge { position: absolute; top: 6px; left: 6px; }
-  .gallery-item .gallery-author { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
-  @media (max-width: 480px) {
-    .card { flex-direction: column; }
-    .card img { width: 100%; height: 200px; }
-    .card-grid { grid-template-columns: repeat(2, 1fr); }
-  }
+  .card-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .card-title { font-size: 23px; font-weight: 400; margin: 0; line-height: 1.38; letter-spacing: 0.005em; border-bottom: 1px solid transparent; }
+  .badge { background: var(--mark); color: var(--on-mark); padding: 4px 8px 3px; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .meta-row { color: var(--text-muted); font-size: 10.5px; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .meta-row span + span::before { content: "／"; margin: 0 6px; opacity: .6; }
+  .synopsis { font-size: 12.5px; margin: 0 0 10px; line-height: 1.95; max-width: 62em; }
+  .cast-list { font-size: 11px; color: var(--text-muted); margin: 0 0 8px; line-height: 1.8; }
+  .comment { font-size: 12px; color: var(--text-muted); margin: 0; padding-left: 14px; border-left: 1px solid var(--rule); }
+
+  /* ---- modal ---- */
   .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px; z-index: 100;
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(20,20,20,.4); backdrop-filter: blur(2px);
+    justify-content: flex-end;
   }
-  .modal-overlay.hidden { display: none; }
-  .modal-card {
-    background: var(--card-bg); border-radius: 14px; max-width: 640px; width: 100%;
-    max-height: 90vh; overflow-y: auto; padding: 20px; position: relative;
-    box-shadow: var(--shadow);
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--panel); width: min(560px, 100%); height: 100%;
+    overflow-y: auto; padding: 64px 44px 80px; position: relative;
+    animation: slidein .38s cubic-bezier(.2,.7,.2,1);
   }
+  @keyframes slidein { from { transform: translateX(28px); opacity: 0 } to { transform: none; opacity: 1 } }
   .modal-close {
-    position: absolute; top: 12px; right: 12px; border: none; background: var(--border);
-    color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem;
+    position: absolute; top: 22px; right: 26px;
+    background: none; border: 0; cursor: pointer; color: var(--text-muted);
+    font-family: inherit; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
   }
-  .modal-card .card { border: none; padding: 0; }
-  .modal-card .card img { width: 140px; height: 196px; box-shadow: 0 2px 10px rgba(60,40,20,.15); }
-  .page-nav { display: flex; gap: 8px; margin-bottom: 12px; }
-  .page-nav a { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); text-decoration: none; font-size: 0.85rem; }
-  .page-nav a.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .modal-close:hover { color: var(--text); }
+  .modal-image { width: 100%; aspect-ratio: 2/3; max-height: 46vh; object-fit: cover; margin-bottom: 26px; background: var(--bg-sub); }
+
+  /* ---- back to top ---- */
   #back-to-top {
-    position: fixed; bottom: 24px; right: 24px; z-index: 90;
-    padding: 10px 16px; border-radius: 999px; border: 1px solid var(--border);
-    background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 0.85rem;
-    box-shadow: var(--shadow);
+    position: fixed; bottom: 0; right: 0; z-index: 90;
+    padding: 14px 20px; border: 0; border-top: 1px solid var(--rule); border-left: 1px solid var(--rule);
+    background: var(--panel); color: var(--text-muted); cursor: pointer;
+    font-family: inherit; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
   }
-  #back-to-top:hover { background: var(--accent-bg); }
+  #back-to-top:hover { color: var(--text); }
+
+  /* ---- responsive ---- */
+  @media (max-width: 1100px) { .card-grid { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 860px) {
+    .topbar, .hero, .controls, .page-layout { padding-left: 22px; padding-right: 22px; }
+    .hero { padding-top: 48px; }
+    .page-layout { flex-direction: column; gap: 0; }
+    .sidebar { width: 100%; padding-top: 24px; }
+    main { padding-top: 24px; width: 100%; }
+    .card-grid { grid-template-columns: repeat(3, 1fr); gap: 32px 18px; }
+    .modal-box { padding: 56px 24px 60px; }
+  }
+  @media (max-width: 520px) {
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .gallery-title { font-size: 14px; }
+    .card-title { font-size: 19px; }
+    .card { flex-wrap: wrap; gap: 18px; }
+    .card-num { width: 100%; padding-top: 0; }
+    .card img { width: 84px; }
+    .globalnav { gap: 16px; }
+    .topbar { padding-top: 14px; padding-bottom: 14px; }
+  }
+
+  /* ---- manga: 作者・ジャンルタグ・外部リンク ---- */
+  .card-author { font-size: 13px; color: var(--text-muted); margin: 0 0 10px; letter-spacing: 0.02em; }
+  .gallery-author { font-size: 11px; line-height: 1.5; color: var(--text-muted); margin-top: 4px; }
+  .sidebar-author { font-size: 10.5px; color: var(--text-muted); line-height: 1.45; margin-top: 2px; }
+  .sidebar-item { flex-wrap: wrap; }
+  .sidebar-item .sidebar-title { flex: 1; }
+  .sidebar-author { width: 100%; padding-left: 30px; }
+  .genre-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tag {
+    font-size: 10px; letter-spacing: 0.1em; color: var(--text-muted);
+    border: 1px solid var(--rule); padding: 4px 9px 3px;
+  }
+  .ext-link {
+    display: inline-block; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text); border-bottom: 1px solid var(--rule-strong); padding-bottom: 2px;
+  }
+  .ext-link:hover { color: var(--text-muted); border-bottom-color: var(--text-muted); }
 </style>
 </head>
 <body>
-<header class="page-header">
-  <h1>お気に入り漫画一覧</h1>
-  <nav class="page-nav">
-    <a href="./favorite-anime.html">アニメ一覧</a>
-    <a href="./favorite-manga.html" class="active">漫画一覧</a>
-    <a href="./favorite-movie.html">映画一覧</a>
+<header class="topbar">
+  <span class="wordmark">FAVORITES ARCHIVE</span>
+  <nav class="globalnav">
+    <a href="./favorite-anime.html">Anime<span class="nav-jp">アニメ</span></a>
+    <a href="./favorite-manga.html" class="active">Manga<span class="nav-jp">漫画</span></a>
+    <a href="./favorite-movie.html">Movie<span class="nav-jp">映画</span></a>
   </nav>
-  <p class="subtitle">読んでよかった作品の記録です。</p>
-  <div class="controls">
-    <div class="view-toggle">
-      <button id="btn-view-gallery" class="active" onclick="setView('gallery')">サムネ</button>
-      <button id="btn-view-list" onclick="setView('list')">詳細</button>
+</header>
+
+<section class="hero">
+  <span class="hero-index caps">Category &mdash; 02</span>
+  <h1>Manga</h1>
+  <p class="hero-jp">読んでよかった漫画作品の記録。出版年・ジャンルで絞り込み、サムネイルまたは詳細で閲覧できます。</p>
+  <p class="hero-count caps" id="hero-count"></p>
+</section>
+
+<div class="controls">
+  <div class="control-row">
+    <span class="control-label caps">View</span>
+    <div class="switch">
+      <button id="btn-view-gallery" class="active" onclick="setView('gallery')">Grid</button>
+      <button id="btn-view-list" onclick="setView('list')">List</button>
     </div>
-    <div class="filter-badges">
-      <button class="active" data-category="all" onclick="setCategory('all')">すべて</button>
+    <span class="control-label caps" style="margin-left:auto">Select</span>
+    <div class="switch">
+      <button class="active" data-category="all" onclick="setCategory('all')">All</button>
       <button data-category="hof" onclick="setCategory('hof')">殿堂入り</button>
     </div>
-    <input type="search" id="search-box" placeholder="タイトル・作者・ジャンルで検索" oninput="render()">
-    <select id="genre-filter" onchange="render()">
-      <option value="all">すべてのジャンル</option>
-    </select>
-    <select id="decade-select" onchange="render()">
-      <option value="all">すべての年代</option>
-      <option value="1970">1970年代</option>
-      <option value="1980">1980年代</option>
-      <option value="1990">1990年代</option>
-      <option value="2000">2000年代</option>
-      <option value="2010">2010年代</option>
-      <option value="2020">2020年代</option>
-    </select>
-    <select id="sort-select" onchange="render()">
-      <option value="firstVolume" selected>第1巻の出版日が新しい順</option>
-      <option value="added">新しく追加した順</option>
-      <option value="title">タイトル順</option>
-      <option value="volumes">巻数が多い順</option>
-    </select>
-    <div class="view-toggle" id="sort-dir-toggle">
-      <button id="btn-sort-desc" class="active" onclick="setSortDir('desc')">降順</button>
-      <button id="btn-sort-asc" onclick="setSortDir('asc')">昇順</button>
+  </div>
+  <div class="control-row">
+    <span class="control-label caps">Filter</span>
+    <div class="selects">
+      <select id="genre-filter" onchange="render()">
+        <option value="all">すべてのジャンル</option>
+      </select>
+      <select id="decade-select" onchange="render()">
+        <option value="all">すべての年代</option>
+        <option value="1970">1970年代</option>
+        <option value="1980">1980年代</option>
+        <option value="1990">1990年代</option>
+        <option value="2000">2000年代</option>
+        <option value="2010">2010年代</option>
+        <option value="2020">2020年代</option>
+      </select>
+      <input type="search" id="search-box" placeholder="SEARCH &mdash; タイトル・作者・ジャンル" oninput="render()">
     </div>
   </div>
-</header>
+  <div class="control-row">
+    <span class="control-label caps">Order</span>
+    <div class="selects">
+      <select id="sort-select" onchange="render()">
+        <option value="firstVolume" selected>第1巻の出版日が新しい順</option>
+        <option value="added">新しく追加した順</option>
+        <option value="title">タイトル順</option>
+        <option value="volumes">巻数が多い順</option>
+      </select>
+    </div>
+    <div class="switch" id="sort-dir-toggle">
+      <button id="btn-sort-desc" class="active" onclick="setSortDir('desc')">Desc</button>
+      <button id="btn-sort-asc" onclick="setSortDir('asc')">Asc</button>
+    </div>
+  </div>
+</div>
+
 <div class="page-layout">
   <aside class="sidebar">
-    <p class="sidebar-heading">全作品(タイトル順)</p>
+    <p class="sidebar-heading caps">Index &mdash; All Titles</p>
     <div id="sidebar-list"></div>
   </aside>
-  <main id="app"></main>
+  <main>
+    <p class="result-count caps" id="result-count"></p>
+    <div id="app"></div>
+  </main>
 </div>
-<div class="modal-overlay hidden" id="modal-overlay" onclick="closeModalOnOverlay(event)">
-  <div class="modal-card" id="modal-card"></div>
+
+<div id="modal-overlay" class="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">Close &#10005;</button>
+    <div id="modal-body"></div>
+  </div>
 </div>
-<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページ上部に戻る">↑ 上に戻る</button>
+
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページ上部に戻る">&uarr; Top</button>
+
 <script>
 const MANGA_DATA = [
   { id: 'centuria', title: 'ケントゥリア', author: '暗森透', volumeCount: 9, volumes: '既刊9巻(連載中)', hof: false, comment: '', addedDate: '2026-08-28', image: 'images/favorite-manga/centuria.jpg', magazine: '少年ジャンプ+', firstVolumeDate: '2024-07-04', genres: ['ダークファンタジー', 'バトル', '古代ローマ風'], amazonUrl: 'https://www.amazon.co.jp/dp/4088841026' },
@@ -333,28 +498,25 @@ const MANGA_DATA = [
   { id: 'konosekai-no-katasumi-ni', title: 'この世界の片隅に', author: 'こうの史代', volumeCount: 3, volumes: '全3巻(完結)', hof: false, comment: '', addedDate: '2026-08-21', image: 'images/favorite-manga/konosekai-no-katasumi-ni.jpg', magazine: '漫画アクション', firstVolumeDate: '2008-01-12', genres: ['戦争', 'ヒューマンドラマ', '日常'], amazonUrl: 'https://www.amazon.co.jp/dp/4575941468' },
   { id: 'make-heroine-ga-oosugiru', title: '負けヒロインが多すぎる', author: '原作:雨森たきび/漫画:いたち/キャラクター原案:いみぎむる', volumeCount: 6, volumes: '6巻(連載中)', hof: false, comment: '', addedDate: '2026-08-21', image: 'images/favorite-manga/make-heroine-ga-oosugiru.jpg', magazine: 'マンガワン/裏サンデー', firstVolumeDate: '2022-10-12', genres: ['ラブコメ', '青春', '学園'], amazonUrl: 'https://www.amazon.co.jp/dp/4098513366' }
 ];
-
-let currentView = 'gallery';
-let currentCategory = 'all';
-let sortDir = 'desc';
+let state = { view: 'gallery', category: 'all', sortDir: 'desc' };
 
 function setView(view) {
-  currentView = view;
+  state.view = view;
   document.getElementById('btn-view-list').classList.toggle('active', view === 'list');
   document.getElementById('btn-view-gallery').classList.toggle('active', view === 'gallery');
   render();
 }
 
 function setCategory(category) {
-  currentCategory = category;
-  document.querySelectorAll('.filter-badges button').forEach(function (btn) {
+  state.category = category;
+  document.querySelectorAll('.switch button[data-category]').forEach(function (btn) {
     btn.classList.toggle('active', btn.dataset.category === category);
   });
   render();
 }
 
 function setSortDir(dir) {
-  sortDir = dir;
+  state.sortDir = dir;
   document.getElementById('btn-sort-desc').classList.toggle('active', dir === 'desc');
   document.getElementById('btn-sort-asc').classList.toggle('active', dir === 'asc');
   render();
@@ -364,6 +526,10 @@ function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
+}
+
+function pad(n) {
+  return String(n).padStart(3, '0');
 }
 
 function populateGenreFilter() {
@@ -384,7 +550,7 @@ function getFilteredSorted() {
   const sortKey = document.getElementById('sort-select').value;
 
   let items = MANGA_DATA.filter(function (item) {
-    if (currentCategory === 'hof' && !item.hof) return false;
+    if (state.category === 'hof' && !item.hof) return false;
     if (genre !== 'all' && item.genres.indexOf(genre) === -1) return false;
     if (decade !== 'all') {
       if (!item.firstVolumeDate) return false;
@@ -402,44 +568,53 @@ function getFilteredSorted() {
     else if (sortKey === 'volumes') cmp = a.volumeCount - b.volumeCount;
     else if (sortKey === 'added') cmp = 0;
     else cmp = (a.firstVolumeDate || '').localeCompare(b.firstVolumeDate || '');
-    return sortDir === 'asc' ? cmp : -cmp;
+    return state.sortDir === 'asc' ? cmp : -cmp;
   });
 
   return items;
 }
 
 function buildDetailHtml(item) {
-  const badgeHtml = item.hof ? '<span class="badge hof">殿堂入り</span>' : '';
+  const badgeHtml = item.hof ? '<span class="badge">殿堂入り</span>' : '';
   const genreTags = item.genres.map(function (g) { return '<span class="tag">' + escapeHtml(g) + '</span>'; }).join('');
   const commentHtml = item.comment ? '<p class="comment">' + escapeHtml(item.comment) + '</p>' : '';
+  const metaParts = [
+    escapeHtml(item.magazine),
+    escapeHtml(item.volumes),
+    '第1巻 ' + escapeHtml(item.firstVolumeDate)
+  ];
   return (
-    '<div class="card">' +
-    '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
-    '<div class="card-body">' +
     '<div class="card-title-row"><h2 class="card-title">' + escapeHtml(item.title) + '</h2>' +
     badgeHtml + '</div>' +
-    '<div class="meta-row">' + escapeHtml(item.author) + '</div>' +
-    '<div class="meta-row">' + escapeHtml(item.magazine) + ' / ' + escapeHtml(item.volumes) + ' / 第1巻: ' + escapeHtml(item.firstVolumeDate) + '</div>' +
+    '<p class="card-author">' + escapeHtml(item.author) + '</p>' +
+    '<div class="meta-row">' + metaParts.map(function (p) { return '<span>' + p + '</span>'; }).join('') + '</div>' +
     '<div class="genre-row">' + genreTags + '</div>' +
-    '<div class="amazon-link"><a href="' + escapeHtml(item.amazonUrl) + '" target="_blank" rel="noopener">Amazonで見る</a></div>' +
-    commentHtml +
-    '</div></div>'
+    '<a class="ext-link" href="' + escapeHtml(item.amazonUrl) + '" target="_blank" rel="noopener">Amazon &#8599;</a>' +
+    commentHtml
   );
 }
 
 function renderList(items) {
-  return items.map(buildDetailHtml).join('');
+  return '<div class="card-list">' + items.map(function (item, i) {
+    return (
+      '<div class="card" data-id="' + escapeHtml(item.id) + '">' +
+      '<span class="card-num">' + pad(i + 1) + '</span>' +
+      '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
+      '<div class="card-body">' + buildDetailHtml(item) + '</div></div>'
+    );
+  }).join('') + '</div>';
 }
 
 function renderGallery(items) {
-  return '<div class="card-grid">' + items.map(function (item) {
-    const badgeHtml = item.hof ? '<span class="badge hof gallery-badge">殿堂入り</span>' : '';
+  return '<div class="card-grid">' + items.map(function (item, i) {
+    const badgeHtml = item.hof ? '<span class="badge gallery-badge">殿堂入り</span>' : '';
     return (
-      '<div class="gallery-item" onclick="openModal(\'' + item.id + '\')">' +
+      '<div class="gallery-item" data-id="' + escapeHtml(item.id) + '">' +
       '<div class="gallery-thumb">' +
       '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' +
       badgeHtml +
       '</div>' +
+      '<span class="gallery-num">' + pad(i + 1) + '</span>' +
       '<div class="gallery-title">' + escapeHtml(item.title) + '</div>' +
       '<div class="gallery-author">' + escapeHtml(item.author) + '</div>' +
       '</div>'
@@ -450,26 +625,45 @@ function renderGallery(items) {
 function openModal(id) {
   const item = MANGA_DATA.find(function (d) { return d.id === id; });
   if (!item) return;
-  document.getElementById('modal-card').innerHTML =
-    '<button class="modal-close" onclick="closeModal()" aria-label="閉じる">×</button>' + buildDetailHtml(item);
-  document.getElementById('modal-overlay').classList.remove('hidden');
+  document.getElementById('modal-body').innerHTML =
+    '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" class="modal-image">' +
+    buildDetailHtml(item);
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
-  document.getElementById('modal-overlay').classList.add('hidden');
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
-function closeModalOnOverlay(event) {
+function handleOverlayClick(event) {
   if (event.target.id === 'modal-overlay') closeModal();
 }
 
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'Escape') closeModal();
+});
+
+document.getElementById('app').addEventListener('click', function (event) {
+  if (event.target.closest('.ext-link')) return;
+  const target = event.target.closest('.gallery-item, .card');
+  if (target) openModal(target.dataset.id);
+});
+
+document.getElementById('sidebar-list').addEventListener('click', function (event) {
+  const sidebarItem = event.target.closest('.sidebar-item');
+  if (sidebarItem) openModal(sidebarItem.dataset.id);
+});
+
 function renderSidebar() {
   const sorted = MANGA_DATA.slice().sort(function (a, b) { return a.title.localeCompare(b.title, 'ja'); });
-  document.getElementById('sidebar-list').innerHTML = sorted.map(function (item) {
+  document.getElementById('sidebar-list').innerHTML = sorted.map(function (item, i) {
     return (
-      '<div class="sidebar-item" onclick="openModal(\'' + item.id + '\')">' +
-      '<div class="sidebar-title">' + escapeHtml(item.title) + '</div>' +
-      '<div class="sidebar-author">' + escapeHtml(item.author) + '</div>' +
+      '<div class="sidebar-item" data-id="' + escapeHtml(item.id) + '">' +
+      '<span class="sidebar-num">' + pad(i + 1) + '</span>' +
+      '<span class="sidebar-title">' + escapeHtml(item.title) + '</span>' +
+      '<span class="sidebar-author">' + escapeHtml(item.author) + '</span>' +
       '</div>'
     );
   }).join('');
@@ -478,18 +672,15 @@ function renderSidebar() {
 function render() {
   const items = getFilteredSorted();
   const app = document.getElementById('app');
-  const countLine = '<p class="count-line">' + items.length + ' 件表示中(全' + MANGA_DATA.length + '作品)</p>';
+  document.getElementById('result-count').textContent = items.length + ' of ' + MANGA_DATA.length + ' titles';
   if (items.length === 0) {
-    app.innerHTML = countLine + '<div class="empty-state">該当する作品がありません。</div>';
+    app.innerHTML = '<div class="empty-state">該当する作品がありません</div>';
     return;
   }
-  if (currentView === 'gallery') {
-    app.innerHTML = countLine + renderGallery(items);
-  } else {
-    app.innerHTML = countLine + '<div class="card-list">' + renderList(items) + '</div>';
-  }
+  app.innerHTML = state.view === 'list' ? renderList(items) : renderGallery(items);
 }
 
+document.getElementById('hero-count').textContent = MANGA_DATA.length + ' Titles Archived';
 populateGenreFilter();
 renderSidebar();
 render();
