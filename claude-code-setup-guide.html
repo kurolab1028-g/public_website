@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>セットアップガイド — Claude Code 環境移行手順書</title>
+    <style>
+      :root {
+        --bg: #f6f7f9;
+        --surface: #ffffff;
+        --text: #1f2430;
+        --muted: #5b6472;
+        --border: #e4e7ec;
+        --accent: #35488d;
+        --accent-soft: #eaecf6;
+        --accent-line: #5167b8;
+        --warn: #c0392b;
+        --warn-soft: #fdeceb;
+        --code-bg: #f0f2f5;
+        --sidebar-w: 290px;
+        --maxw: 880px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic",
+          "Noto Sans JP", "Segoe UI", Meiryo, sans-serif;
+        font-size: 15px;
+        line-height: 1.85;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .wrap {
+        display: flex;
+        align-items: flex-start;
+        max-width: calc(var(--sidebar-w) + var(--maxw) + 80px);
+        margin: 0 auto;
+        gap: 40px;
+        padding: 0 24px;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        width: var(--sidebar-w);
+        flex: 0 0 var(--sidebar-w);
+        height: 100vh;
+        overflow-y: auto;
+        padding: 32px 8px 32px 0;
+      }
+
+      .sidebar h2 {
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin: 0 0 12px 4px;
+      }
+
+      .toc {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-left: 2px solid var(--border);
+      }
+      .toc li a {
+        display: block;
+        padding: 6px 14px;
+        color: var(--muted);
+        font-size: 13.5px;
+        line-height: 1.5;
+        border-left: 2px solid transparent;
+        margin-left: -2px;
+        transition:
+          color 0.15s,
+          border-color 0.15s;
+      }
+      .toc li a:hover {
+        color: var(--text);
+        text-decoration: none;
+        border-left-color: var(--accent-line);
+      }
+
+      main {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: var(--maxw);
+        padding: 40px 0 120px;
+      }
+
+      .cover {
+        background: linear-gradient(135deg, #35488d 0%, #5167b8 100%);
+        color: #fff;
+        border-radius: 16px;
+        padding: 36px 40px;
+        margin-bottom: 32px;
+        box-shadow: 0 8px 24px rgba(31, 122, 92, 0.18);
+      }
+      .cover .eyebrow {
+        font-size: 12.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.85;
+        margin: 0 0 8px;
+      }
+      .cover h1 {
+        font-size: 30px;
+        line-height: 1.3;
+        margin: 0 0 18px;
+        font-weight: 700;
+      }
+      .cover .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+        font-size: 13.5px;
+        opacity: 0.95;
+      }
+      .cover .meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 8px 32px 28px;
+        margin-bottom: 22px;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+      }
+
+      h2.sec {
+        font-size: 21px;
+        font-weight: 700;
+        margin: 24px 0 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--accent-soft);
+        scroll-margin-top: 24px;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      h2.sec .num {
+        color: var(--accent);
+        font-size: 15px;
+        font-weight: 700;
+        background: var(--accent-soft);
+        border-radius: 8px;
+        padding: 2px 10px;
+        line-height: 1.6;
+        flex: 0 0 auto;
+      }
+
+      h3 {
+        font-size: 17px;
+        font-weight: 700;
+        margin: 28px 0 10px;
+        color: #2f3341;
+        scroll-margin-top: 24px;
+      }
+      h4 {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 20px 0 8px;
+        color: var(--accent);
+      }
+
+      p {
+        margin: 10px 0;
+      }
+
+      ul,
+      ol {
+        margin: 10px 0;
+        padding-left: 24px;
+      }
+      li {
+        margin: 4px 0;
+      }
+      li > ul,
+      li > ol {
+        margin: 4px 0;
+      }
+
+      strong {
+        font-weight: 700;
+        color: #2f3341;
+      }
+
+      code {
+        background: var(--code-bg);
+        border-radius: 5px;
+        padding: 1px 6px;
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 0.88em;
+        color: #b03a6e;
+      }
+      pre {
+        background: var(--code-bg);
+        border-radius: 10px;
+        padding: 14px 16px;
+        overflow-x: auto;
+        margin: 14px 0;
+      }
+      pre code {
+        background: none;
+        padding: 0;
+        color: #2f3341;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .note {
+        background: var(--accent-soft);
+        border-left: 4px solid var(--accent-line);
+        border-radius: 0 10px 10px 0;
+        padding: 14px 18px;
+        margin: 16px 0;
+        color: #1d2953;
+        font-size: 14px;
+      }
+      .note p {
+        margin: 4px 0;
+      }
+
+      .warn {
+        color: var(--warn);
+        font-weight: 600;
+      }
+
+      .table-scroll {
+        overflow-x: auto;
+        margin: 16px 0;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 13.5px;
+      }
+      th,
+      td {
+        border: 1px solid var(--border);
+        padding: 9px 12px;
+        text-align: left;
+        vertical-align: top;
+      }
+      thead th {
+        background: #f0f2f4;
+        font-weight: 700;
+        color: #2f3341;
+        white-space: nowrap;
+      }
+      tbody tr:nth-child(even) {
+        background: #fafbfc;
+      }
+
+      .pill {
+        display: inline-block;
+        font-size: 11.5px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 1px 9px;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+      .pill-must {
+        background: #eaecf6;
+        color: #35488d;
+      }
+      .pill-want {
+        background: #fff3e0;
+        color: #b9740f;
+      }
+      .pill-td {
+        background: #fdeceb;
+        color: var(--warn);
+      }
+
+      .st-green {
+        color: #35488d;
+        font-weight: 700;
+      }
+      .st-red {
+        color: var(--warn);
+        font-weight: 700;
+      }
+      .st-muted {
+        color: var(--muted);
+      }
+
+      footer {
+        text-align: center;
+        color: var(--muted);
+        font-size: 12.5px;
+        padding: 24px 0 8px;
+      }
+
+      .lead {
+        font-size: 15px;
+        color: #33414f;
+        background: #fbfcfd;
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin: 16px 0;
+      }
+
+      .checklist {
+        list-style: none;
+        padding-left: 0;
+        margin: 14px 0;
+      }
+      .checklist li {
+        position: relative;
+        padding-left: 28px;
+        margin: 8px 0;
+      }
+      .checklist li::before {
+        content: "\2610";
+        position: absolute;
+        left: 0;
+        color: var(--accent);
+        font-size: 15px;
+      }
+
+      @media (max-width: 980px) {
+        .sidebar {
+          display: none;
+        }
+        .wrap {
+          display: block;
+          padding: 0 16px;
+        }
+        main {
+          max-width: 100%;
+          padding: 24px 0 80px;
+        }
+        section {
+          padding: 8px 20px 24px;
+        }
+        .cover {
+          padding: 28px 22px;
+        }
+        .cover h1 {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <aside class="sidebar">
+        <h2>目次</h2>
+        <ul class="toc">
+          <li><a href="#s0">0. 全体像</a></li>
+          <li><a href="#s1">1. 基盤ツール</a></li>
+          <li><a href="#s2">2. pm-skills リポジトリの導入</a></li>
+          <li><a href="#s3">3. プラグイン</a></li>
+          <li><a href="#s4">4. MCP サーバー</a></li>
+          <li><a href="#s5">5. 外部 CLI</a></li>
+          <li><a href="#s6">6. ~/.claude/settings.json</a></li>
+          <li><a href="#s7">7. メモリ</a></li>
+          <li><a href="#s8">8. 動作確認</a></li>
+          <li><a href="#s9">9. トラブルシュート</a></li>
+          <li><a href="#s10">10. 前職環境で最後にやること</a></li>
+          <li><a href="#s11">関連ドキュメント</a></li>
+        </ul>
+      </aside>
+
+      <main>
+        <div class="cover">
+          <p class="eyebrow">Setup Guide / Claude Code 環境移行</p>
+          <h1>セットアップガイド</h1>
+          <div class="meta">
+            <span>&#128100; 対象: PM 個人の Claude Code 環境</span>
+            <span>&#128197; 最終更新: 2026-09-04</span>
+            <span>&#128193; ソース: pm-skills / docs/setup-guide.md</span>
+          </div>
+        </div>
+
+        <section>
+          <p class="lead">
+            新しい環境（新しい会社・新しい Mac）で、これまでの Claude Code
+            作業環境を再現するための手順書。
+          </p>
+          <p>
+            このリポジトリ（<code>pm-skills</code>）にはスキルとルールしか入っていない。スキルが動くための土台
+            — Claude Code 本体、プラグイン、MCP サーバー、外部 CLI、<code>~/.claude/settings.json</code>、メモリ
+            — は環境側にあり、このガイドがその再現手順を担う。
+          </p>
+          <div class="note">
+            <p>
+              前職固有の資産（社内プラグインマーケットプレイス、社内 MCP サーバー群、社内 CLI）は移行できない。該当箇所には<strong>代替の選択肢</strong>を書いてある。
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s0"><span class="num">0</span>全体像</h2>
+          <pre><code>Claude Code 本体
+  &#9500;&#9472;&#9472; ~/.claude/settings.json      権限・hooks・ステータスライン・有効プラグイン
+  &#9500;&#9472;&#9472; プラグイン                    公式マーケットプレイスから 4 個
+  &#9500;&#9472;&#9472; MCP サーバー                  Slack・課題管理ツール連携（要再構築）
+  &#9500;&#9472;&#9472; 外部 CLI                      Confluence / Jira / Slack（要再構築）
+  &#9500;&#9472;&#9472; ~/.claude/projects/*/memory/ リポジトリごとの永続メモリ
+  &#9492;&#9472;&#9472; pm-skills リポジトリ          スキル 26 個・ルール 6 個</code></pre>
+          <p>
+            所要時間の目安は、土台だけなら 1〜2 時間。MCP と CLI の再構築を含めると 1 日。<strong>土台が半分でも大半のスキルは動く</strong>（下表参照）ので、全部揃うまで待つ必要はない。
+          </p>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>段階</th><th>やること</th><th>これで動くようになるもの</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>段階 1（30 分）</td><td>Claude Code・mise・pm-skills の clone</td><td>文書系スキルのほぼ全部（PRD・リリースノート・マニュアル・清書・HTML 化）</td></tr>
+                <tr><td>段階 2（30 分）</td><td>プラグイン・<code>settings.json</code>・ステータスライン</td><td>仕様駆動の進め方、スキル作成支援、ブラウザ操作</td></tr>
+                <tr><td>段階 3（1 時間）</td><td>Python パッケージ・音声入力</td><td>pptx 生成、PLAN の音声ダンプ</td></tr>
+                <tr><td>段階 4（半日〜）</td><td>MCP・外部 CLI</td><td>Slack 検索、Confluence 投稿、課題管理ツール連携</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s1"><span class="num">1</span>基盤ツール</h2>
+
+          <h3>Claude Code 本体</h3>
+          <p>ネイティブインストーラで入れる。</p>
+          <pre><code>curl -fsSL https://claude.ai/install.sh | bash</code></pre>
+          <p>
+            <code>~/.local/bin/claude</code> にシンボリックリンクが張られ、実体は
+            <code>~/.local/share/claude/versions/&lt;version&gt;</code> に入る。<code>~/.local/bin</code> が <code>PATH</code> にあることを確認する。
+          </p>
+          <pre><code>claude --version   # 2.1.201 以降を想定</code></pre>
+          <p>
+            初回起動でログインを求められる。個人の Claude アカウント（Pro / Max）か、会社が用意する組織アカウントのどちらかを使う。<strong>会社アカウントで入れる場合、作った資産の扱い（誰の著作物になるか）を先に確認しておく。</strong>
+            前職からの持ち出しで問題になるのはここなので、同じ問題を新職場でも作らないようにする。
+          </p>
+          <p>
+            自動更新は切っていた（<code>autoUpdates: false</code>）。破壊的変更で作業が止まるのを避ける意図。更新は自分のタイミングで <code>claude update</code> を打つ。
+          </p>
+
+          <h3>mise（ツールバージョン管理）</h3>
+          <p><code>rulesync</code> はリポジトリごとに <code>mise.toml</code> でバージョンを固定している。グローバルには入れない。</p>
+          <pre><code>brew install mise</code></pre>
+          <p>シェル設定（<code>~/.zshrc</code>）に有効化を書く。</p>
+          <pre><code>eval "$(mise activate zsh)"</code></pre>
+
+          <h3>その他のコマンド</h3>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>ツール</th><th>用途</th><th>導入</th></tr></thead>
+              <tbody>
+                <tr><td><code>node</code> 22 系</td><td>HTML 生成スキル・Apps Script のスタブ実行</td><td><code>mise use -g node@22</code></td></tr>
+                <tr><td><code>uv</code></td><td>Python 製 MCP サーバーの起動</td><td><code>brew install uv</code></td></tr>
+                <tr><td><code>gh</code></td><td>GitHub 操作（リポジトリ作成・PR）</td><td><code>brew install gh</code> &#8594; <code>gh auth login</code></td></tr>
+                <tr><td><code>nkf</code> / <code>poppler</code> / <code>qpdf</code></td><td>文字コード変換・PDF 処理</td><td><code>brew install nkf poppler qpdf</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Python パッケージ</h3>
+          <p>pptx 生成スキルとローカルの補助スクリプトが使う。</p>
+          <pre><code>pip3 install python-pptx Pillow openpyxl</code></pre>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>パッケージ</th><th>使うスキル</th></tr></thead>
+              <tbody>
+                <tr><td><code>python-pptx</code> / <code>Pillow</code></td><td><code>create-template-pptx</code>（テンプレート pptx の流用・アイコン差し替え）</td></tr>
+                <tr><td><code>openpyxl</code></td><td>一覧を Excel で書き出す処理</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>音声入力（Typeless）</h3>
+          <p>
+            <strong>これは「あると便利」ではなく、仕事の質を決める要素。</strong>
+            <code>plan.md</code> に自分の考えを全部ダンプする工程は、キーボードでは量が出ない。10 分喋れば数千文字のコンテキストが入り、Claude が「勝手に生成した」内容にならなくなる。
+          </p>
+          <p>Typeless を導入する。</p>
+          <p>
+            <code>CLAUDE.md</code> に「ユーザーは音声入力を使うことがあるので、誤変換は文脈から補って解釈する」と書いておくと精度が上がる。
+          </p>
+
+          <h3>IDE</h3>
+          <p>
+            Claude Code は基本ターミナルで動かす。IDE（Cursor / VS Code）を開くのは次の場合に限定していた。
+          </p>
+          <ul>
+            <li>大事な文書の細かい推敲</li>
+            <li>ディレクトリ構成や差分を丁寧に確認したいとき</li>
+          </ul>
+          <p>
+            ターミナルのウインドウを複数開いて並列に走らせるのが基本形。1 つの承認待ちの間に別の作業を進められる。
+          </p>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s2"><span class="num">2</span>pm-skills リポジトリの導入</h2>
+
+          <h3>前提：リモートを用意する</h3>
+          <p>
+            このリポジトリは<strong>リモート未設定の状態</strong>で作ってある（<code>git remote -v</code> が空）。持ち出し前に、個人アカウントの private リポジトリを作って push する。
+          </p>
+          <pre><code>gh repo create pm-skills --private --source=. --push</code></pre>
+          <p>
+            <code>~/.claude/settings.json</code> の <code>deny</code> に <code>Bash(git push*)</code> を入れていた場合は外す（意図しない push を防ぐ安全弁として入れていたもの）。
+          </p>
+          <p>push 前のチェック項目は <code>docs/migration-checklist.md</code> に残してある。</p>
+
+          <h3>clone とセットアップ</h3>
+          <pre><code>git clone git@github.com:&lt;自分&gt;/pm-skills.git
+cd pm-skills
+mise install                      # rulesync を導入
+mise exec -- rulesync generate    # .claude/ .cursor/ .agents/ CLAUDE.md AGENTS.md を生成</code></pre>
+          <p>
+            <code>rulesync generate</code> を実行するまで、Claude Code からスキルは見えない。<code>.claude/</code> などの生成物は Git 追跡外なので、clone 直後は必ず実行する。
+          </p>
+
+          <h3>編集してよい場所</h3>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>パス</th><th>扱い</th></tr></thead>
+              <tbody>
+                <tr><td><code>.rulesync/rules/</code> <code>.rulesync/skills/</code></td><td>ソースオブトゥルース。編集するのはここだけ</td></tr>
+                <tr><td><code>.claude/</code> <code>.cursor/</code> <code>.agents/</code> <code>CLAUDE.md</code> <code>AGENTS.md</code></td><td><code>rulesync generate</code> の生成物。直接編集しない</td></tr>
+                <tr><td><code>assets-external/</code></td><td>バイナリ資産（テンプレート pptx・フォント）。<code>.rulesync/</code> の外に置く</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="note">
+            <p class="warn">
+              <code>rulesync generate</code> は <code>.rulesync/</code> 配下のバイナリファイルを破損させる。pptx やフォントを <code>.rulesync/</code> に置かない。これは実際に踏んだ罠。
+            </p>
+          </div>
+
+          <h3>編集後の自動生成を hook にする</h3>
+          <p>
+            <code>.rulesync/</code> を編集したら毎回 <code>rulesync generate</code> を打つのは忘れる。プロジェクトの <code>.claude/settings.json</code> に PostToolUse hook を置いて自動化していた。
+          </p>
+          <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'fp=$(jq -r \".tool_input.file_path // empty\"); case \"$fp\" in */.rulesync/*|*/rulesync.jsonc) mise x -- rulesync generate ;; esac'"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+          <p><code>jq</code> が必要（<code>brew install jq</code>）。</p>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s3"><span class="num">3</span>プラグイン</h2>
+
+          <h3>公式マーケットプレイスを追加する</h3>
+          <pre><code>claude
+# 対話の中で
+/plugin marketplace add anthropics/claude-plugins-official</code></pre>
+
+          <h3>プラグイン</h3>
+          <p>
+            <code>~/.claude/settings.json</code> の <code>enabledPlugins</code>。<code>/plugin</code> から個別にインストールする。
+          </p>
+          <p>現在（2026-09-04 時点）有効にしている 4 個。</p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>プラグイン</th><th>何のために入れているか</th></tr></thead>
+              <tbody>
+                <tr><td><code>superpowers</code></td><td><strong>最重要。</strong> 仕様駆動の進め方そのもの。ブレインストーミング・計画作成・計画実行・並列エージェント・体系的デバッグ・完了前検証。「いきなり作業させない」を強制してくれる</td></tr>
+                <tr><td><code>skill-creator</code></td><td>新しいスキルを作る・既存スキルを改善する。スキルの説明文（発火条件）の調整に効く</td></tr>
+                <tr><td><code>playwright</code></td><td>ブラウザ操作。画面の取り込み、生成 HTML のレンダリング確認、Web ツールからの情報収集</td></tr>
+                <tr><td><code>claude-md-management</code></td><td><code>CLAUDE.md</code> の監査・改善。後日追加した</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><code>superpowers</code> と <code>skill-creator</code> と <code>playwright</code> を最初に入れる。残りは必要になってから。</p>
+          <p>必要になったら検討する候補（まだ導入していない）。</p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>プラグイン</th><th>何のために使えそうか</th></tr></thead>
+              <tbody>
+                <tr><td><code>plugin-dev</code></td><td>スキル / エージェント / hook / コマンドの書き方リファレンス。スキル自作時に参照</td></tr>
+                <tr><td><code>claude-code-setup</code></td><td>環境に対して「どんな自動化を入れるべきか」を提案させる</td></tr>
+                <tr><td><code>frontend-design</code></td><td>モック・プロトタイプの見た目を作るときの設計指針</td></tr>
+                <tr><td><code>atomic-agents</code></td><td>小さなエージェントの組み立て</td></tr>
+                <tr><td><code>security-guidance</code></td><td>変更のセキュリティレビュー</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>社内マーケットプレイスの扱い</h3>
+          <p>
+            前職では社内リポジトリをローカルディレクトリとしてマーケットプレイス登録し、Confluence / 課題管理ツール / Slack / インシデント管理のプラグインを入れていた。
+          </p>
+          <pre><code>{
+  "extraKnownMarketplaces": {
+    "&lt;社内マーケットプレイス名&gt;": {
+      "source": { "source": "directory", "path": "/path/to/社内リポジトリ" }
+    }
+  }
+}</code></pre>
+          <p>
+            <strong>この仕組み自体は新職場でも有効。</strong> 新職場に同種の社内プラグイン基盤があるかを最初に確認し、なければ「自分用マーケットプレイス」を private リポジトリで作って同じ形にする。プラグイン化しておくと、後からチームに配れる。
+          </p>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s4"><span class="num">4</span>MCP サーバー</h2>
+
+          <h3>旧構成</h3>
+          <p>Python 製の MCP サーバーを社内リポジトリからローカル起動していた。設定は <code>~/.claude.json</code> の <code>mcpServers</code>。</p>
+          <pre><code>{
+  "mcpServers": {
+    "slack": {
+      "type": "stdio",
+      "command": "/opt/homebrew/bin/uv",
+      "args": ["--directory", "/path/to/slack-mcp-server", "run", "slack-mcp-server"],
+      "env": { "SLACK_USER_TOKEN": "&lt;token&gt;" }
+    },
+    "atlassian": {
+      "type": "stdio",
+      "command": "/opt/homebrew/bin/uv",
+      "args": ["--directory", "/path/to/atlassian-mcp-server", "run", "atlassian-mcp-server"],
+      "env": {
+        "JIRA_URL": "https://&lt;org&gt;.atlassian.net",
+        "JIRA_USERNAME": "&lt;mail&gt;",
+        "JIRA_API_TOKEN": "&lt;token&gt;",
+        "CONFLUENCE_URL": "https://&lt;org&gt;.atlassian.net",
+        "CONFLUENCE_USERNAME": "&lt;mail&gt;",
+        "CONFLUENCE_API_TOKEN": "&lt;token&gt;",
+        "CONFLUENCE_SPACES_FILTER": "&lt;スペースキー&gt;"
+      }
+    }
+  }
+}</code></pre>
+
+          <h3>トークンの扱い</h3>
+          <div class="note">
+            <p class="warn">
+              前職のトークンは 1 つも持ち込まない。
+            </p>
+            <p>
+              <code>~/.claude.json</code> には Slack のユーザートークンと Atlassian の API トークンが平文で入っている。新環境にファイルをコピーする形の移行はしない。退職時にこれらのトークンを失効させる（Slack はアプリの再インストールで無効化、Atlassian は API トークンを削除）。
+            </p>
+          </div>
+          <p>新環境では各トークンを自分で発行し直す。設定の<strong>形</strong>だけを再利用する。</p>
+
+          <h3>新職場での選択肢</h3>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>目的</th><th>選択肢</th></tr></thead>
+              <tbody>
+                <tr><td>Confluence / 課題管理ツール</td><td>公式の Atlassian リモート MCP サーバー（OAuth。トークンを平文で持たなくて済むので第一候補）。組織がリモート接続を禁じている場合は API トークン方式の stdio サーバーを自作</td></tr>
+                <tr><td>Slack</td><td>公式 Slack MCP か、ユーザートークン方式の自作サーバー。検索（<code>search_messages</code>）・履歴取得・スレッド取得ができれば Slack 系スキルは動く</td></tr>
+                <tr><td>その他</td><td>まず「その SaaS に MCP があるか」を調べる。なければ CLI か API を叩くスキルにする方が安定する</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>追加は <code>claude mcp add</code>、確認は対話中に <code>/mcp</code>。認証が必要なサーバーは <code>/mcp</code> から OAuth フローを通す。</p>
+
+          <h3>MCP を増やしすぎない</h3>
+          <p>
+            MCP サーバーはツール定義がコンテキストを食う。<strong>「読み取りは MCP、書き込みは CLI」</strong>という切り分けが実運用では安定していた。Slack の検索は MCP、Slack への投稿は CLI（<code>write-slack</code> スキル）という構成になっているのはこの理由。
+          </p>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s5"><span class="num">5</span>外部 CLI</h2>
+          <p>いくつかのスキルは、社内で整備された CLI に依存している。これらは移行できない。</p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>CLI</th><th>旧環境での実体</th><th>スキルが求めること</th></tr></thead>
+              <tbody>
+                <tr><td><code>confluence</code></td><td>社内ツールを pnpm でグローバル導入。OAuth 認証</td><td>ページ取得・検索・Markdown での作成/更新・ラベル管理</td></tr>
+                <tr><td><code>jira</code></td><td>同上</td><td>課題取得・JQL 検索・作成・編集・コメント・ステータス遷移</td></tr>
+                <tr><td><code>slack-cli</code></td><td>社内ツールを <code>~/bin</code> に配置（tsx 実行）</td><td>チャンネル一覧・履歴・検索・投稿・スレッド返信・リアクション</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>スキルごとの依存と代替</h3>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>スキル</th><th>依存</th><th>依存なしで動くか</th></tr></thead>
+              <tbody>
+                <tr><td><code>minutes-to-prd</code></td><td>なし（議事録テキストがあればよい）</td><td><span class="st-green">&#9679;</span></td></tr>
+                <tr><td><code>create-mock-spec</code> / <code>prd-requirements-to-spec</code></td><td>なし</td><td><span class="st-green">&#9679;</span></td></tr>
+                <tr><td><code>create-release-note</code> / <code>create-user-manual</code></td><td>なし（PRD ファイルがあればよい）</td><td><span class="st-green">&#9679;</span></td></tr>
+                <tr><td><code>seisho</code></td><td>なし</td><td><span class="st-green">&#9679;</span></td></tr>
+                <tr><td><code>md-to-html</code></td><td>なし</td><td><span class="st-green">&#9679;</span></td></tr>
+                <tr><td><code>create-template-pptx</code></td><td><code>python-pptx</code> / <code>Pillow</code></td><td><span class="st-green">&#9679;</span>（Python パッケージのみ）</td></tr>
+                <tr><td><code>create-release-note-from-jira</code> / <code>create-bug-release-note</code></td><td>課題管理ツールから CSV エクスポート</td><td><span class="st-green">&#9679;</span>（CSV を手で落とせばよい）</td></tr>
+                <tr><td><code>create-google-slides</code> / <code>create-google-form</code></td><td>Google Apps Script</td><td><span class="st-green">&#9679;</span>（生成した <code>.gs</code> を貼り付けて実行）</td></tr>
+                <tr><td><code>confluence-upload-md</code> / <code>confluence-upload-html</code></td><td><code>confluence</code> CLI</td><td><span class="st-red">&#10005;</span> 要整備</td></tr>
+                <tr><td><code>write-slack</code></td><td><code>slack-cli</code></td><td><span class="st-red">&#10005;</span> 要整備</td></tr>
+                <tr><td><code>slack-summary</code> / <code>slack-past-inquiry-search</code></td><td>Slack の検索手段（MCP か CLI）</td><td><span class="st-red">&#10005;</span> 要整備</td></tr>
+                <tr><td><code>watch-webpage-line-notify</code></td><td>Apps Script + 通知先の API</td><td><span class="st-green">&#9679;</span>（通知先を差し替え）</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            <strong>文書系のスキルは外部依存がほぼない。</strong> つまり段階 1 のセットアップだけで、PRD &#8594; リリースノート &#8594; マニュアルという主要な流れは初日から回る。連携系は後回しでよい。
+          </p>
+
+          <h3>CLI が用意できないときの現実的な順序</h3>
+          <ol>
+            <li>まず <strong>MCP で読み取りだけ</strong>通す（検索・取得ができれば調査系スキルが動く）</li>
+            <li>書き込みは<strong>手作業でコピペ</strong>する（Confluence への貼り付け、Slack への投稿）。それでも生成部分が自動なので十分速い</li>
+            <li>頻度が高いものだけ、あとで CLI かスキルにする</li>
+          </ol>
+          <p>「100% 自動化」を目指すと止まる。一番つらい部分だけ自動化する。</p>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s6"><span class="num">6</span><code>~/.claude/settings.json</code></h2>
+          <p>ユーザー全体の設定。以下は旧環境の構成から、環境依存の値を外した雛形。</p>
+          <pre><code>{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_playwright_playwright__*",
+      "Read(//Users/&lt;user&gt;/pm-skills/**)",
+      "Write(//Users/&lt;user&gt;/pm-skills/**)",
+      "Edit(//Users/&lt;user&gt;/pm-skills/**)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "WebFetch"
+    ],
+    "deny": ["Bash(git push*)"],
+    "additionalDirectories": ["/Users/&lt;user&gt;/pm-skills"]
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          { "type": "command", "command": "afplay /System/Library/Sounds/Glass.aiff", "async": true }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "/path/to/ccsl",
+    "padding": 0,
+    "refreshInterval": 5000
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
+  },
+  "theme": "dark",
+  "effortLevel": "max"
+}</code></pre>
+
+          <h3>権限設計の考え方</h3>
+          <p><code>allow</code> / <code>ask</code> / <code>deny</code> の三層で組む。判断の基準は「間違えたときに戻せるか」。</p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>層</th><th>入れるもの</th></tr></thead>
+              <tbody>
+                <tr><td><code>allow</code></td><td>読み取り・検索・調査系、ブラウザ操作、<code>git status</code> / <code>diff</code> / <code>log</code> / <code>add</code>。承認を求められると調査のテンポが落ちるものを入れる</td></tr>
+                <tr><td><code>ask</code></td><td>破壊的なコマンド。<code>rm</code> 系、<code>git</code> の履歴を書き換える系（<code>push</code> <code>reset</code> <code>rebase</code> <code>merge</code> <code>checkout</code> <code>restore</code> <code>clean</code> <code>revert</code> <code>stash</code> など）</td></tr>
+                <tr><td><code>deny</code></td><td>読ませたくないファイル（<code>Read(.env)</code> <code>Read(.env.*)</code>）。持ち出し前は <code>Bash(git push*)</code> も</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><code>additionalDirectories</code> に作業リポジトリを列挙しておくと、リポジトリ外のファイルを触るたびの確認が減る。</p>
+          <div class="note">
+            <p>
+              <strong>設定を変えたら Claude Code を再起動する。</strong> 特に <code>permissions</code> と <code>hooks</code> はセッション開始時に読まれるので、起動中に書き換えても効かない。<code>hooks</code> は対話中に <code>/hooks</code> を一度開くと再読み込みされる。
+            </p>
+          </div>
+          <p>
+            <code>WebFetch</code> の許可はドメイン単位で指定する形（<code>WebFetch(domain:example.com)</code>）にもできる。広く許可すると意図しない外部送信のリスクが上がるので、業務データを扱うなら絞る。
+          </p>
+
+          <h3>hooks</h3>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>イベント</th><th>設定していた内容</th><th>効果</th></tr></thead>
+              <tbody>
+                <tr><td><code>Notification</code></td><td>通知音を鳴らす（<code>afplay</code>）</td><td>並列作業中に「承認待ち」に気づける。<strong>並列で回すなら必須</strong></td></tr>
+                <tr><td><code>PostToolUse</code></td><td><code>.rulesync/</code> を編集したら <code>rulesync generate</code></td><td>生成物の更新漏れを防ぐ</td></tr>
+                <tr><td><code>SessionStart</code> / <code>Stop</code> / <code>UserPromptSubmit</code></td><td>状態ファイルの書き換え</td><td>ステータスライン等の外部連携用</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>「毎回 X したら Y する」という自動化は、メモリや <code>CLAUDE.md</code> に書いても実行されない。<strong>hook にしないと動かない。</strong></p>
+
+          <h3>ステータスライン</h3>
+          <p><code>ccsl</code>（Claude Code 用の拡張ステータスライン）を使っていた。トークン使用量・残量・コンテキスト消費が見える。</p>
+          <pre><code>pip3 install ccsl
+which ccsl   # このパスを settings.json の statusLine.command に書く</code></pre>
+
+          <h3>プロジェクト単位の設定</h3>
+          <p>
+            リポジトリ直下の <code>.claude/settings.json</code>（共有）と <code>.claude/settings.local.json</code>（個人・Git 追跡外）。旧環境では作業リポジトリ側で次のようにしていた。
+          </p>
+          <ul>
+            <li><code>settings.json</code>（共有）: <code>Read(.env)</code> の拒否、<code>rulesync generate</code> の hook</li>
+            <li><code>settings.local.json</code>（個人）: <code>Bash(*)</code> の許可 + 破壊的コマンドを <code>ask</code>、<code>defaultMode: "acceptEdits"</code></li>
+          </ul>
+          <p>
+            <code>defaultMode: "acceptEdits"</code> は、ファイル編集を毎回承認せず自動で適用するモード。文書作成が主な作業だと承認回数が激減する。<strong>Git でバージョン管理されている前提</strong>でのみ使う。
+          </p>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s7"><span class="num">7</span>メモリ</h2>
+          <p>Claude Code はリポジトリごとに永続メモリを持てる。</p>
+          <pre><code>~/.claude/projects/&lt;パスをスラグ化したもの&gt;/memory/
+&#9500;&#9472;&#9472; MEMORY.md                    索引（毎セッション読み込まれる）
+&#9492;&#9472;&#9472; &lt;memory-name&gt;.md             1 ファイル 1 事実</code></pre>
+          <p>
+            各ファイルは frontmatter を持ち、<code>type</code> は <code>user</code> / <code>feedback</code> / <code>project</code> / <code>reference</code> のいずれか。<code>MEMORY.md</code> には 1 行のポインタだけを書く。
+          </p>
+          <p>旧環境で溜まっていたメモリの例（内容は環境依存なので<strong>移行しない。何を書くべきかの型として使う</strong>）。</p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>型</th><th>例</th></tr></thead>
+              <tbody>
+                <tr><td>承認方針</td><td>「この種の操作は確認なしで実行してよい」— 調査系の出力、ブラウザ操作</td></tr>
+                <tr><td>ツール選択</td><td>「この操作は MCP ではなく CLI を使う」（MCP 側に権限がないため）</td></tr>
+                <tr><td>コマンドの罠</td><td>「課題の種別は英語名で指定する。日本語名だと 400 で失敗する」</td></tr>
+                <tr><td>既定値</td><td>「特に指定がなければこの親フォルダ配下に作る」</td></tr>
+                <tr><td>復旧手順</td><td>「権限エラーが出たらこのスコープを追加して再インストール」</td></tr>
+                <tr><td>リポジトリ運用</td><td>「push 先は固定ブランチ」「push するのはスキルだけ」</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            <strong>新職場では空から始めて、ハマるたびに書かせる。</strong>「一度ハマったことに二度ハマらない」がメモリの唯一の役割。前職のメモリをコピーすると、存在しないツールや通らない手順を前提に動き出すので害になる。
+          </p>
+          <p>
+            <code>CLAUDE.md</code> との使い分けは、<strong>めったに変わらないことは <code>CLAUDE.md</code>、運用の細部はメモリ</strong>。旧環境の <code>CLAUDE.local.md</code> の冒頭にこの方針を明記していた。
+          </p>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s8"><span class="num">8</span>動作確認</h2>
+          <p>段階 1〜3 が終わったら、依存の少ないものから順に確認する。</p>
+          <pre><code>cd pm-skills
+mise exec -- rulesync generate        # .claude/skills/ が生成される
+ls .claude/skills | wc -l             # 26</code></pre>
+          <p>Claude Code を起動して、スキルが見えているかを確認する。</p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>確認</th><th>方法</th></tr></thead>
+              <tbody>
+                <tr><td>スキルが認識されている</td><td>対話中に「スキル一覧を教えて」と聞く。26 個出る</td></tr>
+                <tr><td>文書系が動く</td><td><code>seisho</code> の samples の before を清書させ、after と一致するか見る</td></tr>
+                <tr><td>pptx が動く</td><td><code>create-template-pptx</code> でテンプレートを 1 枚流し込んで保存させる</td></tr>
+                <tr><td>HTML が動く</td><td><code>md-to-html</code> で任意の Markdown を変換し、ブラウザで開く</td></tr>
+                <tr><td>プラグインが動く</td><td>「何か作りたい」と言って <code>superpowers:brainstorming</code> が起動するか</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s9"><span class="num">9</span>トラブルシュート</h2>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>症状</th><th>原因と対処</th></tr></thead>
+              <tbody>
+                <tr><td>スキルが認識されない</td><td><code>rulesync generate</code> を実行していない。生成物は Git 追跡外</td></tr>
+                <tr><td>設定変更が効かない</td><td><code>permissions</code> はセッション開始時に読まれる。Claude Code を再起動する。<code>hooks</code> は <code>/hooks</code> を開けば再読み込み</td></tr>
+                <tr><td><code>WebFetch</code> が拒否される</td><td>許可がドメインスコープになっている。対象ドメインを <code>allow</code> に追加する</td></tr>
+                <tr><td>pptx / xlsx が壊れた</td><td><code>.rulesync/</code> 配下にバイナリを置いた。<code>assets-external/</code> に移して相対参照する</td></tr>
+                <tr><td>MCP サーバーが繋がらない</td><td><code>/mcp</code> で状態を確認。OAuth が必要なサーバーは対話セッションから認証フローを通す</td></tr>
+                <tr><td>承認待ちに気づかない</td><td><code>Notification</code> hook で音を鳴らす</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s10"><span class="num">10</span>前職環境で最後にやること</h2>
+          <p>新環境の構築とは別に、離れる側でやるべきこと。</p>
+          <ul class="checklist">
+            <li>発行済みトークンを失効させる（Slack アプリ、Atlassian API トークン、その他 SaaS）</li>
+            <li><code>~/.claude.json</code> <code>~/.claude/settings.json</code> を新環境へ<strong>そのままコピーしない</strong>（トークンと社内パスが埋まっている）</li>
+            <li>スキルの持ち出しについて会社の確認を取る（在職中に業務として作ったものは原則として会社の成果物）</li>
+            <li>このリポジトリを個人の private リポジトリへ push する（<code>docs/migration-checklist.md</code> のチェック項目を先に消化する）</li>
+            <li>同梱フォントのライセンスファイルを配置する（Apache 2.0 は頒布物へのライセンス同梱を条件にしている）</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 class="sec" id="s11">関連ドキュメント</h2>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>ドキュメント</th><th>内容</th></tr></thead>
+              <tbody>
+                <tr><td><code>docs/workflow-guide.md</code></td><td>環境が揃ったあと、実際にどう仕事を進めていたか</td></tr>
+                <tr><td><code>docs/migration-checklist.md</code></td><td>持ち出し時の検査記録と push の前提条件</td></tr>
+                <tr><td><code>docs/fictional-product.md</code></td><td>samples に使う架空プロダクトの設定</td></tr>
+                <tr><td><code>docs/techniques.md</code></td><td>移行しなかったスキルから抽出した汎用的な手法</td></tr>
+                <tr><td><code>docs/reference-claude-code-daily-work.md</code></td><td>発想の元になった記事の全文</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <footer>
+          セットアップガイド — Claude Code 環境移行手順書 ・ pm-skills ・ 2026-09-04
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>
